@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { FaGoogle, FaApple } from "react-icons/fa";
-import { signInWithGoogle, signInWithApple } from '@/lib/firebase';
+import { signInWithGoogle, signInWithApple, handleRedirectResult, auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { onAuthStateChanged } from 'firebase/auth';
 
 interface SocialAuthButtonsProps {
   onSuccess?: (userData: any) => void;
@@ -15,11 +16,37 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isAppleLoading, setIsAppleLoading] = useState(false);
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsGoogleLoading(true);
-      const user = await signInWithGoogle();
-      
+  // Handle redirect result when component mounts
+  useEffect(() => {
+    const checkRedirectResult = async () => {
+      try {
+        const user = await handleRedirectResult();
+        if (user) {
+          const userData = {
+            email: user.email || '',
+            username: user.email || '',
+            fullName: user.displayName || '',
+            password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
+            profileImage: user.photoURL || null
+          };
+          
+          onSuccess?.(userData);
+        }
+      } catch (error) {
+        console.error('Redirect result error:', error);
+        toast({
+          title: "Authentication failed",
+          description: "Could not complete sign in. Please try again.",
+          variant: "destructive",
+        });
+        onError?.(error as Error);
+      }
+    };
+
+    checkRedirectResult();
+
+    // Also listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         const userData = {
           email: user.email || '',
@@ -31,6 +58,19 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
         
         onSuccess?.(userData);
       }
+    });
+
+    return () => unsubscribe();
+  }, [onSuccess, onError, toast]);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsGoogleLoading(true);
+      
+      await signInWithGoogle();
+      // Note: The actual success handling is done in the useEffect through
+      // either the redirect result or the auth state change
+      
     } catch (error) {
       console.error('Google sign-in error:', error);
       toast({
@@ -39,7 +79,6 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
         variant: "destructive",
       });
       onError?.(error as Error);
-    } finally {
       setIsGoogleLoading(false);
     }
   };
@@ -47,28 +86,19 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
   const handleAppleSignIn = async () => {
     try {
       setIsAppleLoading(true);
-      const user = await signInWithApple();
       
-      if (user) {
-        const userData = {
-          email: user.email || '',
-          username: user.email || '',
-          fullName: user.displayName || '',
-          password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
-          profileImage: user.photoURL || null
-        };
-        
-        onSuccess?.(userData);
-      }
+      await signInWithApple();
+      // Note: The actual success handling is done in the useEffect through
+      // either the redirect result or the auth state change
+      
     } catch (error) {
       console.error('Apple sign-in error:', error);
       toast({
-        title: "Authentication failed",
+        title: "Authentication failed", 
         description: "Could not sign in with Apple. Please try again.",
         variant: "destructive",
       });
       onError?.(error as Error);
-    } finally {
       setIsAppleLoading(false);
     }
   };
@@ -104,6 +134,10 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
         )}
         Continue with Apple
       </Button>
+      
+      <p className="text-xs text-center text-gray-500 mt-2">
+        Note: Apple Sign In may require additional setup in production environments
+      </p>
     </div>
   );
 }

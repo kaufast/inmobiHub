@@ -13,6 +13,10 @@ import Footer from "./components/layout/footer";
 import { AuthProvider } from "./hooks/use-auth";
 import { BubbleNotificationsProvider } from "./hooks/use-bubble-notifications";
 import { PropertyComparisonProvider } from "./hooks/use-property-comparison";
+import { useEffect, useState } from "react";
+import { handleRedirectResult } from "./lib/firebase";
+import { useToast } from "./hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 function AppContent() {
   return (
@@ -35,14 +39,57 @@ function AppContent() {
   );
 }
 
+function FirebaseAuthHandler({ children }: { children: React.ReactNode }) {
+  const [isCheckingRedirect, setIsCheckingRedirect] = useState(true);
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    const checkRedirectResult = async () => {
+      try {
+        const user = await handleRedirectResult();
+        if (user) {
+          toast({
+            title: "Firebase authentication successful",
+            description: "Please wait while we sign you in...",
+          });
+        }
+      } catch (error) {
+        console.error("Firebase redirect error:", error);
+        toast({
+          title: "Authentication failed",
+          description: "Could not complete authentication with social provider.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsCheckingRedirect(false);
+      }
+    };
+    
+    checkRedirectResult();
+  }, [toast]);
+  
+  if (isCheckingRedirect) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-lg">Checking authentication status...</span>
+      </div>
+    );
+  }
+  
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
-      <AuthProvider>
-        <PropertyComparisonProvider maxProperties={4}>
-          <AppContent />
-        </PropertyComparisonProvider>
-      </AuthProvider>
+      <FirebaseAuthHandler>
+        <AuthProvider>
+          <PropertyComparisonProvider maxProperties={4}>
+            <AppContent />
+          </PropertyComparisonProvider>
+        </AuthProvider>
+      </FirebaseAuthHandler>
     </BubbleNotificationsProvider>
   );
 }

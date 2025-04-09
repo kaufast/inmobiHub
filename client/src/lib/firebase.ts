@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut, signInWithRedirect, getRedirectResult } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -30,8 +30,18 @@ appleProvider.addScope('name');
 // Sign in with Google
 export async function signInWithGoogle() {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
+    // Check if we're in Replit's preview environment which might block popups
+    const isReplit = window.location.hostname.includes('replit');
+    
+    if (isReplit) {
+      // Use redirect for Replit environment to avoid popup blockers
+      await signInWithRedirect(auth, googleProvider);
+      return null; // The page will redirect, so no need to return anything
+    } else {
+      // Use popup for other environments
+      const result = await signInWithPopup(auth, googleProvider);
+      return result.user;
+    }
   } catch (error) {
     console.error('Error signing in with Google:', error);
     throw error;
@@ -41,11 +51,37 @@ export async function signInWithGoogle() {
 // Sign in with Apple
 export async function signInWithApple() {
   try {
-    const result = await signInWithPopup(auth, appleProvider);
-    return result.user;
+    // Apple Sign In requires a properly configured domain with Apple Developer settings
+    // It likely won't work in development environment without proper setup
+    const isReplit = window.location.hostname.includes('replit');
+    
+    if (isReplit) {
+      // Use redirect for Replit environment to avoid popup blockers
+      await signInWithRedirect(auth, appleProvider);
+      return null; // The page will redirect, so no need to return anything
+    } else {
+      // Use popup for other environments
+      const result = await signInWithPopup(auth, appleProvider);
+      return result.user;
+    }
   } catch (error) {
     console.error('Error signing in with Apple:', error);
     throw error;
+  }
+}
+
+// Check for redirect result (to be called on app initialization)
+export async function handleRedirectResult() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      // User successfully authenticated after redirect
+      return result.user;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error handling redirect result:', error);
+    return null;
   }
 }
 

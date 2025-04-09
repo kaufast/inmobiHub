@@ -2,6 +2,7 @@ import { createContext, ReactNode, useContext, useState, useEffect, useCallback 
 import { User, LoginUser, RegisterUser } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "../lib/queryClient";
+import { auth, firebaseSignOut } from "@/lib/firebase";
 
 // Create the auth context
 type AuthContextType = {
@@ -134,6 +135,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticating(true);
       setError(null);
       
+      // First, log out from Firebase if the user was authenticated with it
+      if (auth.currentUser) {
+        await firebaseSignOut();
+      }
+      
+      // Then log out from our server
       const res = await apiRequest('POST', '/api/logout');
       
       if (!res.ok) {
