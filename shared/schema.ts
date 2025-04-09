@@ -130,7 +130,7 @@ export const messagesRelations = relations(messages, ({ one }) => ({
 export const searchHistory = pgTable("search_history", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
-  query: jsonb("query").notNull(),
+  searchParams: jsonb("search_params").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

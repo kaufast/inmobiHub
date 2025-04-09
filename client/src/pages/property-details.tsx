@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Property, Neighborhood } from "@shared/schema";
 import { useParams, Link } from "wouter";
-import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle } from "lucide-react";
+import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle, Sparkles } from "lucide-react";
+import PersonalizedDescription from "@/components/properties/personalized-description";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -288,7 +289,18 @@ export default function PropertyDetailsPage() {
             {/* Description */}
             <div className="mb-8">
               <h2 className="text-xl font-bold text-primary-800 mb-3">About This Property</h2>
-              <p className="text-primary-600">{property.description}</p>
+              <p className="text-primary-600 mb-6">{property.description}</p>
+              
+              {/* AI-Powered Personalized Description */}
+              {user && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-primary-800 mb-2 flex items-center">
+                    <Sparkles className="h-4 w-4 text-secondary-500 mr-2" />
+                    Personalized Insights
+                  </h3>
+                  <PersonalizedDescription propertyId={property.id} className="mt-2" />
+                </div>
+              )}
             </div>
             
             {/* Property features list */}

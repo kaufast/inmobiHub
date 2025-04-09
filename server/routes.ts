@@ -321,6 +321,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // AI-Powered Recommendation Routes
+  app.get("/api/properties/recommended", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = req.user!.id;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      
+      // Save search parameters to search history if provided
+      if (Object.keys(req.query).length > 1) { // More than just limit
+        const searchParams: any = {};
+        
+        if (req.query.location) searchParams.location = req.query.location as string;
+        if (req.query.propertyType) searchParams.propertyType = req.query.propertyType as string;
+        if (req.query.minPrice) searchParams.minPrice = parseInt(req.query.minPrice as string);
+        if (req.query.maxPrice) searchParams.maxPrice = parseInt(req.query.maxPrice as string);
+        if (req.query.beds) searchParams.beds = parseInt(req.query.beds as string);
+        if (req.query.baths) searchParams.baths = parseInt(req.query.baths as string);
+        
+        await storage.saveSearchHistory(userId, searchParams);
+      }
+      
+      // Get AI-powered recommendations
+      const recommendations = await storage.getRecommendedProperties(userId, limit);
+      
+      res.json(recommendations);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Save search history
+  app.post("/api/search/history", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = req.user!.id;
+      const searchHistory = await storage.saveSearchHistory(userId, req.body);
+      res.status(201).json(searchHistory);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get personalized property description
+  app.get("/api/properties/:id/personalized-description", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = req.user!.id;
+      const propertyId = parseInt(req.params.id);
+      
+      const property = await storage.getProperty(propertyId);
+      const user = await storage.getUser(userId);
+      
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check if property is premium and user has appropriate subscription
+      if (property.isPremium && user.subscriptionTier === 'free') {
+        return res.status(403).json({ 
+          message: "Premium subscription required",
+          details: "This is a premium property. Please upgrade your subscription to access AI-powered insights."
+        });
+      }
+      
+      const { generatePersonalizedDescription } = await import('./openai');
+      const personalizedDescription = await generatePersonalizedDescription(property, user);
+      
+      res.json({ personalizedDescription });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   const httpServer = createServer(app);
   return httpServer;
 }

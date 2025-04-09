@@ -30,6 +30,11 @@ export interface IStorage {
   deleteProperty(id: number): Promise<boolean>;
   getPropertiesByUser(userId: number): Promise<Property[]>;
   
+  // Recommendations
+  getRecommendedProperties(userId: number, limit?: number): Promise<{ property: Property; reason: string }[]>;
+  saveSearchHistory(userId: number, search: SearchProperties): Promise<any>;
+  getSearchHistory(userId: number, limit?: number): Promise<SearchProperties[]>;
+  
   // Favorites
   getFavorite(userId: number, propertyId: number): Promise<Favorite | undefined>;
   getFavoritesByUser(userId: number): Promise<Property[]>;
@@ -61,6 +66,70 @@ export class DatabaseStorage implements IStorage {
       },
       createTableIfMissing: true,
     });
+  }
+  
+  // Recommendations
+  async getRecommendedProperties(userId: number, limit = 5): Promise<{ property: Property; reason: string }[]> {
+    try {
+      // Get the user
+      const user = await this.getUser(userId);
+      if (!user) {
+        return [];
+      }
+      
+      // Get all properties to recommend from
+      const allProperties = await this.getProperties(100); // Get a decent sample size
+      
+      // Get user's search history
+      const searchHistory = await this.getSearchHistory(userId);
+      
+      // Get user's favorited properties
+      const favoritedProperties = await this.getFavoritesByUser(userId);
+      
+      // Use OpenAI to generate recommendations
+      const { generatePropertyRecommendations } = await import('./openai');
+      return generatePropertyRecommendations(
+        user,
+        allProperties,
+        searchHistory,
+        favoritedProperties,
+        limit
+      );
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+      return [];
+    }
+  }
+  
+  async saveSearchHistory(userId: number, search: SearchProperties): Promise<any> {
+    try {
+      const [result] = await db.insert(searchHistory)
+        .values({
+          userId,
+          searchParams: search as any,
+          createdAt: new Date()
+        })
+        .returning();
+      return result;
+    } catch (error) {
+      console.error('Error saving search history:', error);
+      return null;
+    }
+  }
+  
+  async getSearchHistory(userId: number, limit = 20): Promise<SearchProperties[]> {
+    try {
+      const results = await db.select()
+        .from(searchHistory)
+        .where(eq(searchHistory.userId, userId))
+        .orderBy(desc(searchHistory.createdAt))
+        .limit(limit);
+        
+      return results.map(item => item.searchParams as unknown as SearchProperties);
+    } catch (error) {
+      console.error('Error getting search history:', error);
+      return [];
+    }
   }
   
   // Users
