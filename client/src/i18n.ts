@@ -4,7 +4,22 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 // English translations
 const enGB = {
+  tour: {
+    welcomeTitle: 'Welcome to Foundation',
+    welcomeMessage: 'Let us show you around our platform to help you find your dream property!',
+    completedTitle: 'Tour Completed',
+    completedMessage: 'You can restart the tour anytime from the help menu',
+    back: 'Back',
+    close: 'Close',
+    finish: 'Finish',
+    next: 'Next',
+    skip: 'Skip',
+  },
   common: {
+    help: 'Help',
+    startTour: 'Start Guided Tour',
+    faq: 'FAQ',
+    contactSupport: 'Contact Support',
     home: 'Home',
     properties: 'Properties',
     services: 'Services',
@@ -217,7 +232,22 @@ const enGB = {
 
 // Spanish translations
 const esMX = {
+  tour: {
+    welcomeTitle: 'Bienvenido a Foundation',
+    welcomeMessage: '¡Permítanos mostrarle nuestra plataforma para ayudarlo a encontrar su propiedad ideal!',
+    completedTitle: 'Recorrido Completado',
+    completedMessage: 'Puede reiniciar el recorrido en cualquier momento desde el menú de ayuda',
+    back: 'Atrás',
+    close: 'Cerrar',
+    finish: 'Finalizar',
+    next: 'Siguiente',
+    skip: 'Omitir',
+  },
   common: {
+    help: 'Ayuda',
+    startTour: 'Iniciar Recorrido Guiado',
+    faq: 'Preguntas Frecuentes',
+    contactSupport: 'Contactar Soporte',
     home: 'Inicio',
     properties: 'Propiedades',
     services: 'Servicios',

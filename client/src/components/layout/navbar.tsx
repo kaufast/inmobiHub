@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X, ChevronDown, Home, Building, Search, User, LogOut } from "lucide-react";
+import { Menu, X, ChevronDown, Home, Building, Search, User, LogOut, HelpCircle } from "lucide-react";
 import LanguageSelector from "@/components/i18n/language-selector";
 import PropertyNotificationCenter from "@/components/notifications/property-notification-center";
+import HelpMenu from "@/components/layout/help-menu";
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -91,6 +92,7 @@ export default function Navbar() {
         
         <div className="flex items-center gap-2">
           <LanguageSelector />
+          <HelpMenu />
           {user ? (
             <>
               <PropertyNotificationCenter />
@@ -237,6 +239,17 @@ export default function Navbar() {
                         </a>
                       </Link>
                     )}
+                    <div 
+                      className="flex items-center py-2 text-white/80 hover:text-white transition cursor-pointer"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        // This will trigger the HelpMenu's startTour function for the current page
+                        window.dispatchEvent(new CustomEvent('startTour'));
+                      }}
+                    >
+                      <HelpCircle className="mr-3 h-5 w-5" />
+                      {t('common.startTour')}
+                    </div>
                   </div>
                 </nav>
                 <div className="p-4 border-t border-white/10">

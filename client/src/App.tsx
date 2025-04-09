@@ -21,6 +21,7 @@ import { useToast } from "./hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { OrganizationSchema } from "./components/seo/schema-markup";
 import { Helmet } from "react-helmet";
+import { OnboardingTourProvider } from "./hooks/use-onboarding-tour";
 
 function AppContent() {
   return (
@@ -95,7 +96,8 @@ function App() {
       <FirebaseAuthHandler>
         <AuthProvider>
           <PropertyNotificationsProvider maxNotifications={10}>
-            <PropertyComparisonProvider maxProperties={4}>
+            <OnboardingTourProvider>
+              <PropertyComparisonProvider maxProperties={4}>
               {/* Global SEO */}
               <Helmet>
                 <html lang="en" />
@@ -130,6 +132,7 @@ function App() {
               
               <AppContent />
             </PropertyComparisonProvider>
+            </OnboardingTourProvider>
           </PropertyNotificationsProvider>
         </AuthProvider>
       </FirebaseAuthHandler>
