@@ -451,11 +451,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (property.neighborhoodId) {
         const neighborhood = await storage.getNeighborhood(property.neighborhoodId);
         if (neighborhood) {
+          // Get neighborhood scores, using default values if not available
           neighborhoodScores = {
-            safety: neighborhood.safetyScore,
-            schools: neighborhood.schoolScore,
-            amenities: neighborhood.amenitiesScore,
-            transport: neighborhood.transportScore
+            safety: neighborhood.safetyScore || null,
+            schools: neighborhood.schoolScore || null,
+            amenities: neighborhood.amenitiesScore || neighborhood.overallScore || null,
+            transport: neighborhood.transportScore || null
           };
         }
       }
