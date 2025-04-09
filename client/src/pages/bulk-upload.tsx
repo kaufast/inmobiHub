@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, HelpCircle, Lock } from 'lucide-react';
+import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, HelpCircle, Lock, CheckCircle } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useTranslation } from 'react-i18next';
 
@@ -450,10 +450,36 @@ export default function BulkUploadPage() {
                 title, price, address, city, state, propertyType
               </code>
             </div>
+            
             <div className="mt-3">
-              <Button variant="link" className="text-xs p-0 h-auto" asChild>
+              <h5 className="text-sm font-medium mb-1">Multiple Images</h5>
+              <p className="text-xs text-muted-foreground">
+                To include multiple images, separate each URL with a pipe character (|) in the "images" column:
+              </p>
+              <code className="text-xs bg-muted p-1 rounded block mt-1 mb-2 whitespace-normal break-all">
+                https://example.com/image1.jpg|https://example.com/image2.jpg|https://example.com/image3.jpg
+              </code>
+            </div>
+            
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" className="text-xs h-8" asChild>
                 <a href="/assets/property-template.csv" download>
+                  <FileSpreadsheet className="h-3.5 w-3.5 mr-1" />
                   {t('downloadTemplate')}
+                </a>
+              </Button>
+              
+              <Button variant="outline" size="sm" className="text-xs h-8" asChild>
+                <a href="/assets/properties-example.csv" download>
+                  <FileSpreadsheet className="h-3.5 w-3.5 mr-1" />
+                  Download Example CSV
+                </a>
+              </Button>
+              
+              <Button variant="outline" size="sm" className="text-xs h-8" asChild>
+                <a href="/assets/bulk-upload-guide.md" target="_blank">
+                  <HelpCircle className="h-3.5 w-3.5 mr-1" />
+                  View Complete Guide
                 </a>
               </Button>
             </div>
