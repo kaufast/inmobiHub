@@ -12,14 +12,26 @@ type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<Omit<User, 'password'>, Error, LoginUser>;
+  loginMutation: UseMutationResult<User, Error, LoginUser>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<Omit<User, 'password'>, Error, RegisterUser>;
+  registerMutation: UseMutationResult<User, Error, RegisterUser>;
 };
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+const defaultContext: AuthContextType = {
+  user: null,
+  isLoading: false,
+  error: null,
+  loginMutation: {} as UseMutationResult<User, Error, LoginUser>,
+  logoutMutation: {} as UseMutationResult<void, Error, void>,
+  registerMutation: {} as UseMutationResult<User, Error, RegisterUser>,
+};
+
+export const AuthContext = createContext<AuthContextType>(defaultContext);
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
+  
+  // Fetch current user
   const {
     data: user,
     error,
@@ -29,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
+  // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginUser) => {
       const res = await apiRequest("POST", "/api/login", credentials);
@@ -50,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  // Register mutation
   const registerMutation = useMutation({
     mutationFn: async (userData: RegisterUser) => {
       const res = await apiRequest("POST", "/api/register", userData);
@@ -71,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/logout");
@@ -91,25 +106,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  // Create context value
+  const contextValue: AuthContextType = {
+    user: user ?? null,
+    isLoading,
+    error,
+    loginMutation,
+    logoutMutation,
+    registerMutation,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user: user ?? null,
-        isLoading,
-        error,
-        loginMutation,
-        logoutMutation,
-        registerMutation,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+// Hook for using auth context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
+    console.log("Auth context not available yet");
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

@@ -21,34 +21,24 @@ export default function Navbar() {
   const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // Safely access auth context
-  let authContext = null;
-  let user = null;
-  
-  try {
-    authContext = useAuth();
-    user = authContext?.user;
-  } catch (error) {
-    console.log("Auth context not available yet");
-  }
+  // Get auth context
+  const { user, logoutMutation } = useAuth();
   
   const handleLogout = () => {
-    if (authContext) {
-      authContext.logoutMutation.mutate();
-    }
+    logoutMutation.mutate();
   };
 
   return (
     <header className="glassmorphism-dark sticky top-0 z-50 text-white">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-        <Link href="/">
-          <a className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 21H21M5 21V7L13 3V21M19 21V10L13 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <span className="text-xl font-bold">Foundation<sup>®</sup></span>
-          </a>
-        </Link>
+          </Link>
+        </div>
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
