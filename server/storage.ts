@@ -43,6 +43,7 @@ export interface IStorage {
   updateMessageStatus(id: number, status: 'read' | 'replied' | 'archived'): Promise<Message | undefined>;
   
   // Neighborhoods
+  getNeighborhood(id: number): Promise<Neighborhood | undefined>;
   getNeighborhoods(limit?: number): Promise<Neighborhood[]>;
   
   // Session store
@@ -263,6 +264,13 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Neighborhoods
+  async getNeighborhood(id: number): Promise<Neighborhood | undefined> {
+    const [neighborhood] = await db.select()
+      .from(neighborhoods)
+      .where(eq(neighborhoods.id, id));
+    return neighborhood;
+  }
+  
   async getNeighborhoods(limit = 5): Promise<Neighborhood[]> {
     return db.select()
       .from(neighborhoods)

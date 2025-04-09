@@ -54,6 +54,7 @@ export const properties = pgTable("properties", {
   isPremium: boolean("is_premium").notNull().default(false),
   features: jsonb("features").$type<string[]>(),
   images: jsonb("images").$type<string[]>().notNull(),
+  neighborhoodId: integer("neighborhood_id").references(() => neighborhoods.id),
   ownerId: integer("owner_id").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -63,6 +64,10 @@ export const propertiesRelations = relations(properties, ({ one, many }) => ({
   owner: one(users, {
     fields: [properties.ownerId],
     references: [users.id],
+  }),
+  neighborhood: one(neighborhoods, {
+    fields: [properties.neighborhoodId],
+    references: [neighborhoods.id],
   }),
   favorites: many(favorites),
 }));
@@ -137,12 +142,49 @@ export const neighborhoods = pgTable("neighborhoods", {
   name: text("name").notNull(),
   city: text("city").notNull(),
   state: text("state").notNull(),
-  growth: doublePrecision("growth").notNull(),
+  zipCode: text("zip_code").notNull(),
+  latitude: doublePrecision("latitude").notNull(),
+  longitude: doublePrecision("longitude").notNull(),
+  
+  // Overall score and ranking
+  overallScore: integer("overall_score").notNull(), // 0-100 score
   rank: integer("rank"),
+
+  // Specific insight metrics (0-100 scores)
+  safetyScore: integer("safety_score"),
+  schoolScore: integer("school_score"),
+  transportScore: integer("transport_score"),
+  walkabilityScore: integer("walkability_score"),
+  restaurantScore: integer("restaurant_score"),
+  shoppingScore: integer("shopping_score"),
+  nightlifeScore: integer("nightlife_score"),
+  familyFriendlyScore: integer("family_friendly_score"),
+  affordabilityScore: integer("affordability_score"),
+  
+  // Growth and trends
+  growth: doublePrecision("growth"), // Annual growth rate
+  medianHomePrice: integer("median_home_price"),
+  priceHistory: jsonb("price_history").$type<{year: number, price: number}[]>(),
+  
+  // Descriptive content
   description: text("description"),
+  highlights: jsonb("highlights").$type<string[]>(), // Key features of neighborhood
+  challenges: jsonb("challenges").$type<string[]>(), // Challenges/downsides
+  
+  // Demographics
+  population: integer("population"),
+  demographics: jsonb("demographics").$type<{
+    ageGroups: {group: string, percentage: number}[],
+    incomeDistribution: {range: string, percentage: number}[]
+  }>(),
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const neighborhoodsRelations = relations(neighborhoods, ({ many }) => ({
+  properties: many(properties),
+}));
 
 // Schema validation
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -196,6 +238,12 @@ export const searchPropertiesSchema = z.object({
   features: z.array(z.string()).optional(),
 });
 
+export const insertNeighborhoodSchema = createInsertSchema(neighborhoods).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type RegisterUser = z.infer<typeof registerUserSchema>;
@@ -211,5 +259,7 @@ export type Message = typeof messages.$inferSelect;
 export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 export type Favorite = typeof favorites.$inferSelect;
 
-export type SearchProperties = z.infer<typeof searchPropertiesSchema>;
+export type InsertNeighborhood = z.infer<typeof insertNeighborhoodSchema>;
 export type Neighborhood = typeof neighborhoods.$inferSelect;
+
+export type SearchProperties = z.infer<typeof searchPropertiesSchema>;

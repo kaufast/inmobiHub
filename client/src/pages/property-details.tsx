@@ -1,15 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { Property } from "@shared/schema";
+import { Property, Neighborhood } from "@shared/schema";
 import { useParams, Link } from "wouter";
-import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home } from "lucide-react";
+import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
 import PropertyGallery from "@/components/properties/property-gallery";
-import PropertyMap from "@/components/properties/property-map";
+import EnhancedPropertyMap from "@/components/map/enhanced-property-map";
+import NeighborhoodScoreCard from "@/components/neighborhoods/neighborhood-score-card";
 import { formatPrice } from "@/lib/utils";
 
 export default function PropertyDetailsPage() {
@@ -269,17 +271,54 @@ export default function PropertyDetailsPage() {
           </div>
         </div>
         
-        {/* Property Location */}
+        {/* Property Location and Neighborhood */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
           <div className="p-6">
-            <h2 className="text-xl font-bold text-primary-800 mb-4">Location</h2>
-            <div className="h-[400px] rounded-lg overflow-hidden">
-              <PropertyMap
-                lat={property.latitude}
-                lng={property.longitude}
-                address={`${property.address}, ${property.city}, ${property.state}`}
-              />
-            </div>
+            <Tabs defaultValue="location" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="location">Location</TabsTrigger>
+                <TabsTrigger value="neighborhood">Neighborhood</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="location" className="mt-0">
+                <div className="h-[500px] rounded-lg overflow-hidden">
+                  <EnhancedPropertyMap
+                    initialProperty={property}
+                    center={{ lat: property.latitude, lng: property.longitude }}
+                    zoom={15}
+                    height="100%"
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="neighborhood" className="mt-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-1">
+                    {property.neighborhoodId ? (
+                      <NeighborhoodScoreCard neighborhoodId={property.neighborhoodId} />
+                    ) : (
+                      <div className="bg-primary-50 p-6 rounded-lg text-center">
+                        <Info className="h-10 w-10 text-primary-400 mx-auto mb-3" />
+                        <h3 className="text-lg font-medium text-primary-800 mb-2">No Neighborhood Data</h3>
+                        <p className="text-primary-600 text-sm">
+                          Detailed neighborhood information is not available for this property.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="lg:col-span-2 h-[400px] rounded-lg overflow-hidden">
+                    <EnhancedPropertyMap
+                      initialProperty={property}
+                      center={{ lat: property.latitude, lng: property.longitude }}
+                      zoom={14}
+                      height="100%"
+                      showNeighborhoodData={true}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>

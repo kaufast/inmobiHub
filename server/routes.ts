@@ -280,6 +280,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  app.get("/api/neighborhoods/:id", async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const neighborhood = await storage.getNeighborhood(id);
+      
+      if (!neighborhood) {
+        return res.status(404).json({ message: "Neighborhood not found" });
+      }
+      
+      res.json(neighborhood);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Subscription routes
   app.get("/api/subscription", isAuthenticated, async (req, res) => {
     const user = req.user!;
