@@ -2,17 +2,6 @@ import { useEffect, useRef } from "react";
 import { Property } from "@shared/schema";
 import { formatPrice } from "@/lib/utils";
 
-// Load Leaflet library externally
-useEffect(() => {
-  const loadLeaflet = async () => {
-    const leafletStylesheet = document.createElement('link');
-    leafletStylesheet.rel = 'stylesheet';
-    leafletStylesheet.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
-    document.head.appendChild(leafletStylesheet);
-  };
-  loadLeaflet();
-}, []);
-
 interface PropertyMapProps {
   lat?: number;
   lng?: number;
@@ -32,6 +21,17 @@ export default function PropertyMap({
 }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  
+  // Load Leaflet stylesheet
+  useEffect(() => {
+    const loadLeaflet = async () => {
+      const leafletStylesheet = document.createElement('link');
+      leafletStylesheet.rel = 'stylesheet';
+      leafletStylesheet.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
+      document.head.appendChild(leafletStylesheet);
+    };
+    loadLeaflet();
+  }, []);
 
   useEffect(() => {
     // Dynamic import for Leaflet (server-side rendering compatibility)

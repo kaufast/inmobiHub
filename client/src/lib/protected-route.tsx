@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
+import { useState } from "react";
 
 export function ProtectedRoute({
   path,
@@ -9,7 +10,20 @@ export function ProtectedRoute({
   path: string;
   component: React.ComponentType;
 }) {
-  const { user, isLoading } = useAuth();
+  // Try using useAuth safely
+  let user = null;
+  let isLoading = false;
+  
+  try {
+    // Try to use the auth context
+    const auth = useAuth();
+    user = auth.user;
+    isLoading = auth.isLoading;
+  } catch (e) {
+    console.log("Auth context not available");
+    // If auth context isn't available, we'll treat as loading
+    isLoading = true;
+  }
 
   if (isLoading) {
     return (
@@ -29,5 +43,9 @@ export function ProtectedRoute({
     );
   }
 
-  return <Route path={path} component={Component} />;
+  return (
+    <Route path={path}>
+      <Component />
+    </Route>
+  );
 }

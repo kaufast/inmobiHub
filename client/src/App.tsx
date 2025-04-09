@@ -13,9 +13,7 @@ import { useAuth } from "./hooks/use-auth";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
 
-function Router() {
-  const { user, isLoading } = useAuth();
-
+function AppContent() {
   return (
     <>
       <Navbar />
@@ -36,7 +34,7 @@ function Router() {
 
 function App() {
   return (
-    <Router />
+    <AppContent />
   );
 }
 

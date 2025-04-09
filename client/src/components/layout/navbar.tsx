@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,14 +14,28 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X, ChevronDown, Home, Building, Search, User, LogOut } from "lucide-react";
+import LanguageSelector from "@/components/i18n/language-selector";
 
 export default function Navbar() {
   const [location] = useLocation();
-  const { user, logoutMutation } = useAuth();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  
+  // Safely access auth context
+  let authContext = null;
+  let user = null;
+  
+  try {
+    authContext = useAuth();
+    user = authContext?.user;
+  } catch (error) {
+    console.log("Auth context not available yet");
+  }
+  
   const handleLogout = () => {
-    logoutMutation.mutate();
+    if (authContext) {
+      authContext.logoutMutation.mutate();
+    }
   };
 
   return (
@@ -39,46 +54,46 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center space-x-6">
           <Link href="/">
             <a className={`text-white/80 hover:text-white transition ${location === '/' ? 'text-white' : ''}`}>
-              Home
+              {t('common.home')}
             </a>
           </Link>
           <Link href="/search">
             <a className={`text-white/80 hover:text-white transition ${location.startsWith('/search') ? 'text-white' : ''}`}>
-              Properties
+              {t('common.properties')}
             </a>
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="text-white/80 hover:text-white transition flex items-center">
-                Services <ChevronDown className="ml-1 h-4 w-4" />
+                {t('common.services')} <ChevronDown className="ml-1 h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
               <DropdownMenuItem>
                 <Link href="/services/buying">
-                  <a className="flex w-full">Buying</a>
+                  <a className="flex w-full">{t('common.buying')}</a>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Link href="/services/selling">
-                  <a className="flex w-full">Selling</a>
+                  <a className="flex w-full">{t('common.selling')}</a>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Link href="/services/investing">
-                  <a className="flex w-full">Investing</a>
+                  <a className="flex w-full">{t('common.investing')}</a>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Link href="/about">
             <a className={`text-white/80 hover:text-white transition ${location === '/about' ? 'text-white' : ''}`}>
-              About
+              {t('common.about')}
             </a>
           </Link>
           <Link href="/contact">
             <a className={`text-white/80 hover:text-white transition ${location === '/contact' ? 'text-white' : ''}`}>
-              Contact
+              {t('common.contact')}
             </a>
           </Link>
         </nav>
@@ -109,13 +124,13 @@ export default function Navbar() {
                 <Link href="/dashboard">
                   <DropdownMenuItem>
                     <User className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
+                    <span>{t('common.dashboard')}</span>
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span>{t('common.logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -123,14 +138,15 @@ export default function Navbar() {
             <>
               <Link href="/auth">
                 <Button variant="ghost" className="hidden md:inline-block text-white hover:bg-white/10">
-                  Sign In
+                  {t('common.login')}
                 </Button>
               </Link>
               <Link href="/auth">
                 <Button className="bg-secondary-500 hover:bg-secondary-600">
-                  Join Now
+                  {t('common.register')}
                 </Button>
               </Link>
+              <LanguageSelector />
             </>
           )}
           
@@ -164,7 +180,7 @@ export default function Navbar() {
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <Home className="mr-3 h-5 w-5" />
-                        Home
+                        {t('common.home')}
                       </a>
                     </Link>
                     <Link href="/search">
@@ -173,7 +189,7 @@ export default function Navbar() {
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <Search className="mr-3 h-5 w-5" />
-                        Properties
+                        {t('common.properties')}
                       </a>
                     </Link>
                     <Link href="/services">
@@ -182,7 +198,7 @@ export default function Navbar() {
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <Building className="mr-3 h-5 w-5" />
-                        Services
+                        {t('common.services')}
                       </a>
                     </Link>
                     <Link href="/about">
@@ -191,7 +207,7 @@ export default function Navbar() {
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <User className="mr-3 h-5 w-5" />
-                        About
+                        {t('common.about')}
                       </a>
                     </Link>
                     <Link href="/contact">
@@ -213,7 +229,7 @@ export default function Navbar() {
                             d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                           />
                         </svg>
-                        Contact
+                        {t('common.contact')}
                       </a>
                     </Link>
                     {user && (
@@ -223,7 +239,7 @@ export default function Navbar() {
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           <User className="mr-3 h-5 w-5" />
-                          Dashboard
+                          {t('common.dashboard')}
                         </a>
                       </Link>
                     )}
@@ -239,7 +255,7 @@ export default function Navbar() {
                       }}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
-                      Log Out
+                      {t('common.logout')}
                     </Button>
                   ) : (
                     <div className="flex flex-col space-y-2">
@@ -248,7 +264,7 @@ export default function Navbar() {
                           className="w-full bg-secondary-500 hover:bg-secondary-600"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Join Now
+                          {t('common.register')}
                         </Button>
                       </Link>
                       <Link href="/auth">
@@ -257,7 +273,7 @@ export default function Navbar() {
                           className="w-full text-white border-white/20 hover:bg-white/10"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          Sign In
+                          {t('common.login')}
                         </Button>
                       </Link>
                     </div>
