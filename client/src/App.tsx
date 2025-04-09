@@ -4,6 +4,7 @@ import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
 import PropertyDetailsPage from "@/pages/property-details";
+import PropertyAnalyticsPage from "@/pages/property-analytics";
 import SearchResultsPage from "@/pages/search-results";
 import DashboardPage from "@/pages/dashboard";
 import NotificationsDemo from "@/pages/notifications-demo";
@@ -32,6 +33,7 @@ function AppContent() {
           <Route path="/" component={HomePage} />
           <Route path="/auth" component={AuthPage} />
           <Route path="/property/:id" component={PropertyDetailsPage} />
+          <Route path="/property/:id/analytics" component={PropertyAnalyticsPage} />
           <Route path="/property-comparison" component={PropertyComparisonPage} />
           <Route path="/search" component={SearchResultsPage} />
           <Route path="/notifications-demo" component={NotificationsDemo} />

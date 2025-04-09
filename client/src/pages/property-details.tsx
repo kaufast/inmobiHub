@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Property, Neighborhood } from "@shared/schema";
 import { useParams, Link } from "wouter";
-import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle, Sparkles } from "lucide-react";
+import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle, Sparkles, BarChart2 } from "lucide-react";
 import PersonalizedDescription from "@/components/properties/personalized-description";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -224,6 +224,26 @@ export default function PropertyDetailsPage() {
             >
               <MessageCircle className="mr-2 h-4 w-4" /> Message
             </Button>
+            
+            <Link href={`/property/${property.id}/analytics`}>
+              <Button 
+                variant="outline"
+                className={user?.subscriptionTier === 'free' ? 'opacity-60' : ''}
+                onClick={(e) => {
+                  if (user?.subscriptionTier === 'free') {
+                    e.preventDefault();
+                    toast({
+                      title: "Premium Feature",
+                      description: "Property analytics are available to Premium subscribers only",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                }}
+              >
+                <BarChart2 className="mr-2 h-4 w-4" /> Analytics
+              </Button>
+            </Link>
           </div>
         </div>
 

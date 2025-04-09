@@ -299,6 +299,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Market trends and analytics data
+  app.get("/api/market/trends", hasPremiumAccess, async (req, res) => {
+    try {
+      // Get location param (city name)
+      const location = req.query.location as string;
+
+      if (!location) {
+        return res.status(400).json({ error: "Location is required" });
+      }
+
+      // Generate market data based on location
+      // In a real app, this would come from a database or external API
+      const currentDate = new Date();
+      const marketData = {
+        location,
+        timestamp: currentDate.toISOString(),
+        medianPrice: 0,
+        averagePricePerSqFt: 0,
+        inventoryCount: 0,
+        averageDaysOnMarket: 0,
+        monthlyTrends: [],
+        yearlyTrends: [],
+        forecast: {}
+      };
+
+      // Simulate different market data for different cities
+      if (location.toLowerCase().includes('seattle')) {
+        marketData.medianPrice = 850000;
+        marketData.averagePricePerSqFt = 525;
+        marketData.inventoryCount = 1250;
+        marketData.averageDaysOnMarket = 18;
+      } else if (location.toLowerCase().includes('bellevue')) {
+        marketData.medianPrice = 1250000;
+        marketData.averagePricePerSqFt = 680;
+        marketData.inventoryCount = 420;
+        marketData.averageDaysOnMarket = 15;
+      } else if (location.toLowerCase().includes('redmond')) {
+        marketData.medianPrice = 980000;
+        marketData.averagePricePerSqFt = 550;
+        marketData.inventoryCount = 320;
+        marketData.averageDaysOnMarket = 17;
+      } else if (location.toLowerCase().includes('kirkland')) {
+        marketData.medianPrice = 1050000;
+        marketData.averagePricePerSqFt = 590;
+        marketData.inventoryCount = 280;
+        marketData.averageDaysOnMarket = 16;
+      } else {
+        // Default data for other locations
+        marketData.medianPrice = 750000;
+        marketData.averagePricePerSqFt = 450;
+        marketData.inventoryCount = 500;
+        marketData.averageDaysOnMarket = 22;
+      }
+      
+      // Generate monthly trends for the past 12 months
+      const monthlyTrends = [];
+      for (let i = 11; i >= 0; i--) {
+        const date = new Date(currentDate);
+        date.setMonth(date.getMonth() - i);
+        
+        // Generate price fluctuations with an overall upward trend
+        const priceFluctuation = 1 + ((Math.random() * 0.04) - 0.02); // -2% to +2%
+        const trendFactor = 1 + (0.005 * (12 - i)); // Slight upward trend
+        
+        monthlyTrends.push({
+          month: date.toLocaleString('default', { month: 'short', year: 'numeric' }),
+          medianPrice: Math.round(marketData.medianPrice / trendFactor * priceFluctuation),
+          inventory: Math.round(marketData.inventoryCount * (0.85 + (Math.random() * 0.3))),
+          daysOnMarket: Math.round(marketData.averageDaysOnMarket * (0.9 + (Math.random() * 0.2))),
+          pricePerSqFt: Math.round(marketData.averagePricePerSqFt / trendFactor * priceFluctuation)
+        });
+      }
+      
+      // Generate yearly trends for the past 5 years
+      const yearlyTrends = [];
+      for (let i = 4; i >= 0; i--) {
+        const date = new Date(currentDate);
+        date.setFullYear(date.getFullYear() - i);
+        
+        // Generate yearly appreciation with some randomness
+        const yearlyAppreciation = 1.04 + (Math.random() * 0.02);
+        const cumulativeAppreciation = Math.pow(yearlyAppreciation, i);
+        
+        yearlyTrends.push({
+          year: date.getFullYear(),
+          medianPrice: Math.round(marketData.medianPrice / cumulativeAppreciation),
+          appreciation: i === 0 ? 0 : Math.round((yearlyAppreciation - 1) * 100 * 10) / 10,
+          inventory: Math.round(marketData.inventoryCount * (0.85 + (i * 0.03))),
+          affordabilityIndex: Math.round((5.5 - (i * 0.15)) * 10) / 10
+        });
+      }
+      
+      // Add forecast data
+      const forecast = {
+        oneYear: {
+          priceGrowth: Math.round((3 + (Math.random() * 3)) * 10) / 10,
+          inventoryChange: Math.round((-5 + (Math.random() * 10)) * 10) / 10,
+          daysOnMarketChange: Math.round((-10 + (Math.random() * 20)) * 10) / 10,
+          confidenceScore: Math.round((6.5 + (Math.random() * 2.5)) * 10) / 10
+        },
+        fiveYear: {
+          priceGrowth: Math.round((15 + (Math.random() * 10)) * 10) / 10,
+          hotness: Math.round((1 + (Math.random() * 9)) * 10) / 10,
+          investmentRating: ['A', 'A-', 'B+', 'B', 'B-'][Math.floor(Math.random() * 5)]
+        }
+      };
+      
+      marketData.monthlyTrends = monthlyTrends;
+      marketData.yearlyTrends = yearlyTrends;
+      marketData.forecast = forecast;
+      
+      res.json(marketData);
+    } catch (error) {
+      console.error("Market data error:", error);
+      res.status(500).json({ error: error instanceof Error ? error.message : "Failed to fetch market trends" });
+    }
+  });
+  
   // Premium data endpoints
   app.get("/api/neighborhoods", async (req, res, next) => {
     try {
