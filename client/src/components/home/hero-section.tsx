@@ -1,7 +1,10 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 export default function HeroSection() {
+  const { t } = useTranslation();
+  
   return (
     <section className="relative bg-primary-800 overflow-hidden">
       {/* Hero Background with Overlay */}
@@ -14,12 +17,12 @@ export default function HeroSection() {
               OPENING<br/>MORE<br/>DOORS
             </h1>
             <p className="mt-6 text-xl text-white/90 max-w-lg">
-              Unlocking Smart Capital For Data-Driven Investors
+              {t('common.findYourDreamProperty')}
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link href="/auth">
                 <Button size="lg" className="bg-secondary-500 hover:bg-secondary-600 text-white font-medium text-lg flex items-center">
-                  Apply Now
+                  {t('common.applyNow')}
                   <svg className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
@@ -27,7 +30,7 @@ export default function HeroSection() {
               </Link>
               <Link href="#membership">
                 <Button variant="outline" size="lg" className="text-white border-white/30 hover:bg-white/10 font-medium text-lg">
-                  Learn More
+                  {t('common.showMore')}
                 </Button>
               </Link>
             </div>
@@ -84,7 +87,7 @@ export default function HeroSection() {
                     
                     {/* Property value data */}
                     <div className="bg-primary-800/60 backdrop-blur-sm rounded-xl p-4 mb-4">
-                      <h3 className="text-sm text-white/70 mb-1">Current Value</h3>
+                      <h3 className="text-sm text-white/70 mb-1">{t('property.price')}</h3>
                       <div className="flex items-end">
                         <span className="text-2xl font-bold text-white">$695</span>
                         <span className="text-xs text-white/70 ml-1 mb-1">K</span>
@@ -132,15 +135,15 @@ export default function HeroSection() {
                     <div className="bg-primary-800/60 backdrop-blur-sm rounded-xl p-4 mb-4">
                       <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
-                          <div className="text-xs text-white/70">Beds</div>
+                          <div className="text-xs text-white/70">{t('property.bedrooms')}</div>
                           <div className="font-semibold">4</div>
                         </div>
                         <div>
-                          <div className="text-xs text-white/70">Baths</div>
+                          <div className="text-xs text-white/70">{t('property.bathrooms')}</div>
                           <div className="font-semibold">3</div>
                         </div>
                         <div>
-                          <div className="text-xs text-white/70">SqFt</div>
+                          <div className="text-xs text-white/70">{t('property.sqft')}</div>
                           <div className="font-semibold">2,350</div>
                         </div>
                       </div>
@@ -149,7 +152,7 @@ export default function HeroSection() {
                     {/* Action buttons */}
                     <div className="flex space-x-3">
                       <button className="flex-1 bg-secondary-500 hover:bg-secondary-600 text-white py-3 rounded-xl font-medium transition">
-                        Book Viewing
+                        {t('common.requestTour')}
                       </button>
                       <button className="bg-white/10 hover:bg-white/20 text-white py-3 px-4 rounded-xl flex items-center justify-center transition">
                         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

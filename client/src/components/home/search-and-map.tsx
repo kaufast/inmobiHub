@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MapPin, Search, Sliders } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useTranslation } from "react-i18next";
 
 export default function SearchAndMap() {
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [searchParams, setSearchParams] = useState<SearchProperties>({
     location: "",
@@ -67,19 +69,19 @@ export default function SearchAndMap() {
   return (
     <section className="bg-primary-50 py-16">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-primary-800 mb-10 text-center">Find Your Perfect Property</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-primary-800 mb-10 text-center">{t('common.findYourDreamProperty')}</h2>
         
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Search Panel */}
           <div className="lg:w-1/3">
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-xl font-semibold text-primary-800 mb-4">Search Properties</h3>
+              <h3 className="text-xl font-semibold text-primary-800 mb-4">{t('common.searchProperties')}</h3>
               
               {/* Search Form */}
               <div className="space-y-4">
                 {/* Location input */}
                 <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-primary-700 mb-1">Location</label>
+                  <label htmlFor="location" className="block text-sm font-medium text-primary-700 mb-1">{t('common.location')}</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <MapPin className="h-4 w-4 text-primary-400" />
@@ -96,7 +98,7 @@ export default function SearchAndMap() {
                 
                 {/* Property type */}
                 <div>
-                  <label htmlFor="property_type" className="block text-sm font-medium text-primary-700 mb-1">Property Type</label>
+                  <label htmlFor="property_type" className="block text-sm font-medium text-primary-700 mb-1">{t('common.propertyType')}</label>
                   <Select 
                     value={searchParams.propertyType} 
                     onValueChange={(value) => handleInputChange('propertyType', value)}
@@ -116,7 +118,7 @@ export default function SearchAndMap() {
                 
                 {/* Price range */}
                 <div>
-                  <label htmlFor="price_range" className="block text-sm font-medium text-primary-700 mb-1">Price Range</label>
+                  <label htmlFor="price_range" className="block text-sm font-medium text-primary-700 mb-1">{t('common.priceRange')}</label>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -150,16 +152,16 @@ export default function SearchAndMap() {
                 {/* Beds & Baths */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="beds" className="block text-sm font-medium text-primary-700 mb-1">Beds</label>
+                    <label htmlFor="beds-field" className="block text-sm font-medium text-primary-700 mb-1">{t('common.beds')}</label>
                     <Select 
                       value={searchParams.beds?.toString()} 
                       onValueChange={(value) => handleInputChange('beds', value ? Number(value) : undefined)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Any" />
+                        <SelectValue placeholder={t('common.any')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="any">Any</SelectItem>
+                        <SelectItem value="any">{t('common.any')}</SelectItem>
                         <SelectItem value="1">1+</SelectItem>
                         <SelectItem value="2">2+</SelectItem>
                         <SelectItem value="3">3+</SelectItem>
@@ -169,16 +171,16 @@ export default function SearchAndMap() {
                     </Select>
                   </div>
                   <div>
-                    <label htmlFor="baths" className="block text-sm font-medium text-primary-700 mb-1">Baths</label>
+                    <label htmlFor="baths" className="block text-sm font-medium text-primary-700 mb-1">{t('common.baths')}</label>
                     <Select 
                       value={searchParams.baths?.toString()} 
                       onValueChange={(value) => handleInputChange('baths', value ? Number(value) : undefined)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Any" />
+                        <SelectValue placeholder={t('common.any')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="any">Any</SelectItem>
+                        <SelectItem value="any">{t('common.any')}</SelectItem>
                         <SelectItem value="1">1+</SelectItem>
                         <SelectItem value="2">2+</SelectItem>
                         <SelectItem value="3">3+</SelectItem>
@@ -198,7 +200,7 @@ export default function SearchAndMap() {
                     <CollapsibleTrigger asChild>
                       <button type="button" className="flex items-center text-primary-600 hover:text-primary-800 text-sm">
                         <Sliders className="h-4 w-4 mr-2" />
-                        More filters
+                        {t('common.moreFilters')}
                         <svg 
                           className={`ml-1 h-4 w-4 transition-transform ${isAdvancedOpen ? 'rotate-180' : ''}`} 
                           fill="none" 
@@ -213,18 +215,18 @@ export default function SearchAndMap() {
                     <CollapsibleContent className="mt-4 space-y-4">
                       {/* Square footage */}
                       <div>
-                        <label htmlFor="sqft" className="block text-sm font-medium text-primary-700 mb-1">Square Footage</label>
+                        <label htmlFor="sqft" className="block text-sm font-medium text-primary-700 mb-1">{t('common.squareFootage')}</label>
                         <div className="grid grid-cols-2 gap-3">
                           <Input 
                             id="min_sqft" 
-                            placeholder="Min" 
+                            placeholder={t('common.min')} 
                             type="number"
                             value={searchParams.minSqft || ''}
                             onChange={(e) => handleInputChange('minSqft', e.target.value ? Number(e.target.value) : undefined)}
                           />
                           <Input 
                             id="max_sqft" 
-                            placeholder="Max" 
+                            placeholder={t('common.max')} 
                             type="number"
                             value={searchParams.maxSqft || ''}
                             onChange={(e) => handleInputChange('maxSqft', e.target.value ? Number(e.target.value) : undefined)}
@@ -234,7 +236,7 @@ export default function SearchAndMap() {
                       
                       {/* Features checklist */}
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 mb-2">Features</label>
+                        <label className="block text-sm font-medium text-primary-700 mb-2">{t('common.features')}</label>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="flex items-center space-x-2">
                             <Checkbox 
@@ -242,7 +244,7 @@ export default function SearchAndMap() {
                               checked={(searchParams.features || []).includes('pool')}
                               onCheckedChange={() => handleFeatureToggle('pool')}
                             />
-                            <label htmlFor="feature-pool" className="text-sm text-primary-700">Pool</label>
+                            <label htmlFor="feature-pool" className="text-sm text-primary-700">{t('common.features.pool')}</label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Checkbox 
@@ -250,7 +252,7 @@ export default function SearchAndMap() {
                               checked={(searchParams.features || []).includes('garage')}
                               onCheckedChange={() => handleFeatureToggle('garage')}
                             />
-                            <label htmlFor="feature-garage" className="text-sm text-primary-700">Garage</label>
+                            <label htmlFor="feature-garage" className="text-sm text-primary-700">{t('common.features.garage')}</label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Checkbox 
@@ -258,7 +260,7 @@ export default function SearchAndMap() {
                               checked={(searchParams.features || []).includes('waterfront')}
                               onCheckedChange={() => handleFeatureToggle('waterfront')}
                             />
-                            <label htmlFor="feature-waterfront" className="text-sm text-primary-700">Waterfront</label>
+                            <label htmlFor="feature-waterfront" className="text-sm text-primary-700">{t('common.features.waterfront')}</label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Checkbox 
@@ -266,7 +268,7 @@ export default function SearchAndMap() {
                               checked={(searchParams.features || []).includes('fireplace')}
                               onCheckedChange={() => handleFeatureToggle('fireplace')}
                             />
-                            <label htmlFor="feature-fireplace" className="text-sm text-primary-700">Fireplace</label>
+                            <label htmlFor="feature-fireplace" className="text-sm text-primary-700">{t('common.features.fireplace')}</label>
                           </div>
                         </div>
                       </div>
@@ -280,7 +282,7 @@ export default function SearchAndMap() {
                   onClick={handleSearch}
                 >
                   <Search className="mr-2 h-4 w-4" />
-                  Search Properties
+                  {t('common.searchProperties')}
                 </Button>
                 
                 {/* Save search */}
@@ -289,7 +291,7 @@ export default function SearchAndMap() {
                     <svg className="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
-                    Save this search
+                    {t('common.saveThisSearch')}
                   </button>
                 </div>
               </div>
@@ -339,9 +341,9 @@ export default function SearchAndMap() {
             {/* Property cards preview */}
             <div className="p-4 border-t border-primary-200">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-medium text-primary-800">15 Properties Found</h3>
+                <h3 className="font-medium text-primary-800">{t('common.propertiesFound', { count: 15 })}</h3>
                 <div className="flex items-center">
-                  <span className="text-sm text-primary-500 mr-2">View:</span>
+                  <span className="text-sm text-primary-500 mr-2">{t('common.view')}:</span>
                   <button className="p-1.5 rounded bg-primary-100 text-primary-800 mr-1">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
