@@ -7,6 +7,7 @@ import PropertyDetailsPage from "@/pages/property-details";
 import SearchResultsPage from "@/pages/search-results";
 import DashboardPage from "@/pages/dashboard";
 import NotificationsDemo from "@/pages/notifications-demo";
+import PropertyComparisonPage from "@/pages/property-comparison";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
@@ -29,6 +30,7 @@ function AppContent() {
           <Route path="/" component={HomePage} />
           <Route path="/auth" component={AuthPage} />
           <Route path="/property/:id" component={PropertyDetailsPage} />
+          <Route path="/property-comparison" component={PropertyComparisonPage} />
           <Route path="/search" component={SearchResultsPage} />
           <Route path="/notifications-demo" component={NotificationsDemo} />
           <ProtectedRoute path="/dashboard" component={DashboardPage} />
