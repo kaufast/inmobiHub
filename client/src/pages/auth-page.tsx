@@ -21,7 +21,7 @@ import { Loader2 } from "lucide-react";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-  const { user, loginMutation, registerMutation } = useAuth();
+  const { user, login, register, isAuthenticating } = useAuth();
   const [, navigate] = useLocation();
 
   // Redirect if already logged in
@@ -56,21 +56,19 @@ export default function AuthPage() {
     },
   });
 
-  const onLoginSubmit = (data: LoginUser) => {
+  const onLoginSubmit = async (data: LoginUser) => {
     try {
-      loginMutation.mutate(data);
+      await login(data);
     } catch (error) {
       console.error("Login error:", error);
-      alert("An error occurred during login. Please try again.");
     }
   };
 
-  const onRegisterSubmit = (data: RegisterUser) => {
+  const onRegisterSubmit = async (data: RegisterUser) => {
     try {
-      registerMutation.mutate(data);
+      await register(data);
     } catch (error) {
       console.error("Registration error:", error);
-      alert("An error occurred during registration. Please try again.");
     }
   };
 
@@ -156,9 +154,9 @@ export default function AuthPage() {
                       <Button 
                         type="submit" 
                         className="w-full bg-secondary-600 hover:bg-secondary-700"
-                        disabled={loginMutation.isPending}
+                        disabled={isAuthenticating}
                       >
-                        {loginMutation.isPending ? (
+                        {isAuthenticating ? (
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         ) : null}
                         Sign In
@@ -249,9 +247,9 @@ export default function AuthPage() {
                       <Button 
                         type="submit" 
                         className="w-full bg-secondary-600 hover:bg-secondary-700"
-                        disabled={registerMutation.isPending}
+                        disabled={isAuthenticating}
                       >
-                        {registerMutation.isPending ? (
+                        {isAuthenticating ? (
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         ) : null}
                         Create Account

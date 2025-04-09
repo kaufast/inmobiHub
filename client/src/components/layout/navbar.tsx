@@ -22,10 +22,10 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Get auth context
-  const { user, logoutMutation } = useAuth();
+  const { user, logout } = useAuth();
   
   const handleLogout = () => {
-    logoutMutation.mutate();
+    logout();
   };
 
   return (

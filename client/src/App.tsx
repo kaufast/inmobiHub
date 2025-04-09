@@ -10,8 +10,11 @@ import NotificationsDemo from "@/pages/notifications-demo";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
+import { AuthProvider } from "./hooks/use-auth";
+import { BubbleNotificationsProvider } from "./hooks/use-bubble-notifications";
+import { PropertyComparisonProvider } from "./hooks/use-property-comparison";
 
-function App() {
+function AppContent() {
   return (
     <>
       <Navbar />
@@ -29,6 +32,18 @@ function App() {
       <Footer />
       <Toaster />
     </>
+  );
+}
+
+function App() {
+  return (
+    <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
+      <AuthProvider>
+        <PropertyComparisonProvider maxProperties={4}>
+          <AppContent />
+        </PropertyComparisonProvider>
+      </AuthProvider>
+    </BubbleNotificationsProvider>
   );
 }
 
