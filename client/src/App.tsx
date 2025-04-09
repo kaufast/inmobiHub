@@ -6,6 +6,7 @@ import AuthPage from "@/pages/auth-page";
 import PropertyDetailsPage from "@/pages/property-details";
 import SearchResultsPage from "@/pages/search-results";
 import DashboardPage from "@/pages/dashboard";
+import NotificationsDemo from "@/pages/notifications-demo";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
@@ -20,6 +21,7 @@ function App() {
           <Route path="/auth" component={AuthPage} />
           <Route path="/property/:id" component={PropertyDetailsPage} />
           <Route path="/search" component={SearchResultsPage} />
+          <Route path="/notifications-demo" component={NotificationsDemo} />
           <ProtectedRoute path="/dashboard" component={DashboardPage} />
           <Route component={NotFound} />
         </Switch>

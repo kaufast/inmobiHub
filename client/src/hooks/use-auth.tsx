@@ -49,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
+      
       toast({
         title: "Login successful",
         description: `Welcome back, ${user.fullName}!`,
@@ -71,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/user"], user);
+      
       toast({
         title: "Registration successful",
         description: `Welcome to Foundation, ${user.fullName}!`,
@@ -92,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
+      
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",
