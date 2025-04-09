@@ -67,6 +67,10 @@ import {
   Trash2,
 } from "lucide-react";
 
+interface MessagesProps {
+  propertyId?: number;
+}
+
 // Form schema for new message
 const messageFormSchema = z.object({
   recipientId: z.number({

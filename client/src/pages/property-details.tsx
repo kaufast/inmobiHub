@@ -194,7 +194,7 @@ export default function PropertyDetailsPage() {
                 }
                 
                 // Navigate to messages tab in dashboard
-                window.location.href = "/dashboard?tab=messages&property=" + property.id;
+                window.location.href = `/dashboard?tab=messages&property=${property.id}`;
               }}
             >
               <MessageCircle className="mr-2 h-4 w-4" /> Message
