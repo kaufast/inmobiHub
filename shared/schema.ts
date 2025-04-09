@@ -26,6 +26,7 @@ export const users = pgTable("users", {
   profileImage: text("profile_image"),
   bio: text("bio"),
   phone: text("phone"),
+  preferredLanguage: text("preferred_language").default("en-GB"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

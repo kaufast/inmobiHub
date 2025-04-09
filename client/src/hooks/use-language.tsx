@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 
 // Define supported languages
 export const supportedLanguages = [
@@ -27,6 +28,7 @@ export function useLanguage() {
   const { i18n } = useTranslation();
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language || 'en-GB');
   const [isRTL, setIsRTL] = useState(i18n.language === 'ar-SA' || i18n.language.startsWith('ar'));
+  const { user } = useAuth() || { user: null };
 
   // Update state when i18n language changes
   useEffect(() => {
@@ -37,7 +39,7 @@ export function useLanguage() {
     document.documentElement.lang = i18n.language.split('-')[0];
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
     
-    // Optional: Add RTL class to body for global styling
+    // Add RTL class to body for global styling
     if (isRTL) {
       document.body.classList.add('rtl');
     } else {
@@ -57,12 +59,30 @@ export function useLanguage() {
     return languageCodeMap[baseCode] || 'en-GB'; // Default to English if not found
   }, []);
   
-  // Change language with normalization
-  const changeLanguage = useCallback((langCode: string) => {
+  // Change language with normalization and persistence
+  const changeLanguage = useCallback(async (langCode: string) => {
     const normalizedCode = normalizeLanguageCode(langCode);
-    i18n.changeLanguage(normalizedCode);
+    
+    // Change the language in i18next
+    await i18n.changeLanguage(normalizedCode);
+    
+    // Store in localStorage for unauthenticated users
     localStorage.setItem('i18nextLng', normalizedCode);
-  }, [i18n, normalizeLanguageCode]);
+    
+    // If user is authenticated, update their profile preference
+    if (user?.id) {
+      try {
+        // Update user's language preference if we have a user profile API
+        await fetch('/api/user/preferences', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ preferredLanguage: normalizedCode }),
+        });
+      } catch (error) {
+        console.error('Failed to update user language preference:', error);
+      }
+    }
+  }, [i18n, normalizeLanguageCode, user]);
   
   // Get language info
   const getCurrentLanguageInfo = useCallback(() => {
@@ -71,19 +91,43 @@ export function useLanguage() {
     return lang || supportedLanguages[0]; // Default to first language if not found
   }, [currentLanguage]);
   
-  // Detect browser language on initial load
+  // Detect and set language based on various factors
   useEffect(() => {
-    const detectAndSetLanguage = () => {
-      // Only detect if no language is already set
-      if (!localStorage.getItem('i18nextLng')) {
-        const browserLang = navigator.language;
-        const normalizedCode = normalizeLanguageCode(browserLang);
-        i18n.changeLanguage(normalizedCode);
+    const detectAndSetLanguage = async () => {
+      // Priority order:
+      // 1. User's saved preference from profile (if authenticated)
+      // 2. Previously stored preference in localStorage
+      // 3. Browser language setting
+      // 4. IP geolocation (optional)
+      // 5. Default to English
+
+      let detectedLang;
+      
+      // 1. Check user profile if authenticated
+      if (user?.preferredLanguage) {
+        detectedLang = user.preferredLanguage;
+      } 
+      // 2. Check localStorage
+      else if (localStorage.getItem('i18nextLng')) {
+        detectedLang = localStorage.getItem('i18nextLng');
+      } 
+      // 3. Check browser language
+      else {
+        detectedLang = navigator.language;
+        
+        // 4. Optionally check IP geolocation (could be implemented in the future)
+        // This would require a backend API call to a geolocation service
+      }
+      
+      // Normalize and set the language
+      if (detectedLang) {
+        const normalizedCode = normalizeLanguageCode(detectedLang);
+        await i18n.changeLanguage(normalizedCode);
       }
     };
     
     detectAndSetLanguage();
-  }, [i18n, normalizeLanguageCode]);
+  }, [i18n, normalizeLanguageCode, user]);
   
   return {
     currentLanguage,

@@ -48,6 +48,7 @@ const enGB = {
     contactAgent: 'Contact Agent',
     addToFavorites: 'Add to Favorites',
     removeFromFavorites: 'Remove from Favorites',
+    selectLanguage: 'Select Language',
     shareListing: 'Share Listing',
     printListing: 'Print Listing',
     copy: 'Copy',

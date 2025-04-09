@@ -152,4 +152,33 @@ export function setupAuth(app: Express) {
     const { password, ...userWithoutPassword } = req.user as User;
     res.json(userWithoutPassword);
   });
+
+  // User preferences update
+  app.patch("/api/user/preferences", (req, res, next) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+    
+    try {
+      const { preferredLanguage } = req.body;
+      
+      if (preferredLanguage) {
+        // Update user's language preference
+        storage.updateUser(req.user!.id, { 
+          preferredLanguage 
+        }).then(updatedUser => {
+          if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+          }
+          
+          // Return user without password
+          const { password, ...userWithoutPassword } = updatedUser;
+          return res.json(userWithoutPassword);
+        });
+      } else {
+        return res.status(400).json({ message: "No valid preference updates provided" });
+      }
+    } catch (error) {
+      console.error("Error updating user preferences:", error);
+      next(error);
+    }
+  });
 }
