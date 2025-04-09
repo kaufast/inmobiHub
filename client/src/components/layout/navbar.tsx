@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X, ChevronDown, Home, Building, Search, User, LogOut } from "lucide-react";
 import LanguageSelector from "@/components/i18n/language-selector";
+import PropertyNotificationCenter from "@/components/notifications/property-notification-center";
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -89,41 +90,45 @@ export default function Navbar() {
         </nav>
         
         <div className="flex items-center gap-2">
+          <LanguageSelector />
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.profileImage || ''} alt={user.fullName} />
-                    <AvatarFallback className="bg-secondary-500 text-white">
-                      {user.fullName.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56 glassmorphism-card" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.fullName}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <Link href="/dashboard">
-                  <DropdownMenuItem className="hover:bg-white/10">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>{t('common.dashboard')}</span>
+            <>
+              <PropertyNotificationCenter />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.profileImage || ''} alt={user.fullName} />
+                      <AvatarFallback className="bg-secondary-500 text-white">
+                        {user.fullName.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 glassmorphism-card" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.fullName}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <Link href="/dashboard">
+                    <DropdownMenuItem className="hover:bg-white/10">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>{t('common.dashboard')}</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem onClick={handleLogout} className="hover:bg-white/10">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>{t('common.logout')}</span>
                   </DropdownMenuItem>
-                </Link>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuItem onClick={handleLogout} className="hover:bg-white/10">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>{t('common.logout')}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <>
               <Link href="/auth">
@@ -136,7 +141,6 @@ export default function Navbar() {
                   {t('common.register')}
                 </Button>
               </Link>
-              <LanguageSelector />
             </>
           )}
           

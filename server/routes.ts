@@ -5,6 +5,7 @@ import { setupAuth } from "./auth";
 import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { WebSocketServer, WebSocket } from 'ws';
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
@@ -425,5 +426,211 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   const httpServer = createServer(app);
+  
+  // Set up WebSocket server on a distinct path to avoid conflict with Vite's HMR
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Types for WebSocket messages
+  type WebSocketMessage = {
+    type: 'subscribe' | 'unsubscribe' | 'newProperty' | 'propertyUpdated' | 'ping';
+    payload?: any;
+  };
+  
+  // Keep track of clients and their subscriptions
+  const clients = new Map<WebSocket, {
+    userId?: number;
+    isAuthenticated: boolean;
+    subscriptions: {
+      location?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      propertyType?: string;
+      bedrooms?: number;
+      bathrooms?: number;
+    }
+  }>();
+  
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
+    
+    // Initialize client record
+    clients.set(ws, {
+      isAuthenticated: false,
+      subscriptions: {}
+    });
+    
+    // Handle messages from clients
+    ws.on('message', async (message) => {
+      try {
+        const data: WebSocketMessage = JSON.parse(message.toString());
+        
+        switch (data.type) {
+          case 'subscribe':
+            // Store user's subscription preferences
+            if (data.payload && clients.has(ws)) {
+              const clientData = clients.get(ws);
+              if (clientData) {
+                if (data.payload.userId) {
+                  clientData.userId = data.payload.userId;
+                  clientData.isAuthenticated = true;
+                }
+                clientData.subscriptions = {
+                  ...clientData.subscriptions,
+                  ...data.payload.filters
+                };
+                clients.set(ws, clientData);
+              }
+              
+              // Send confirmation
+              ws.send(JSON.stringify({
+                type: 'subscribed',
+                payload: {
+                  message: 'Successfully subscribed to property notifications',
+                  filters: clients.get(ws)?.subscriptions
+                }
+              }));
+            }
+            break;
+            
+          case 'unsubscribe':
+            // Clear subscription preferences
+            if (clients.has(ws)) {
+              const clientData = clients.get(ws);
+              if (clientData) {
+                clientData.subscriptions = {};
+                clients.set(ws, clientData);
+              }
+              
+              // Send confirmation
+              ws.send(JSON.stringify({
+                type: 'unsubscribed',
+                payload: {
+                  message: 'Successfully unsubscribed from property notifications'
+                }
+              }));
+            }
+            break;
+            
+          case 'ping':
+            // Keep connection alive
+            ws.send(JSON.stringify({ type: 'pong' }));
+            break;
+            
+          default:
+            console.warn('Unknown WebSocket message type:', data.type);
+        }
+      } catch (error) {
+        console.error('Error handling WebSocket message:', error);
+      }
+    });
+    
+    // Handle disconnect
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+      clients.delete(ws);
+    });
+    
+    // Send initial welcome message
+    ws.send(JSON.stringify({
+      type: 'connected',
+      payload: {
+        message: 'Connected to real estate notification system',
+        timestamp: new Date().toISOString()
+      }
+    }));
+  });
+  
+  // Helper function to send property notifications to subscribed clients
+  const notifyClientsAboutProperty = (property: any, notificationType: 'newProperty' | 'propertyUpdated') => {
+    clients.forEach((clientData, ws) => {
+      try {
+        // Skip if client is not ready
+        if (ws.readyState !== WebSocket.OPEN) return;
+        
+        // Check if client is subscribed to this type of property
+        const subs = clientData.subscriptions;
+        
+        // Simple filter matching
+        let matches = true;
+        
+        if (subs.location && !property.address.toLowerCase().includes(subs.location.toLowerCase()) && 
+            !property.city.toLowerCase().includes(subs.location.toLowerCase()) && 
+            !property.state.toLowerCase().includes(subs.location.toLowerCase())) {
+          matches = false;
+        }
+        
+        if (matches && subs.propertyType && property.propertyType !== subs.propertyType) {
+          matches = false;
+        }
+        
+        if (matches && subs.minPrice && property.price < subs.minPrice) {
+          matches = false;
+        }
+        
+        if (matches && subs.maxPrice && property.price > subs.maxPrice) {
+          matches = false;
+        }
+        
+        if (matches && subs.bedrooms && property.bedrooms < subs.bedrooms) {
+          matches = false;
+        }
+        
+        if (matches && subs.bathrooms && property.bathrooms < subs.bathrooms) {
+          matches = false;
+        }
+        
+        // If all conditions match, send notification
+        if (matches) {
+          ws.send(JSON.stringify({
+            type: notificationType,
+            payload: {
+              property: {
+                id: property.id,
+                title: property.title,
+                price: property.price,
+                address: property.address,
+                city: property.city,
+                state: property.state,
+                bedrooms: property.bedrooms,
+                bathrooms: property.bathrooms,
+                squareFeet: property.squareFeet,
+                propertyType: property.propertyType,
+                isPremium: property.isPremium,
+                images: property.images && property.images.length > 0 ? property.images : []
+              },
+              timestamp: new Date().toISOString()
+            }
+          }));
+        }
+      } catch (error) {
+        console.error('Error sending notification to client:', error);
+      }
+    });
+  };
+  
+  // Override the createProperty method to send notifications
+  const originalCreateProperty = storage.createProperty;
+  storage.createProperty = async (propertyData) => {
+    const newProperty = await originalCreateProperty(propertyData);
+    
+    // Notify clients about the new property
+    notifyClientsAboutProperty(newProperty, 'newProperty');
+    
+    return newProperty;
+  };
+  
+  // Override the updateProperty method to send notifications for significant updates
+  const originalUpdateProperty = storage.updateProperty;
+  storage.updateProperty = async (id, propertyData) => {
+    const updatedProperty = await originalUpdateProperty(id, propertyData);
+    
+    // Only notify for significant updates (price change, etc.)
+    if (propertyData.price || propertyData.isPremium === true) {
+      notifyClientsAboutProperty(updatedProperty, 'propertyUpdated');
+    }
+    
+    return updatedProperty;
+  };
+  
   return httpServer;
 }

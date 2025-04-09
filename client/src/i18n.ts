@@ -198,6 +198,20 @@ const enGB = {
     writeMessage: 'Write a message',
     propertyInquiry: 'Property Inquiry',
     regarding: 'Regarding'
+  },
+  notifications: {
+    title: 'Notifications',
+    toggle: 'Toggle notifications',
+    clearAll: 'Clear all notifications',
+    empty: 'No notifications yet',
+    newProperty: 'New property listed',
+    updatedProperty: 'Property updated',
+    status: {
+      connecting: 'Connecting',
+      connected: 'Connected',
+      disconnected: 'Disconnected',
+      error: 'Connection error'
+    }
   }
 };
 
@@ -397,6 +411,20 @@ const esMX = {
     writeMessage: 'Escribe un mensaje',
     propertyInquiry: 'Consulta de Propiedad',
     regarding: 'Respecto a'
+  },
+  notifications: {
+    title: 'Notificaciones',
+    toggle: 'Alternar notificaciones',
+    clearAll: 'Borrar todas las notificaciones',
+    empty: 'No hay notificaciones todavía',
+    newProperty: 'Nueva propiedad listada',
+    updatedProperty: 'Propiedad actualizada',
+    status: {
+      connecting: 'Conectando',
+      connected: 'Conectado',
+      disconnected: 'Desconectado',
+      error: 'Error de conexión'
+    }
   }
 };
 
