@@ -1,5 +1,6 @@
 import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
@@ -62,6 +63,7 @@ function AppContent() {
         </Switch>
       </main>
       <Footer />
+      <ChatWidget delayAppearance={10000} />
       <Toaster />
     </>
   );

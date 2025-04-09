@@ -6,6 +6,7 @@ import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, inse
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
+import { handleChatMessage } from "./anthropic";
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
@@ -32,6 +33,38 @@ const hasPremiumAccess = (req: Request, res: Response, next: NextFunction) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
+  
+  // ChatAI Agent endpoint
+  app.post("/api/chat", async (req, res, next) => {
+    try {
+      const { message, chatHistory, propertyId } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ message: "Message is required" });
+      }
+      
+      let propertyContext;
+      if (propertyId) {
+        // Fetch property data to provide context to the chatbot
+        propertyContext = await storage.getProperty(parseInt(propertyId));
+      }
+      
+      // Get response from Anthropic
+      const response = await handleChatMessage(
+        message, 
+        chatHistory || [], 
+        propertyContext
+      );
+      
+      res.json({ response });
+    } catch (error) {
+      console.error("Error in chat endpoint:", error);
+      res.status(500).json({ 
+        message: "Failed to process chat message",
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
   
   // Property routes
   app.get("/api/properties", async (req, res, next) => {

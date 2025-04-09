@@ -19,6 +19,7 @@ import NeighborhoodScoreCard from "@/components/neighborhoods/neighborhood-score
 import { formatPrice } from "@/lib/utils";
 import { PropertySchema, BreadcrumbsSchema } from "@/components/seo/schema-markup";
 import { PropertyMetaTags } from "@/components/seo/meta-tags";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 
 export default function PropertyDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -458,6 +459,8 @@ export default function PropertyDetailsPage() {
             </Tabs>
           </div>
         </div>
+        {/* Property-specific chat widget */}
+        <ChatWidget propertyId={property.id} delayAppearance={10000} />
       </div>
     </div>
   );
