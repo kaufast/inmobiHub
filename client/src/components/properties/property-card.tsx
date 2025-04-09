@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import ComparePropertyButton from "@/components/properties/compare-property-button";
 
 interface PropertyCardProps {
   property: Property;
@@ -86,13 +87,23 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
               <div className="absolute bottom-3 left-3 text-white">
                 <span className="font-bold text-xl">{formatPrice(property.price)}</span>
               </div>
-              <button 
-                className={`absolute top-3 right-3 bg-white/20 hover:bg-white/40 h-8 w-8 rounded-full flex items-center justify-center backdrop-blur-sm text-white transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                onClick={handleFavoriteToggle}
-                disabled={isLoading}
-              >
-                <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : ''}`} />
-              </button>
+              <div className="absolute top-3 right-3 flex space-x-2">
+                <button 
+                  className={`bg-white/20 hover:bg-white/40 h-8 w-8 rounded-full flex items-center justify-center backdrop-blur-sm text-white transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={handleFavoriteToggle}
+                  disabled={isLoading}
+                >
+                  <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : ''}`} />
+                </button>
+                <span onClick={(e) => e.stopPropagation()}>
+                  <ComparePropertyButton 
+                    propertyId={property.id} 
+                    variant="ghost" 
+                    size="icon" 
+                    className="bg-white/20 hover:bg-white/40 h-8 w-8 rounded-full flex items-center justify-center backdrop-blur-sm text-white transition"
+                  />
+                </span>
+              </div>
             </div>
             
             {/* Property details */}
@@ -168,13 +179,23 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
           <div className="absolute bottom-3 left-3 text-white">
             <span className="font-bold text-xl">{formatPrice(property.price)}</span>
           </div>
-          <button 
-            className={`absolute top-3 right-3 bg-white/20 hover:bg-white/40 h-8 w-8 rounded-full flex items-center justify-center backdrop-blur-sm text-white transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={handleFavoriteToggle}
-            disabled={isLoading}
-          >
-            <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : ''}`} />
-          </button>
+          <div className="absolute top-3 right-3 flex space-x-2">
+            <button 
+              className={`bg-white/20 hover:bg-white/40 h-8 w-8 rounded-full flex items-center justify-center backdrop-blur-sm text-white transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={handleFavoriteToggle}
+              disabled={isLoading}
+            >
+              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : ''}`} />
+            </button>
+            <span onClick={(e) => e.stopPropagation()}>
+              <ComparePropertyButton 
+                propertyId={property.id} 
+                variant="ghost" 
+                size="icon" 
+                className="bg-white/20 hover:bg-white/40 h-8 w-8 rounded-full flex items-center justify-center backdrop-blur-sm text-white transition"
+              />
+            </span>
+          </div>
         </div>
         
         {/* Property details */}

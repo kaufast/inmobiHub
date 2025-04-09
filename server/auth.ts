@@ -5,7 +5,7 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { User, RegisterUser, loginUserSchema } from "@shared/schema";
+import { User, RegisterUser, loginUserSchema, registerUserSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 
@@ -89,7 +89,7 @@ export function setupAuth(app: Express) {
   app.post("/api/register", async (req, res, next) => {
     try {
       // Validate request body
-      const validatedData = loginUserSchema.parse(req.body);
+      const validatedData = registerUserSchema.parse(req.body);
       
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(validatedData.username);
@@ -100,7 +100,7 @@ export function setupAuth(app: Express) {
       // Create user with hashed password
       const hashedPassword = await hashPassword(validatedData.password);
       const userData: RegisterUser = {
-        ...req.body,
+        ...validatedData,
         password: hashedPassword,
       };
       

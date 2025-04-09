@@ -55,6 +55,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Compare multiple properties
+  app.get("/api/properties/compare/:ids", async (req, res, next) => {
+    try {
+      const ids = req.params.ids.split(",").map(id => Number(id));
+      
+      if (ids.length === 0) {
+        return res.status(400).json({ message: "No property IDs provided" });
+      }
+      
+      if (ids.length > 4) {
+        return res.status(400).json({ message: "Cannot compare more than 4 properties" });
+      }
+      
+      const properties = await Promise.all(
+        ids.map(id => storage.getProperty(id))
+      );
+      
+      // Filter out any undefined properties (not found)
+      const validProperties = properties.filter(property => property !== undefined) as any[];
+      
+      res.json(validProperties);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   app.get("/api/properties/:id", async (req, res, next) => {
     try {
       const property = await storage.getProperty(parseInt(req.params.id));
