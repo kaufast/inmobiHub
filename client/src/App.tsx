@@ -17,6 +17,8 @@ import { useEffect, useState } from "react";
 import { handleRedirectResult } from "./lib/firebase";
 import { useToast } from "./hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { OrganizationSchema } from "./components/seo/schema-markup";
+import { Helmet } from "react-helmet";
 
 function AppContent() {
   return (
@@ -81,11 +83,47 @@ function FirebaseAuthHandler({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
+  // Base URL for organization schema
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://foundation.com';
+  const logoUrl = `${baseUrl}/logo.png`; // Assuming a logo in the public folder
+
   return (
     <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
       <FirebaseAuthHandler>
         <AuthProvider>
           <PropertyComparisonProvider maxProperties={4}>
+            {/* Global SEO */}
+            <Helmet>
+              <html lang="en" />
+              <meta charSet="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <meta name="theme-color" content="#4f46e5" />
+              <link rel="icon" href="/favicon.ico" />
+              <link rel="apple-touch-icon" href="/logo192.png" />
+              
+              {/* Default meta tags, will be overridden by page-specific ones */}
+              <title>Foundation - Modern Real Estate Platform</title>
+              <meta name="description" content="A modern real estate platform for finding your dream home. Browse listings, connect with agents, and discover properties that match your needs." />
+              
+              {/* Default Open Graph */}
+              <meta property="og:site_name" content="Foundation" />
+              <meta property="og:type" content="website" />
+              <meta property="og:url" content={baseUrl} />
+              <meta property="og:title" content="Foundation - Modern Real Estate Platform" />
+              <meta property="og:description" content="Find your dream home with Foundation's intelligent real estate platform. Personalized recommendations, comprehensive property details, and easy communication with agents." />
+              
+              {/* Default Twitter Cards */}
+              <meta name="twitter:card" content="summary_large_image" />
+              <meta name="twitter:site" content="@foundation" />
+            </Helmet>
+            
+            {/* Global Organization Schema */}
+            <OrganizationSchema 
+              baseUrl={baseUrl}
+              logoUrl={logoUrl}
+              name="Foundation Real Estate"
+            />
+            
             <AppContent />
           </PropertyComparisonProvider>
         </AuthProvider>

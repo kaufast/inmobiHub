@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, List, Grid, MapPin } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { PropertyListSchema } from "@/components/seo/schema-markup";
+import { SearchMetaTags } from "@/components/seo/meta-tags";
 
 export default function SearchResultsPage() {
   const [location, setLocation] = useLocation();
@@ -63,8 +65,49 @@ export default function SearchResultsPage() {
     setLocation(`/search?${params.toString()}`);
   };
   
+  // Define base URL for SEO
+  const baseUrl = window.location.origin;
+  
+  // Generate descriptive title/meta info based on search parameters
+  const getSearchDescription = () => {
+    const parts = [];
+    if (searchParams.location) parts.push(`in ${searchParams.location}`);
+    if (searchParams.propertyType) parts.push(`${searchParams.propertyType} properties`);
+    if (searchParams.minPrice && searchParams.maxPrice) parts.push(`$${searchParams.minPrice.toLocaleString()}-$${searchParams.maxPrice.toLocaleString()}`);
+    else if (searchParams.minPrice) parts.push(`from $${searchParams.minPrice.toLocaleString()}`);
+    else if (searchParams.maxPrice) parts.push(`up to $${searchParams.maxPrice.toLocaleString()}`);
+    if (searchParams.beds) parts.push(`${searchParams.beds}+ bedrooms`);
+    
+    return parts.length > 0 ? parts.join(', ') : 'all properties';
+  };
+
   return (
     <div className="min-h-screen bg-primary-50 py-8">
+      {/* SEO Meta Tags */}
+      <SearchMetaTags
+        location={searchParams.location}
+        propertyType={searchParams.propertyType}
+        minPrice={searchParams.minPrice}
+        maxPrice={searchParams.maxPrice}
+        bedrooms={searchParams.beds}
+        baseUrl={baseUrl}
+        count={properties?.length || 0}
+        keywords={[
+          'real estate search',
+          'property listings',
+          ...(searchParams.location ? [searchParams.location] : []),
+          ...(searchParams.propertyType ? [searchParams.propertyType] : [])
+        ]}
+      />
+      
+      {/* Schema.org Structured Data for Property List */}
+      {properties && properties.length > 0 && (
+        <PropertyListSchema 
+          properties={properties} 
+          baseUrl={baseUrl}
+        />
+      )}
+      
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Search Panel */}

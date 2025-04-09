@@ -14,6 +14,8 @@ import PropertyGallery from "@/components/properties/property-gallery";
 import EnhancedPropertyMap from "@/components/map/enhanced-property-map";
 import NeighborhoodScoreCard from "@/components/neighborhoods/neighborhood-score-card";
 import { formatPrice } from "@/lib/utils";
+import { PropertySchema, BreadcrumbsSchema } from "@/components/seo/schema-markup";
+import { PropertyMetaTags } from "@/components/seo/meta-tags";
 
 export default function PropertyDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -106,8 +108,54 @@ export default function PropertyDetailsPage() {
     );
   }
 
+  // Define base URL for SEO
+  const baseUrl = window.location.origin;
+  
+  // Define breadcrumbs for schema
+  const breadcrumbItems = [
+    { name: 'Home', url: '/' },
+    { name: 'Properties', url: '/search' },
+    { name: property.title, url: `/property/${property.id}` }
+  ];
+
   return (
     <div className="min-h-screen bg-primary-50 py-8">
+      {/* SEO Meta Tags */}
+      <PropertyMetaTags 
+        property={{
+          title: property.title,
+          description: property.description,
+          price: property.price,
+          bedrooms: property.bedrooms,
+          bathrooms: property.bathrooms,
+          squareFeet: property.squareFeet,
+          address: property.address,
+          city: property.city,
+          state: property.state,
+          image: property.images[0]
+        }}
+        baseUrl={baseUrl}
+        propertyId={property.id}
+        keywords={[
+          'real estate', 
+          property.city, 
+          property.state, 
+          property.propertyType
+        ]}
+      />
+      
+      {/* Schema.org Structured Data */}
+      <PropertySchema 
+        property={property} 
+        baseUrl={baseUrl} 
+      />
+      
+      {/* Breadcrumbs Schema */}
+      <BreadcrumbsSchema 
+        items={breadcrumbItems}
+        baseUrl={baseUrl}
+      />
+      
       <div className="container mx-auto px-4">
         {/* Breadcrumbs */}
         <div className="flex items-center mb-6 text-sm">
