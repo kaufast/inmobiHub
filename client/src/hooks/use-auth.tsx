@@ -8,48 +8,45 @@ import { RegisterUser, LoginUser, User } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
+// Define auth context type
 type AuthContextType = {
   user: User | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<User, Error, LoginUser>;
-  logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<User, Error, RegisterUser>;
+  loginMutation: {
+    mutate: (data: LoginUser) => void;
+    isPending: boolean;
+  };
+  logoutMutation: {
+    mutate: () => void;
+    isPending: boolean;
+  };
+  registerMutation: {
+    mutate: (data: RegisterUser) => void;
+    isPending: boolean;
+  };
 };
 
-// Create safe dummy mutations with no-op mutate functions
-const createDummyMutation = <TData, TError, TVariables>() => ({
-  mutate: (_variables: TVariables) => {
-    console.warn("Auth context not ready yet. This mutation will do nothing.");
-  },
-  mutateAsync: async (_variables: TVariables): Promise<TData> => {
-    console.warn("Auth context not ready yet. This mutation will do nothing.");
-    return Promise.reject(new Error("Auth context not initialized"));
-  },
-  isPending: false,
-  isError: false,
-  isSuccess: false,
-  isIdle: true,
-  error: null,
-  data: undefined,
-  failureCount: 0,
-  failureReason: null,
-  // Add other required properties
-  reset: () => {},
-  status: "idle",
-}) as unknown as UseMutationResult<TData, TError, TVariables>;
-
-const defaultContext: AuthContextType = {
+// Create context with default values
+const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: false,
   error: null,
-  loginMutation: createDummyMutation<User, Error, LoginUser>(),
-  logoutMutation: createDummyMutation<void, Error, void>(),
-  registerMutation: createDummyMutation<User, Error, RegisterUser>(),
-};
+  loginMutation: {
+    mutate: () => console.log("Login function not initialized"),
+    isPending: false,
+  },
+  logoutMutation: {
+    mutate: () => console.log("Logout function not initialized"),
+    isPending: false,
+  },
+  registerMutation: {
+    mutate: () => console.log("Register function not initialized"),
+    isPending: false,
+  },
+});
 
-export const AuthContext = createContext<AuthContextType>(defaultContext);
-
+// Provider component to wrap our app and provide auth context
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   
@@ -64,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   // Login mutation
-  const loginMutation = useMutation({
+  const login = useMutation({
     mutationFn: async (credentials: LoginUser) => {
       const res = await apiRequest("POST", "/api/login", credentials);
       return await res.json();
@@ -87,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   // Register mutation
-  const registerMutation = useMutation({
+  const register = useMutation({
     mutationFn: async (userData: RegisterUser) => {
       const res = await apiRequest("POST", "/api/register", userData);
       return await res.json();
@@ -110,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   // Logout mutation
-  const logoutMutation = useMutation({
+  const logout = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/logout");
     },
@@ -131,8 +128,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  // Create context value
-  const contextValue: AuthContextType = {
+  // Simplified interface for mutations
+  const loginMutation = {
+    mutate: (data: LoginUser) => login.mutate(data),
+    isPending: login.isPending,
+  };
+
+  const registerMutation = {
+    mutate: (data: RegisterUser) => register.mutate(data),
+    isPending: register.isPending,
+  };
+
+  const logoutMutation = {
+    mutate: () => logout.mutate(),
+    isPending: logout.isPending,
+  };
+
+  // Create context value with simplified interface
+  const value: AuthContextType = {
     user: user ?? null,
     isLoading,
     error,
@@ -142,17 +155,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Hook for using auth context
+// Custom hook to use auth context
 export function useAuth() {
   const context = useContext(AuthContext);
-  // We're now returning default context if context is null,
-  // rather than throwing an error. This ensures all methods
-  // are available even if the context isn't fully initialized.
+  
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  
   return context;
 }
+
+// Export context for testing/advanced usage
+export { AuthContext };

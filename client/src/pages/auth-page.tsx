@@ -58,12 +58,7 @@ export default function AuthPage() {
 
   const onLoginSubmit = (data: LoginUser) => {
     try {
-      if (loginMutation && typeof loginMutation.mutate === 'function') {
-        loginMutation.mutate(data);
-      } else {
-        console.error("Login mutation not available");
-        alert("Login system is not ready. Please try again in a moment.");
-      }
+      loginMutation.mutate(data);
     } catch (error) {
       console.error("Login error:", error);
       alert("An error occurred during login. Please try again.");
@@ -72,12 +67,7 @@ export default function AuthPage() {
 
   const onRegisterSubmit = (data: RegisterUser) => {
     try {
-      if (registerMutation && typeof registerMutation.mutate === 'function') {
-        registerMutation.mutate(data);
-      } else {
-        console.error("Register mutation not available");
-        alert("Registration system is not ready. Please try again in a moment.");
-      }
+      registerMutation.mutate(data);
     } catch (error) {
       console.error("Registration error:", error);
       alert("An error occurred during registration. Please try again.");
