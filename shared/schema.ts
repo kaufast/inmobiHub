@@ -12,6 +12,8 @@ export const roleEnum = pgEnum('role', ['user', 'agent', 'admin']);
 export const subscriptionTierEnum = pgEnum('subscription_tier', ['free', 'premium', 'enterprise']);
 export const propertyTypeEnum = pgEnum('property_type', ['house', 'condo', 'apartment', 'townhouse', 'land']);
 export const messageStatusEnum = pgEnum('message_status', ['unread', 'read', 'replied', 'archived']);
+export const tourStatusEnum = pgEnum('tour_status', ['pending', 'confirmed', 'completed', 'cancelled', 'rescheduled']);
+export const tourTypeEnum = pgEnum('tour_type', ['in-person', 'virtual']);
 
 // Users
 export const users = pgTable("users", {
@@ -196,6 +198,40 @@ export const neighborhoodsRelations = relations(neighborhoods, ({ many }) => ({
   properties: many(properties),
 }));
 
+// Property Tours
+export const propertyTours = pgTable("property_tours", {
+  id: serial("id").primaryKey(),
+  propertyId: integer("property_id").notNull().references(() => properties.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  agentId: integer("agent_id").references(() => users.id),
+  tourDate: timestamp("tour_date").notNull(),
+  tourTime: text("tour_time").notNull(), // Store as HH:MM format
+  duration: integer("duration").notNull().default(30), // Duration in minutes
+  notes: text("notes"),
+  status: tourStatusEnum("status").notNull().default('pending'),
+  tourType: tourTypeEnum("tour_type").notNull().default('in-person'),
+  contactPhone: text("contact_phone"),
+  contactEmail: text("contact_email"),
+  additionalAttendees: integer("additional_attendees").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const propertyToursRelations = relations(propertyTours, ({ one }) => ({
+  property: one(properties, {
+    fields: [propertyTours.propertyId],
+    references: [properties.id],
+  }),
+  user: one(users, {
+    fields: [propertyTours.userId],
+    references: [users.id],
+  }),
+  agent: one(users, {
+    fields: [propertyTours.agentId],
+    references: [users.id],
+  }),
+}));
+
 // Schema validation
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -264,6 +300,29 @@ export const insertNeighborhoodSchema = createInsertSchema(neighborhoods).omit({
   updatedAt: true,
 });
 
+export const insertPropertyTourSchema = createInsertSchema(propertyTours).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  agentId: true, // Assigned by the system
+});
+
+export const updatePropertyTourSchema = z.object({
+  id: z.number().int().positive(),
+  tourDate: z.date().optional(),
+  tourTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: "Time must be in HH:MM format",
+  }).optional(),
+  duration: z.number().int().min(15).max(120).optional(),
+  notes: z.string().optional(),
+  status: z.enum(['pending', 'confirmed', 'completed', 'cancelled', 'rescheduled']).optional(),
+  tourType: z.enum(['in-person', 'virtual']).optional(),
+  contactPhone: z.string().optional(),
+  contactEmail: z.string().email().optional(),
+  additionalAttendees: z.number().int().min(0).max(10).optional(),
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type RegisterUser = z.infer<typeof registerUserSchema>;
@@ -281,5 +340,9 @@ export type Favorite = typeof favorites.$inferSelect;
 
 export type InsertNeighborhood = z.infer<typeof insertNeighborhoodSchema>;
 export type Neighborhood = typeof neighborhoods.$inferSelect;
+
+export type InsertPropertyTour = z.infer<typeof insertPropertyTourSchema>;
+export type UpdatePropertyTour = z.infer<typeof updatePropertyTourSchema>;
+export type PropertyTour = typeof propertyTours.$inferSelect;
 
 export type SearchProperties = z.infer<typeof searchPropertiesSchema>;

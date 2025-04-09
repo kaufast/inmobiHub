@@ -3,7 +3,8 @@ import {
   properties, type Property, type InsertProperty,
   favorites, type Favorite, type InsertFavorite,
   messages, type Message, type InsertMessage,
-  searchHistory, type SearchProperties, neighborhoods, type Neighborhood
+  searchHistory, type SearchProperties, neighborhoods, type Neighborhood,
+  propertyTours, type PropertyTour, type InsertPropertyTour, type UpdatePropertyTour
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, like, gte, lte, desc, sql } from "drizzle-orm";
@@ -50,6 +51,16 @@ export interface IStorage {
   // Neighborhoods
   getNeighborhood(id: number): Promise<Neighborhood | undefined>;
   getNeighborhoods(limit?: number): Promise<Neighborhood[]>;
+  
+  // Property Tours
+  getPropertyTour(id: number): Promise<PropertyTour | undefined>;
+  getPropertyToursByUser(userId: number): Promise<PropertyTour[]>;
+  getPropertyToursByProperty(propertyId: number): Promise<PropertyTour[]>;
+  getPropertyToursByAgent(agentId: number): Promise<PropertyTour[]>;
+  createPropertyTour(tour: InsertPropertyTour): Promise<PropertyTour>;
+  updatePropertyTour(id: number, tour: UpdatePropertyTour): Promise<PropertyTour | undefined>;
+  cancelPropertyTour(id: number): Promise<PropertyTour | undefined>;
+  getAvailableTourTimeSlots(propertyId: number, date: Date): Promise<string[]>; // Returns available times
   
   // Session store
   sessionStore: session.Store;
@@ -524,6 +535,123 @@ export class DatabaseStorage implements IStorage {
       .from(neighborhoods)
       .orderBy(neighborhoods.rank)
       .limit(limit);
+  }
+  
+  // Property Tours
+  async getPropertyTour(id: number): Promise<PropertyTour | undefined> {
+    const [tour] = await db.select()
+      .from(propertyTours)
+      .where(eq(propertyTours.id, id));
+    return tour;
+  }
+  
+  async getPropertyToursByUser(userId: number): Promise<PropertyTour[]> {
+    return db.select()
+      .from(propertyTours)
+      .where(eq(propertyTours.userId, userId))
+      .orderBy(desc(propertyTours.tourDate));
+  }
+  
+  async getPropertyToursByProperty(propertyId: number): Promise<PropertyTour[]> {
+    return db.select()
+      .from(propertyTours)
+      .where(eq(propertyTours.propertyId, propertyId))
+      .orderBy(desc(propertyTours.tourDate));
+  }
+  
+  async getPropertyToursByAgent(agentId: number): Promise<PropertyTour[]> {
+    return db.select()
+      .from(propertyTours)
+      .where(eq(propertyTours.agentId, agentId))
+      .orderBy(desc(propertyTours.tourDate));
+  }
+  
+  async createPropertyTour(tour: InsertPropertyTour): Promise<PropertyTour> {
+    // Get property data to assign an agent
+    const property = await this.getProperty(tour.propertyId);
+    if (!property) {
+      throw new Error("Property not found");
+    }
+    
+    // Assign the property owner as the agent if they are an agent or admin
+    const owner = await this.getUser(property.ownerId);
+    let agentId = null;
+    
+    if (owner && (owner.role === 'agent' || owner.role === 'admin')) {
+      agentId = owner.id;
+    } else {
+      // Find an available agent
+      const [agent] = await db.select()
+        .from(users)
+        .where(eq(users.role, 'agent'))
+        .limit(1);
+        
+      if (agent) {
+        agentId = agent.id;
+      }
+    }
+    
+    // Create the tour with an assigned agent
+    const [newTour] = await db.insert(propertyTours)
+      .values({
+        ...tour,
+        agentId,
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+      
+    return newTour;
+  }
+  
+  async updatePropertyTour(id: number, tour: UpdatePropertyTour): Promise<PropertyTour | undefined> {
+    const [updatedTour] = await db.update(propertyTours)
+      .set({
+        ...tour,
+        updatedAt: new Date(),
+      })
+      .where(eq(propertyTours.id, id))
+      .returning();
+      
+    return updatedTour;
+  }
+  
+  async cancelPropertyTour(id: number): Promise<PropertyTour | undefined> {
+    const [cancelledTour] = await db.update(propertyTours)
+      .set({
+        status: 'cancelled',
+        updatedAt: new Date(),
+      })
+      .where(eq(propertyTours.id, id))
+      .returning();
+      
+    return cancelledTour;
+  }
+  
+  async getAvailableTourTimeSlots(propertyId: number, date: Date): Promise<string[]> {
+    // Get all tour slots for the property on the given date
+    const tours = await db.select()
+      .from(propertyTours)
+      .where(
+        and(
+          eq(propertyTours.propertyId, propertyId),
+          sql`DATE(${propertyTours.tourDate}) = DATE(${date})`
+        )
+      );
+    
+    // Generate time slots from 9:00 to 17:00 with 30-minute intervals
+    const allTimeSlots = [];
+    for (let hour = 9; hour < 17; hour++) {
+      allTimeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+      allTimeSlots.push(`${hour.toString().padStart(2, '0')}:30`);
+    }
+    
+    // Filter out booked slots
+    const bookedTimes = tours.map(tour => tour.tourTime);
+    const availableSlots = allTimeSlots.filter(time => !bookedTimes.includes(time));
+    
+    return availableSlots;
   }
 }
 

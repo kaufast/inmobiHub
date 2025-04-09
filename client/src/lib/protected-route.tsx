@@ -1,15 +1,21 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
-import { useState } from "react";
 
+type UserRole = 'user' | 'agent' | 'admin';
+
+interface ProtectedRouteProps {
+  path: string;
+  component: React.ComponentType;
+  allowedRoles?: UserRole[];
+}
+
+// Generic protected route that checks authentication
 export function ProtectedRoute({
   path,
   component: Component,
-}: {
-  path: string;
-  component: React.ComponentType;
-}) {
+  allowedRoles
+}: ProtectedRouteProps) {
   // Try using useAuth safely
   let user = null;
   let isLoading = false;
@@ -35,6 +41,7 @@ export function ProtectedRoute({
     );
   }
 
+  // If no user, redirect to auth page
   if (!user) {
     return (
       <Route path={path}>
@@ -43,9 +50,42 @@ export function ProtectedRoute({
     );
   }
 
+  // If allowedRoles is specified, check if user has required role
+  if (allowedRoles && allowedRoles.length > 0) {
+    if (!allowedRoles.includes(user.role as UserRole)) {
+      // Redirect to appropriate dashboard based on role
+      const redirectPath = 
+        user.role === 'admin' ? '/admin/dashboard' : 
+        user.role === 'agent' ? '/agent/dashboard' : '/dashboard';
+      
+      return (
+        <Route path={path}>
+          <Redirect to={redirectPath} />
+        </Route>
+      );
+    }
+  }
+
   return (
     <Route path={path}>
       <Component />
     </Route>
   );
+}
+
+// Specific routes for different user roles
+export function UserProtectedRoute({ path, component }: Omit<ProtectedRouteProps, 'allowedRoles'>) {
+  return <ProtectedRoute path={path} component={component} allowedRoles={['user']} />;
+}
+
+export function AgentProtectedRoute({ path, component }: Omit<ProtectedRouteProps, 'allowedRoles'>) {
+  return <ProtectedRoute path={path} component={component} allowedRoles={['agent']} />;
+}
+
+export function AdminProtectedRoute({ path, component }: Omit<ProtectedRouteProps, 'allowedRoles'>) {
+  return <ProtectedRoute path={path} component={component} allowedRoles={['admin']} />;
+}
+
+export function PublisherProtectedRoute({ path, component }: Omit<ProtectedRouteProps, 'allowedRoles'>) {
+  return <ProtectedRoute path={path} component={component} allowedRoles={['agent', 'admin']} />;
 }

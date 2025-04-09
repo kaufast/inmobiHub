@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema } from "@shared/schema";
+import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema, insertPropertyTourSchema, updatePropertyTourSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
@@ -438,6 +438,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(neighborhood);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Property Tour Endpoints
+  
+  // Get available tour slots for a property on a specific date
+  app.get("/api/properties/:propertyId/tour-slots", async (req, res, next) => {
+    try {
+      const propertyId = parseInt(req.params.propertyId);
+      const dateStr = req.query.date as string;
+      
+      if (!dateStr) {
+        return res.status(400).json({ message: "Date parameter is required" });
+      }
+      
+      const date = new Date(dateStr);
+      
+      if (isNaN(date.getTime())) {
+        return res.status(400).json({ message: "Invalid date format" });
+      }
+      
+      const availableSlots = await storage.getAvailableTourTimeSlots(propertyId, date);
+      res.json(availableSlots);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get all tours for a property
+  app.get("/api/properties/:propertyId/tours", isAuthenticated, async (req, res, next) => {
+    try {
+      const propertyId = parseInt(req.params.propertyId);
+      const tours = await storage.getPropertyToursByProperty(propertyId);
+      res.json(tours);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get user's tours
+  app.get("/api/user/tours", isAuthenticated, async (req, res, next) => {
+    try {
+      const userId = req.user!.id;
+      const tours = await storage.getPropertyToursByUser(userId);
+      res.json(tours);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get agent's tours (only for agents and admins)
+  app.get("/api/agent/tours", isAuthenticated, async (req, res, next) => {
+    try {
+      const user = req.user!;
+      
+      if (user.role !== 'agent' && user.role !== 'admin') {
+        return res.status(403).json({ message: "Only agents and admins can access this endpoint" });
+      }
+      
+      const tours = await storage.getPropertyToursByAgent(user.id);
+      res.json(tours);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Get a specific tour by ID
+  app.get("/api/tours/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const tour = await storage.getPropertyTour(id);
+      
+      if (!tour) {
+        return res.status(404).json({ message: "Tour not found" });
+      }
+      
+      // Check if the user has permission to view this tour (as the user, agent, or admin)
+      const user = req.user!;
+      if (tour.userId !== user.id && tour.agentId !== user.id && user.role !== 'admin') {
+        return res.status(403).json({ message: "You don't have permission to view this tour" });
+      }
+      
+      res.json(tour);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Create a new property tour
+  app.post("/api/properties/:propertyId/tours", isAuthenticated, async (req, res, next) => {
+    try {
+      const propertyId = parseInt(req.params.propertyId);
+      const userId = req.user!.id;
+      
+      // Validate that the property exists
+      const property = await storage.getProperty(propertyId);
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      
+      // Parse and validate using schema
+      const { tourDate, tourTime, duration, notes, tourType, contactPhone, contactEmail, additionalAttendees } = req.body;
+      
+      const parsedTour = insertPropertyTourSchema.safeParse({
+        propertyId,
+        userId,
+        tourDate: new Date(tourDate),
+        tourTime,
+        duration: duration || 30,
+        notes,
+        tourType: tourType || 'in-person',
+        contactPhone,
+        contactEmail,
+        additionalAttendees: additionalAttendees || 0
+      });
+      
+      if (!parsedTour.success) {
+        return res.status(400).json({ message: "Invalid tour data", errors: parsedTour.error.errors });
+      }
+      
+      // Check if the selected time slot is available
+      const availableSlots = await storage.getAvailableTourTimeSlots(propertyId, new Date(tourDate));
+      if (!availableSlots.includes(tourTime)) {
+        return res.status(400).json({ message: "The selected time slot is not available" });
+      }
+      
+      const newTour = await storage.createPropertyTour(parsedTour.data);
+      res.status(201).json(newTour);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Update a property tour
+  app.put("/api/tours/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = req.user!;
+      
+      // Check if the tour exists
+      const existingTour = await storage.getPropertyTour(id);
+      if (!existingTour) {
+        return res.status(404).json({ message: "Tour not found" });
+      }
+      
+      // Check if the user has permission to update this tour
+      if (existingTour.userId !== user.id && existingTour.agentId !== user.id && user.role !== 'admin') {
+        return res.status(403).json({ message: "You don't have permission to update this tour" });
+      }
+      
+      // Parse and validate update data
+      const parsedUpdate = updatePropertyTourSchema.safeParse({
+        id,
+        ...req.body
+      });
+      
+      if (!parsedUpdate.success) {
+        return res.status(400).json({ message: "Invalid tour data", errors: parsedUpdate.error.errors });
+      }
+      
+      // If updating the date/time, check if the new slot is available
+      if (parsedUpdate.data.tourDate && parsedUpdate.data.tourTime) {
+        const availableSlots = await storage.getAvailableTourTimeSlots(
+          existingTour.propertyId, 
+          parsedUpdate.data.tourDate
+        );
+        
+        // Allow keeping the same time slot even if it's "unavailable" (because it's the current booking)
+        const isCurrentTimeSlot = existingTour.tourDate.toDateString() === parsedUpdate.data.tourDate.toDateString() && 
+                                existingTour.tourTime === parsedUpdate.data.tourTime;
+                                
+        if (!isCurrentTimeSlot && !availableSlots.includes(parsedUpdate.data.tourTime)) {
+          return res.status(400).json({ message: "The selected time slot is not available" });
+        }
+      }
+      
+      const updatedTour = await storage.updatePropertyTour(id, parsedUpdate.data);
+      res.json(updatedTour);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Cancel a property tour
+  app.post("/api/tours/:id/cancel", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = req.user!;
+      
+      // Check if the tour exists
+      const existingTour = await storage.getPropertyTour(id);
+      if (!existingTour) {
+        return res.status(404).json({ message: "Tour not found" });
+      }
+      
+      // Check if the tour is already cancelled
+      if (existingTour.status === 'cancelled') {
+        return res.status(400).json({ message: "Tour is already cancelled" });
+      }
+      
+      // Check if the user has permission to cancel this tour
+      if (existingTour.userId !== user.id && existingTour.agentId !== user.id && user.role !== 'admin') {
+        return res.status(403).json({ message: "You don't have permission to cancel this tour" });
+      }
+      
+      const cancelledTour = await storage.cancelPropertyTour(id);
+      res.json(cancelledTour);
     } catch (error) {
       next(error);
     }

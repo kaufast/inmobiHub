@@ -7,10 +7,18 @@ import PropertyDetailsPage from "@/pages/property-details";
 import PropertyAnalyticsPage from "@/pages/property-analytics";
 import SearchResultsPage from "@/pages/search-results";
 import DashboardPage from "@/pages/dashboard";
+import AdminDashboardPage from "@/pages/admin-dashboard";
+import AgentDashboardPage from "@/pages/agent-dashboard";
 import NotificationsDemo from "@/pages/notifications-demo";
 import PropertyComparisonPage from "@/pages/property-comparison";
 import BulkUploadPage from "@/pages/bulk-upload";
-import { ProtectedRoute } from "./lib/protected-route";
+import { 
+  ProtectedRoute, 
+  UserProtectedRoute, 
+  AgentProtectedRoute, 
+  AdminProtectedRoute,
+  PublisherProtectedRoute
+} from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
 import { AuthProvider } from "./hooks/use-auth";
@@ -32,6 +40,7 @@ function AppContent() {
       <Navbar />
       <main>
         <Switch>
+          {/* Public Routes */}
           <Route path="/" component={HomePage} />
           <Route path="/auth" component={AuthPage} />
           <Route path="/property/:id" component={PropertyDetailsPage} />
@@ -39,8 +48,16 @@ function AppContent() {
           <Route path="/property-comparison" component={PropertyComparisonPage} />
           <Route path="/search" component={SearchResultsPage} />
           <Route path="/notifications-demo" component={NotificationsDemo} />
-          <ProtectedRoute path="/dashboard" component={DashboardPage} />
-          <ProtectedRoute path="/bulk-upload" component={BulkUploadPage} />
+          
+          {/* Role-Specific Dashboard Routes */}
+          <UserProtectedRoute path="/dashboard" component={DashboardPage} />
+          <AdminProtectedRoute path="/admin/dashboard" component={AdminDashboardPage} />
+          <AgentProtectedRoute path="/agent/dashboard" component={AgentDashboardPage} />
+          
+          {/* Premium Features */}
+          <PublisherProtectedRoute path="/bulk-upload" component={BulkUploadPage} />
+          
+          {/* Catch-all for 404 */}
           <Route component={NotFound} />
         </Switch>
       </main>
