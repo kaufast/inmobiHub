@@ -1,0 +1,62 @@
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAHBABI9mL7s6Jr_n7FhlSCLMrMA8QBp8Q",
+  authDomain: "inmobi-a6bd4.firebaseapp.com",
+  projectId: "inmobi-a6bd4",
+  storageBucket: "inmobi-a6bd4.firebasestorage.app",
+  messagingSenderId: "937279827019",
+  appId: "1:937279827019:web:92eb1d4219413097b9f1ce",
+  measurementId: "G-D1KKXE9REV"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Configure Google Auth Provider
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
+
+// Configure Apple Auth Provider
+const appleProvider = new OAuthProvider('apple.com');
+appleProvider.addScope('email');
+appleProvider.addScope('name');
+
+// Sign in with Google
+export async function signInWithGoogle() {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+  } catch (error) {
+    console.error('Error signing in with Google:', error);
+    throw error;
+  }
+}
+
+// Sign in with Apple
+export async function signInWithApple() {
+  try {
+    const result = await signInWithPopup(auth, appleProvider);
+    return result.user;
+  } catch (error) {
+    console.error('Error signing in with Apple:', error);
+    throw error;
+  }
+}
+
+// Sign out
+export async function firebaseSignOut() {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error('Error signing out:', error);
+    throw error;
+  }
+}
+
+export { auth };
