@@ -10,7 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import PropertyGallery from "@/components/properties/property-gallery";
+import PropertyShare from "@/components/properties/property-share";
 import EnhancedPropertyMap from "@/components/map/enhanced-property-map";
 import NeighborhoodScoreCard from "@/components/neighborhoods/neighborhood-score-card";
 import { formatPrice } from "@/lib/utils";
@@ -21,6 +23,7 @@ export default function PropertyDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [isFavorite, setIsFavorite] = useState(false);
 
   // Set document title
@@ -188,34 +191,7 @@ export default function PropertyDetailsPage() {
               {isFavorite ? 'Saved' : 'Save'}
             </Button>
             
-            <Button 
-              variant="outline"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: property.title,
-                    text: `Check out this property: ${property.title}`,
-                    url: window.location.href,
-                  }).catch(err => {
-                    console.error('Error sharing property:', err);
-                    toast({
-                      title: "Sharing failed",
-                      description: "Could not share this property",
-                      variant: "destructive",
-                    });
-                  });
-                } else {
-                  // Fallback: copy to clipboard
-                  navigator.clipboard.writeText(window.location.href);
-                  toast({
-                    title: "Link copied!",
-                    description: "Property link copied to clipboard",
-                  });
-                }
-              }}
-            >
-              <Share className="mr-2 h-4 w-4" /> Share
-            </Button>
+            <PropertyShare property={property} variant="button" />
             
             <Button 
               variant="outline"
@@ -349,6 +325,18 @@ export default function PropertyDetailsPage() {
                   <PersonalizedDescription propertyId={property.id} className="mt-2" />
                 </div>
               )}
+              
+              {/* Share section */}
+              <div className="mt-8 p-4 bg-primary-50 rounded-lg">
+                <h3 className="text-lg font-semibold text-primary-800 mb-2 flex items-center">
+                  <Share className="h-4 w-4 text-secondary-500 mr-2" />
+                  {t('property.shareTitle', 'Share this property')}
+                </h3>
+                <p className="text-primary-600 mb-4 text-sm">
+                  {t('property.shareDescription', 'Share this property with friends and family, or save it for future reference. You can share via social media, email, or by copying the link.')}
+                </p>
+                <PropertyShare property={property} variant="iconButton" className="mt-2" />
+              </div>
             </div>
             
             {/* Property features list */}

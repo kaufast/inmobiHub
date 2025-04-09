@@ -50,6 +50,12 @@ const enGB = {
     removeFromFavorites: 'Remove from Favorites',
     shareListing: 'Share Listing',
     printListing: 'Print Listing',
+    copy: 'Copy',
+    copied: 'Copied',
+    linkCopied: 'Link copied to clipboard',
+    copyFailed: 'Failed to copy link',
+    close: 'Close',
+    shareOnSocial: 'Share on social media',
     similarProperties: 'Similar Properties',
     propertyFeatures: 'Property Features',
     neighborhood: 'Neighborhood',
@@ -115,7 +121,9 @@ const enGB = {
     city: 'City',
     state: 'State',
     zipCode: 'Zip Code',
-    country: 'Country'
+    country: 'Country',
+    shareTitle: 'Share this property',
+    shareDescription: 'Share this property with friends and family, or save it for future reference. You can share via social media, email, or by copying the link.'
   },
   subscription: {
     plan: 'Plan',
@@ -278,6 +286,12 @@ const esMX = {
     removeFromFavorites: 'Eliminar de Favoritos',
     shareListing: 'Compartir Listado',
     printListing: 'Imprimir Listado',
+    copy: 'Copiar',
+    copied: 'Copiado',
+    linkCopied: 'Enlace copiado al portapapeles',
+    copyFailed: 'Error al copiar enlace',
+    close: 'Cerrar',
+    shareOnSocial: 'Compartir en redes sociales',
     similarProperties: 'Propiedades Similares',
     propertyFeatures: 'Características de la Propiedad',
     neighborhood: 'Vecindario',
@@ -343,7 +357,9 @@ const esMX = {
     city: 'Ciudad',
     state: 'Estado',
     zipCode: 'Código Postal',
-    country: 'País'
+    country: 'País',
+    shareTitle: 'Compartir esta propiedad',
+    shareDescription: 'Comparte esta propiedad con amigos y familiares, o guárdala para futuras consultas. Puedes compartir a través de redes sociales, correo electrónico o copiando el enlace.'
   },
   subscription: {
     plan: 'Plan',
