@@ -229,16 +229,26 @@ export default function PropertyComparison({ propertyIds, onClose }: PropertyCom
                 {/* Property images carousel */}
                 <Carousel className="w-full">
                   <CarouselContent>
-                    {expandedProperty.images?.map((image, index) => (
-                      <CarouselItem key={index}>
+                    {expandedProperty.images && expandedProperty.images.length > 0 ? (
+                      expandedProperty.images.map((image, index) => (
+                        <CarouselItem key={index}>
+                          <div className="p-1">
+                            <div 
+                              className="aspect-video w-full rounded-md overflow-hidden bg-cover bg-center" 
+                              style={{ backgroundImage: `url(${image})` }}
+                            />
+                          </div>
+                        </CarouselItem>
+                      ))
+                    ) : (
+                      <CarouselItem>
                         <div className="p-1">
-                          <div 
-                            className="aspect-video w-full rounded-md overflow-hidden bg-cover bg-center" 
-                            style={{ backgroundImage: `url(${image})` }}
-                          />
+                          <div className="aspect-video w-full rounded-md overflow-hidden bg-primary-100 flex items-center justify-center">
+                            <Home className="h-16 w-16 text-primary-300" />
+                          </div>
                         </div>
                       </CarouselItem>
-                    ))}
+                    )}
                   </CarouselContent>
                   <CarouselPrevious />
                   <CarouselNext />
@@ -331,10 +341,16 @@ function PropertyCard({
   return (
     <Card className="overflow-hidden h-full flex flex-col">
       <div className="relative">
-        <div 
-          className="aspect-video bg-cover bg-center"
-          style={{ backgroundImage: `url(${property.images?.[0] || ''})` }}
-        />
+        {property.images && property.images.length > 0 ? (
+          <div 
+            className="aspect-video bg-cover bg-center"
+            style={{ backgroundImage: `url(${property.images[0]})` }}
+          />
+        ) : (
+          <div className="aspect-video bg-primary-100 flex items-center justify-center">
+            <Home className="h-12 w-12 text-primary-300" />
+          </div>
+        )}
         <div className="absolute top-2 right-2 flex space-x-1">
           <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full bg-white/80" onClick={onExpand}>
             <Maximize2 className="h-4 w-4" />
@@ -442,10 +458,16 @@ function TableView({
               {properties.map((property) => (
                 <TableCell key={`${property.id}-image`} className="text-center p-2">
                   <div className="relative mx-auto w-24 h-24 md:w-32 md:h-32">
-                    <div 
-                      className="w-full h-full rounded-md bg-cover bg-center border"
-                      style={{ backgroundImage: `url(${property.images?.[0] || ''})` }}
-                    />
+                    {property.images && property.images.length > 0 ? (
+                      <div 
+                        className="w-full h-full rounded-md bg-cover bg-center border"
+                        style={{ backgroundImage: `url(${property.images[0]})` }}
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-md border flex items-center justify-center bg-primary-100">
+                        <Home className="h-8 w-8 text-primary-300" />
+                      </div>
+                    )}
                   </div>
                 </TableCell>
               ))}

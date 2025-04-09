@@ -99,11 +99,20 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                   Premium
                 </Badge>
               )}
-              <img 
-                src={property.images[0]} 
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                alt={property.title}
-              />
+              {property.images && property.images.length > 0 ? (
+                <img 
+                  src={property.images[0]} 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                  alt={property.title}
+                />
+              ) : (
+                <div className="w-full h-full bg-primary-100 flex items-center justify-center">
+                  <svg className="h-12 w-12 text-primary-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 22V12h6v10" />
+                  </svg>
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
               <div className="absolute bottom-3 left-3 text-white">
                 <span className="font-bold text-xl">{formatPrice(property.price)}</span>
@@ -191,11 +200,20 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
         
         {/* Property image */}
         <div className="relative h-52 overflow-hidden">
-          <img 
-            src={property.images[0]} 
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-            alt={property.title} 
-          />
+          {property.images && property.images.length > 0 ? (
+            <img 
+              src={property.images[0]} 
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+              alt={property.title} 
+            />
+          ) : (
+            <div className="w-full h-full bg-primary-100 flex items-center justify-center">
+              <svg className="h-12 w-12 text-primary-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 22V12h6v10" />
+              </svg>
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute bottom-3 left-3 text-white">
             <span className="font-bold text-xl">{formatPrice(property.price)}</span>
