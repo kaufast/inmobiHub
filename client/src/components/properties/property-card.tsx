@@ -218,27 +218,36 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
           <div className="absolute bottom-3 left-3 text-white">
             <span className="font-bold text-xl">{formatPrice(property.price)}</span>
           </div>
-          <div className="absolute top-3 right-3 flex space-x-2">
-            <button 
-              className={`bg-white/20 hover:bg-white/40 h-8 w-8 rounded-full flex items-center justify-center backdrop-blur-sm text-white transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onClick={handleFavoriteToggle}
-              disabled={isLoading}
-            >
-              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : ''}`} />
-            </button>
-            <span onClick={(e) => e.stopPropagation()}>
-              <ComparePropertyButton 
-                propertyId={property.id} 
-                variant="ghost" 
-                size="icon" 
-                className="bg-white/20 hover:bg-white/40 h-8 w-8 rounded-full flex items-center justify-center backdrop-blur-sm text-white transition"
-              />
-            </span>
-          </div>
         </div>
         
         {/* Property details */}
         <div className="p-4">
+          {/* Action buttons now displayed below the image */}
+          <div className="flex justify-end space-x-2 mb-3">
+            <button 
+              className={`bg-gray-100 hover:bg-gray-200 h-8 w-8 rounded-full flex items-center justify-center text-gray-600 transition ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleFavoriteToggle(e);
+              }}
+              disabled={isLoading}
+            >
+              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : ''}`} />
+            </button>
+            <span onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}>
+              <ComparePropertyButton 
+                propertyId={property.id} 
+                variant="ghost" 
+                size="icon" 
+                className="bg-gray-100 hover:bg-gray-200 h-8 w-8 rounded-full flex items-center justify-center text-gray-600 transition"
+              />
+            </span>
+          </div>
+          
           <h3 className="font-semibold text-lg text-primary-800 mb-1">{property.title}</h3>
           <p className="text-primary-500 text-sm flex items-center">
             <MapPin className="h-4 w-4 mr-1" />
