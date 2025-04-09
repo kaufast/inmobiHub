@@ -120,7 +120,20 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
             </div>
             
             {/* Action buttons below the image visible only on small screens */}
-            <div className="sm:hidden flex justify-end p-2 border-b border-gray-100">
+            <div className="sm:hidden flex justify-between p-2 border-b border-gray-100">
+              <button 
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md ${isFavorite ? 'text-secondary-500 bg-secondary-50' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleFavoriteToggle(e);
+                }}
+                disabled={isLoading}
+              >
+                <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500' : ''}`} />
+                <span className="text-sm font-medium">{isFavorite ? 'Saved' : 'Save'}</span>
+              </button>
+              
               <div 
                 onClick={(e) => {
                   e.preventDefault();
@@ -181,6 +194,19 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                   <span className="text-xs text-primary-500">Listed by <span className="font-medium text-primary-700">Agent</span></span>
                 </div>
                 <div className="flex items-center gap-2">
+                  <button 
+                    className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md ${isFavorite ? 'text-secondary-500 bg-secondary-50' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleFavoriteToggle(e);
+                    }}
+                    disabled={isLoading}
+                  >
+                    <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500' : ''}`} />
+                    <span className="text-sm font-medium">{isFavorite ? 'Saved' : 'Save'}</span>
+                  </button>
+                  
                   <div 
                     onClick={(e) => {
                       e.preventDefault();
@@ -240,7 +266,20 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
         </div>
         
         {/* Action buttons below the image */}
-        <div className="flex justify-end p-2 border-b border-gray-100">
+        <div className="flex justify-between p-2 border-b border-gray-100">
+          <button 
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md ${isFavorite ? 'text-secondary-500 bg-secondary-50' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleFavoriteToggle(e);
+            }}
+            disabled={isLoading}
+          >
+            <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500' : ''}`} />
+            <span className="text-sm font-medium">{isFavorite ? 'Saved' : 'Save'}</span>
+          </button>
+          
           <div 
             onClick={(e) => {
               e.preventDefault();
