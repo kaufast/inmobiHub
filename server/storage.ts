@@ -4,7 +4,8 @@ import {
   favorites, type Favorite, type InsertFavorite,
   messages, type Message, type InsertMessage,
   searchHistory, type SearchProperties, neighborhoods, type Neighborhood,
-  propertyTours, type PropertyTour, type InsertPropertyTour, type UpdatePropertyTour
+  propertyTours, type PropertyTour, type InsertPropertyTour, type UpdatePropertyTour,
+  chatAnalytics, type ChatAnalytics, type InsertChatAnalytics
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, like, gte, lte, desc, sql } from "drizzle-orm";
@@ -61,6 +62,15 @@ export interface IStorage {
   updatePropertyTour(id: number, tour: UpdatePropertyTour): Promise<PropertyTour | undefined>;
   cancelPropertyTour(id: number): Promise<PropertyTour | undefined>;
   getAvailableTourTimeSlots(propertyId: number, date: Date): Promise<string[]>; // Returns available times
+  
+  // Chat Analytics
+  saveChatInteraction(analytics: InsertChatAnalytics): Promise<ChatAnalytics>;
+  getChatAnalytics(limit?: number, offset?: number): Promise<ChatAnalytics[]>;
+  getChatAnalyticsByUser(userId: number, limit?: number): Promise<ChatAnalytics[]>;
+  getChatAnalyticsByProperty(propertyId: number, limit?: number): Promise<ChatAnalytics[]>;
+  getTopChatQuestions(limit?: number): Promise<{message: string, count: number}[]>;
+  getChatCategories(): Promise<{category: string, count: number}[]>;
+  getChatSentimentBreakdown(): Promise<{sentiment: string, count: number}[]>;
   
   // Session store
   sessionStore: session.Store;
@@ -652,6 +662,148 @@ export class DatabaseStorage implements IStorage {
     const availableSlots = allTimeSlots.filter(time => !bookedTimes.includes(time));
     
     return availableSlots;
+  }
+
+  // Chat Analytics
+  async saveChatInteraction(analytics: InsertChatAnalytics): Promise<ChatAnalytics> {
+    try {
+      const [result] = await db.insert(chatAnalytics)
+        .values(analytics)
+        .returning();
+      return result;
+    } catch (error) {
+      console.error('Error saving chat interaction:', error);
+      throw error;
+    }
+  }
+
+  async getChatAnalytics(limit = 50, offset = 0): Promise<ChatAnalytics[]> {
+    try {
+      return db.select()
+        .from(chatAnalytics)
+        .orderBy(desc(chatAnalytics.timestamp))
+        .limit(limit)
+        .offset(offset);
+    } catch (error) {
+      console.error('Error getting chat analytics:', error);
+      return [];
+    }
+  }
+
+  async getChatAnalyticsByUser(userId: number, limit = 20): Promise<ChatAnalytics[]> {
+    try {
+      return db.select()
+        .from(chatAnalytics)
+        .where(eq(chatAnalytics.userId, userId))
+        .orderBy(desc(chatAnalytics.timestamp))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error getting user chat analytics:', error);
+      return [];
+    }
+  }
+
+  async getChatAnalyticsByProperty(propertyId: number, limit = 20): Promise<ChatAnalytics[]> {
+    try {
+      return db.select()
+        .from(chatAnalytics)
+        .where(eq(chatAnalytics.propertyId, propertyId))
+        .orderBy(desc(chatAnalytics.timestamp))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error getting property chat analytics:', error);
+      return [];
+    }
+  }
+
+  async getTopChatQuestions(limit = 10): Promise<{message: string, count: number}[]> {
+    try {
+      // Use SQL for aggregation
+      const results = await db.execute(sql`
+        SELECT message, COUNT(*) as count
+        FROM chat_analytics
+        GROUP BY message
+        ORDER BY count DESC
+        LIMIT ${limit}
+      `);
+      
+      // Process results based on return format
+      if (Array.isArray(results)) {
+        return results.map(row => ({
+          message: row.message as string,
+          count: Number(row.count)
+        }));
+      } else if (results && 'rows' in results) {
+        return results.rows.map(row => ({
+          message: row.message as string,
+          count: Number(row.count)
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error getting top chat questions:', error);
+      return [];
+    }
+  }
+
+  async getChatCategories(): Promise<{category: string, count: number}[]> {
+    try {
+      // Only get categories that are non-null
+      const results = await db.execute(sql`
+        SELECT category, COUNT(*) as count
+        FROM chat_analytics
+        WHERE category IS NOT NULL
+        GROUP BY category
+        ORDER BY count DESC
+      `);
+      
+      // Process results
+      if (Array.isArray(results)) {
+        return results.map(row => ({
+          category: row.category as string,
+          count: Number(row.count)
+        }));
+      } else if (results && 'rows' in results) {
+        return results.rows.map(row => ({
+          category: row.category as string,
+          count: Number(row.count)
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error getting chat categories:', error);
+      return [];
+    }
+  }
+
+  async getChatSentimentBreakdown(): Promise<{sentiment: string, count: number}[]> {
+    try {
+      // Only get sentiment that are non-null
+      const results = await db.execute(sql`
+        SELECT sentiment, COUNT(*) as count
+        FROM chat_analytics
+        WHERE sentiment IS NOT NULL
+        GROUP BY sentiment
+        ORDER BY count DESC
+      `);
+      
+      // Process results
+      if (Array.isArray(results)) {
+        return results.map(row => ({
+          sentiment: row.sentiment as string,
+          count: Number(row.count)
+        }));
+      } else if (results && 'rows' in results) {
+        return results.rows.map(row => ({
+          sentiment: row.sentiment as string,
+          count: Number(row.count)
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error('Error getting chat sentiment breakdown:', error);
+      return [];
+    }
   }
 }
 

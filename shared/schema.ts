@@ -345,4 +345,36 @@ export type InsertPropertyTour = z.infer<typeof insertPropertyTourSchema>;
 export type UpdatePropertyTour = z.infer<typeof updatePropertyTourSchema>;
 export type PropertyTour = typeof propertyTours.$inferSelect;
 
+// Chat Analytics
+export const chatAnalytics = pgTable("chat_analytics", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'set null' }),
+  message: text("message").notNull(),
+  response: text("response").notNull(),
+  propertyId: integer("property_id").references(() => properties.id, { onDelete: 'set null' }),
+  category: text("category"),
+  sentiment: text("sentiment"),
+  isPropertySpecific: boolean("is_property_specific").default(false),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+export const chatAnalyticsRelations = relations(chatAnalytics, ({ one }) => ({
+  user: one(users, {
+    fields: [chatAnalytics.userId],
+    references: [users.id],
+  }),
+  property: one(properties, {
+    fields: [chatAnalytics.propertyId],
+    references: [properties.id],
+  }),
+}));
+
+export const insertChatAnalyticsSchema = createInsertSchema(chatAnalytics).omit({
+  id: true,
+  timestamp: true,
+});
+
+export type InsertChatAnalytics = z.infer<typeof insertChatAnalyticsSchema>;
+export type ChatAnalytics = typeof chatAnalytics.$inferSelect;
+
 export type SearchProperties = z.infer<typeof searchPropertiesSchema>;

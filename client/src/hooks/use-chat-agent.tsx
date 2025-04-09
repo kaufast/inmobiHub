@@ -6,7 +6,7 @@ type Message = {
   content: string;
 };
 
-export function useChatAgent(propertyId?: number) {
+export function useChatAgent(propertyId?: number, category?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +26,8 @@ export function useChatAgent(propertyId?: number) {
       const response = await apiRequest('POST', '/api/chat', {
         message,
         chatHistory: messages,
-        propertyId
+        propertyId,
+        category
       });
 
       const data = await response.json();
@@ -40,7 +41,7 @@ export function useChatAgent(propertyId?: number) {
     } finally {
       setIsLoading(false);
     }
-  }, [messages, propertyId]);
+  }, [messages, propertyId, category]);
 
   const clearChat = useCallback(() => {
     setMessages([]);

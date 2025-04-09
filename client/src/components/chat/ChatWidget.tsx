@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageCircle, X, Send, Minimize2, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, Minimize2, Loader2, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface ChatWidgetProps {
   propertyId?: number;
@@ -16,10 +18,12 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
-  const { messages, isLoading, error, sendMessage } = useChatAgent(propertyId);
+  const { messages, isLoading, error, sendMessage } = useChatAgent(propertyId, category);
 
   // Show chat widget after delay
   useEffect(() => {
@@ -51,6 +55,18 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
       setInputValue('');
     }
   };
+  
+  // List of predefined categories for analytics
+  const categories = [
+    { value: "pricing", label: "Pricing Questions" },
+    { value: "features", label: "Property Features" },
+    { value: "neighborhood", label: "Neighborhood Info" },
+    { value: "financing", label: "Financing & Mortgages" },
+    { value: "process", label: "Buying/Selling Process" },
+    { value: "legal", label: "Legal Questions" },
+    { value: "scheduling", label: "Scheduling & Tours" },
+    { value: "other", label: "Other Questions" }
+  ];
 
   if (!isVisible) return null;
 
@@ -155,7 +171,44 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
             )}
           </CardContent>
           
-          <CardFooter className="p-3 pt-2 border-t">
+          <CardFooter className="p-3 pt-2 border-t flex-col">
+            <div className="flex w-full items-center gap-2 mb-2">
+              <Popover open={isCategoryOpen} onOpenChange={setIsCategoryOpen}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex gap-1 text-xs h-8 px-2 border-dashed"
+                  >
+                    <Tag size={14} />
+                    {category ? categories.find(c => c.value === category)?.label : "Select category"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-60 p-2">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium mb-2">Question category</p>
+                    {categories.map((cat) => (
+                      <Button
+                        key={cat.value}
+                        variant={category === cat.value ? "default" : "outline"}
+                        className="w-full justify-start text-left text-sm mb-1"
+                        onClick={() => {
+                          setCategory(cat.value);
+                          setIsCategoryOpen(false);
+                        }}
+                      >
+                        {cat.label}
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <span className="text-xs text-muted-foreground flex-1">
+                {category 
+                  ? "Category selected for analytics" 
+                  : "Select a question category to help us improve"}
+              </span>
+            </div>
             <form onSubmit={handleSubmit} className="flex w-full gap-2">
               <Input
                 ref={inputRef}

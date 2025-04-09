@@ -30,6 +30,20 @@ const hasPremiumAccess = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+// Middleware to check if user is an admin
+const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  const user = req.user as Express.User;
+  if (user.role !== 'admin') {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+  
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
@@ -37,7 +51,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ChatAI Agent endpoint
   app.post("/api/chat", async (req, res, next) => {
     try {
-      const { message, chatHistory, propertyId } = req.body;
+      const { message, chatHistory, propertyId, category } = req.body;
+      const userId = req.user?.id; // Get user ID if authenticated
       
       if (!message) {
         return res.status(400).json({ message: "Message is required" });
@@ -55,6 +70,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chatHistory || [], 
         propertyContext
       );
+      
+      // Save the chat interaction for analytics
+      try {
+        await storage.saveChatInteraction({
+          userId: userId || null,
+          message,
+          response,
+          propertyId: propertyId ? parseInt(propertyId) : null,
+          category: category || null,
+          isPropertySpecific: !!propertyId,
+          sentiment: null, // This could be populated by an AI sentiment analysis in the future
+        });
+      } catch (analyticsError) {
+        // We don't want analytics errors to break the main functionality
+        console.error("Error saving chat analytics:", analyticsError);
+      }
       
       res.json({ response });
     } catch (error) {
@@ -937,6 +968,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const personalizedDescription = await generatePersonalizedDescription(property, user);
       
       res.json({ personalizedDescription });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Chat Analytics endpoints (admin-only)
+  app.get("/api/admin/chat-analytics", isAdmin, async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      
+      const analytics = await storage.getChatAnalytics(limit, offset);
+      res.json(analytics);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/admin/chat-analytics/top-questions", isAdmin, async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      
+      const topQuestions = await storage.getTopChatQuestions(limit);
+      res.json(topQuestions);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/admin/chat-analytics/categories", isAdmin, async (req, res, next) => {
+    try {
+      const categories = await storage.getChatCategories();
+      res.json(categories);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/admin/chat-analytics/sentiment", isAdmin, async (req, res, next) => {
+    try {
+      const sentiment = await storage.getChatSentimentBreakdown();
+      res.json(sentiment);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/admin/chat-analytics/by-property/:propertyId", isAdmin, async (req, res, next) => {
+    try {
+      const propertyId = parseInt(req.params.propertyId);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      
+      const analytics = await storage.getChatAnalyticsByProperty(propertyId, limit);
+      res.json(analytics);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/admin/chat-analytics/by-user/:userId", isAdmin, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      
+      const analytics = await storage.getChatAnalyticsByUser(userId, limit);
+      res.json(analytics);
     } catch (error) {
       next(error);
     }
