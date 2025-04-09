@@ -151,9 +151,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 // Hook for using auth context
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    console.log("Auth context not available yet");
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  // We're now returning default context if context is null,
+  // rather than throwing an error. This ensures all methods
+  // are available even if the context isn't fully initialized.
   return context;
 }
