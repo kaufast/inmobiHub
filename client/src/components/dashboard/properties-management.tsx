@@ -64,9 +64,11 @@ import {
   Bed,
   Bath,
   Square,
+  Building,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import PropertyLocationPicker from "@/components/map/property-location-picker";
 
 // Create validaton schema based on insertPropertySchema
 const formSchema = z.object({
@@ -722,45 +724,23 @@ export default function PropertiesManagement() {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="latitude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Latitude</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="Latitude"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="longitude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Longitude</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="Longitude"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormItem className="col-span-2">
+                    <FormLabel>Property Location</FormLabel>
+                    <FormDescription>
+                      Click on the map to set the property location or use the search box to find an address
+                    </FormDescription>
+                    <div className="mt-2">
+                      <PropertyLocationPicker
+                        latitude={form.watch("latitude")}
+                        longitude={form.watch("longitude")}
+                        onLocationChange={(lat, lng) => {
+                          form.setValue("latitude", lat);
+                          form.setValue("longitude", lng);
+                        }}
+                        className="mt-2"
+                      />
+                    </div>
+                  </FormItem>
                   
                   <FormField
                     control={form.control}
@@ -1119,45 +1099,23 @@ export default function PropertiesManagement() {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={editForm.control}
-                      name="latitude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Latitude</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="Latitude"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={editForm.control}
-                      name="longitude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Longitude</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="Longitude"
-                              {...field}
-                              onChange={(e) => field.onChange(Number(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormItem className="col-span-2">
+                    <FormLabel>Property Location</FormLabel>
+                    <FormDescription>
+                      Click on the map to set the property location or use the search box to find an address
+                    </FormDescription>
+                    <div className="mt-2">
+                      <PropertyLocationPicker
+                        latitude={editForm.watch("latitude")}
+                        longitude={editForm.watch("longitude")}
+                        onLocationChange={(lat, lng) => {
+                          editForm.setValue("latitude", lat);
+                          editForm.setValue("longitude", lng);
+                        }}
+                        className="mt-2"
+                      />
+                    </div>
+                  </FormItem>
                   
                   <FormField
                     control={editForm.control}
