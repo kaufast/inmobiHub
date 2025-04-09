@@ -227,9 +227,9 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
   status: true,
 });
 
-export const insertFavoriteSchema = createInsertSchema(favorites).omit({
-  id: true,
-  createdAt: true,
+export const insertFavoriteSchema = z.object({
+  propertyId: z.number().int().positive(),
+  userId: z.number().int().positive().optional()
 });
 
 export const searchPropertiesSchema = z.object({

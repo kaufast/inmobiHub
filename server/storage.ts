@@ -468,7 +468,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   async addFavorite(favorite: InsertFavorite): Promise<Favorite> {
-    const [newFavorite] = await db.insert(favorites).values(favorite).returning();
+    const [newFavorite] = await db.insert(favorites).values([favorite]).returning();
     return newFavorite;
   }
   

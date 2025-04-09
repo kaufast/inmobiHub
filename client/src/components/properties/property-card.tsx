@@ -75,10 +75,11 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
       
       // Invalidate favorites query
       queryClient.invalidateQueries({ queryKey: ["/api/user/favorites"] });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Favorites error:", error);
       toast({
         title: "Error",
-        description: "Failed to update favorites",
+        description: error.message || "Failed to update favorites",
         variant: "destructive",
       });
     } finally {

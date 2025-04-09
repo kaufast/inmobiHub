@@ -212,11 +212,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(favorite);
     } catch (error) {
       if (error instanceof ZodError) {
+        console.error("Zod validation error:", error.errors);
         return res.status(400).json({
           message: "Invalid favorite data",
           errors: fromZodError(error).message,
+          details: error.errors
         });
       }
+      console.error("Error adding favorite:", error);
       next(error);
     }
   });
