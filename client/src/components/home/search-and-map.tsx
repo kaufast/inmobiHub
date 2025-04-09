@@ -307,30 +307,30 @@ export default function SearchAndMap() {
               
               {/* Map Markers */}
               <div className="absolute" style={{ top: '40%', left: '35%' }}>
-                <div className="glassmorphism-small text-white font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-white/40 cursor-pointer">
+                <div className="glassmorphism-small text-primary-800 font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-white/40 cursor-pointer">
                   $1.2M
                 </div>
               </div>
               <div className="absolute" style={{ top: '55%', left: '48%' }}>
-                <div className="glassmorphism-small text-white font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-white/40 cursor-pointer">
+                <div className="glassmorphism-small text-primary-800 font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-white/40 cursor-pointer">
                   $785K
                 </div>
               </div>
               <div className="absolute" style={{ top: '30%', left: '60%' }}>
-                <div className="glassmorphism-small text-white font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-white/40 cursor-pointer">
+                <div className="glassmorphism-small text-primary-800 font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-white/40 cursor-pointer">
                   $3.4M
                 </div>
               </div>
               
               {/* Map controls */}
               <div className="absolute top-4 right-4 glassmorphism-small rounded-lg shadow-md">
-                <button className="p-2 hover:bg-primary-50 transition">
+                <button className="p-2 hover:bg-primary-50 transition text-primary-800">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                 </button>
                 <div className="border-t border-primary-200"></div>
-                <button className="p-2 hover:bg-primary-50 transition">
+                <button className="p-2 hover:bg-primary-50 transition text-primary-800">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                   </svg>
