@@ -2,12 +2,13 @@ import { Link } from "wouter";
 import { Property } from "@shared/schema";
 import { formatPrice, truncateText } from "@/lib/utils";
 import { Heart, MapPin, Bed, Bath } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 import ComparePropertyButton from "@/components/properties/compare-property-button";
 
 interface PropertyCardProps {
@@ -20,6 +21,25 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
   const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch favorites data to check if this property is already favorited
+  const { data: favorites } = useQuery({
+    queryKey: ["/api/user/favorites"],
+    enabled: !!user, // Only run this query if user is logged in
+    queryFn: async () => {
+      const res = await fetch("/api/user/favorites");
+      if (!res.ok) return [];
+      return res.json();
+    }
+  });
+
+  // Check if this property is in favorites
+  useEffect(() => {
+    if (favorites && Array.isArray(favorites)) {
+      const isInFavorites = favorites.some((fav) => fav.id === Number(property.id));
+      setIsFavorite(isInFavorites);
+    }
+  }, [favorites, property.id]);
   
   const handleFavoriteToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -45,7 +65,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
           description: "Property removed from your favorites list",
         });
       } else {
-        await apiRequest("POST", "/api/user/favorites", { propertyId: property.id });
+        await apiRequest("POST", "/api/user/favorites", { propertyId: Number(property.id) });
         setIsFavorite(true);
         toast({
           title: "Added to favorites",
