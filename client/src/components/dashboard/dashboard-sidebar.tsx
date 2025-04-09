@@ -19,7 +19,7 @@ interface DashboardSidebarProps {
 }
 
 export default function DashboardSidebar({ activeTab, setActiveTab }: DashboardSidebarProps) {
-  const { user, logoutMutation } = useAuth();
+  const { user, logout } = useAuth();
 
   if (!user) {
     return null;
@@ -38,7 +38,12 @@ export default function DashboardSidebar({ activeTab, setActiveTab }: DashboardS
 
   const navigationItems = [
     {
-      name: "Properties",
+      name: "Browse Properties",
+      value: "browse",
+      icon: <Home className="h-5 w-5 mr-2" />,
+    },
+    {
+      name: "My Properties",
       value: "properties",
       icon: <Building className="h-5 w-5 mr-2" />,
     },
@@ -112,7 +117,7 @@ export default function DashboardSidebar({ activeTab, setActiveTab }: DashboardS
         <Button 
           variant="outline" 
           className="w-full flex items-center justify-center text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
-          onClick={() => logoutMutation.mutate()}
+          onClick={() => logout()}
         >
           <LogOut className="h-4 w-4 mr-2" />
           Log Out

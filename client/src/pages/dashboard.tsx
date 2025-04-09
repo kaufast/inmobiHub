@@ -2,16 +2,17 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import DashboardSidebar from "@/components/dashboard/dashboard-sidebar";
+import PropertyBrowser from "@/components/dashboard/property-browser";
 import PropertiesManagement from "@/components/dashboard/properties-management";
 import Messages from "@/components/dashboard/messages";
 import Favorites from "@/components/dashboard/favorites";
 import Profile from "@/components/dashboard/profile";
 import Subscription from "@/components/dashboard/subscription";
 
-type Tab = "properties" | "favorites" | "messages" | "profile" | "subscription";
+type Tab = "properties" | "favorites" | "messages" | "profile" | "subscription" | "browse";
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("properties");
+  const [activeTab, setActiveTab] = useState<Tab>("browse");
   const [propertyId, setPropertyId] = useState<number | undefined>(undefined);
   const { user } = useAuth();
   const [location] = useLocation();
@@ -22,7 +23,7 @@ export default function DashboardPage() {
     const tabParam = url.searchParams.get('tab') as Tab | null;
     const propertyParam = url.searchParams.get('property');
     
-    if (tabParam && ["properties", "favorites", "messages", "profile", "subscription"].includes(tabParam)) {
+    if (tabParam && ["properties", "favorites", "messages", "profile", "subscription", "browse"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
     
@@ -51,13 +52,32 @@ export default function DashboardPage() {
           
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-xl shadow-md overflow-hidden">
-              {activeTab === "properties" && <PropertiesManagement />}
-              {activeTab === "favorites" && <Favorites />}
-              {activeTab === "messages" && <Messages propertyId={propertyId} />}
-              {activeTab === "profile" && <Profile />}
-              {activeTab === "subscription" && <Subscription />}
-            </div>
+            {activeTab === "browse" && <PropertyBrowser />}
+            {activeTab === "properties" && (
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <PropertiesManagement />
+              </div>
+            )}
+            {activeTab === "favorites" && (
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <Favorites />
+              </div>
+            )}
+            {activeTab === "messages" && (
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <Messages propertyId={propertyId} />
+              </div>
+            )}
+            {activeTab === "profile" && (
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <Profile />
+              </div>
+            )}
+            {activeTab === "subscription" && (
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <Subscription />
+              </div>
+            )}
           </div>
         </div>
       </div>
