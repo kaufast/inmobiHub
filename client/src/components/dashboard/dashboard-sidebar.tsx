@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Link } from "wouter";
 import { 
   Home, 
   Heart, 
@@ -10,7 +12,9 @@ import {
   User, 
   Package, 
   LogOut,
-  Building
+  Building,
+  Upload,
+  Crown
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -68,6 +72,16 @@ export default function DashboardSidebar({ activeTab, setActiveTab }: DashboardS
       icon: <Package className="h-5 w-5 mr-2" />,
     },
   ];
+  
+  // Define premium features available to premium users only
+  const premiumFeatures = [
+    {
+      name: "Bulk Upload",
+      path: "/bulk-upload",
+      icon: <Upload className="h-5 w-5 mr-2" />,
+      premium: true
+    }
+  ];
 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -110,6 +124,29 @@ export default function DashboardSidebar({ activeTab, setActiveTab }: DashboardS
             </li>
           ))}
         </ul>
+        
+        {/* Premium Features Section */}
+        {(user.subscriptionTier === 'premium' || user.subscriptionTier === 'enterprise') && (
+          <>
+            <Separator className="my-2 mx-6" />
+            <div className="px-6 pt-2 pb-1">
+              <div className="flex items-center text-xs text-primary-500">
+                <Crown className="h-4 w-4 mr-1 text-amber-500" />
+                <span>Premium Features</span>
+              </div>
+            </div>
+            <ul>
+              {premiumFeatures.map((feature) => (
+                <li key={feature.path}>
+                  <Link href={feature.path} className="flex items-center w-full px-6 py-3 text-sm transition-colors text-primary-600 hover:bg-primary-50 hover:text-primary-900">
+                    {feature.icon}
+                    {feature.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </nav>
       
       {/* Logout */}

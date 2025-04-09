@@ -469,6 +469,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Bulk upload properties endpoint (premium feature)
+  app.post("/api/properties/bulk-upload", isAuthenticated, hasPremiumAccess, async (req, res, next) => {
+    try {
+      const { properties } = req.body;
+      
+      if (!Array.isArray(properties) || properties.length === 0) {
+        return res.status(400).json({ 
+          message: "Invalid request format. Expected an array of properties."
+        });
+      }
+      
+      if (properties.length > 100) {
+        return res.status(400).json({ 
+          message: "Maximum of 100 properties can be uploaded at once."
+        });
+      }
+      
+      // Process each property and validate
+      const results = {
+        successful: 0,
+        failed: 0,
+        errors: [],
+        created: []
+      };
+      
+      for (const propertyData of properties) {
+        try {
+          // Add owner ID to each property
+          const propertyWithOwner = {
+            ...propertyData,
+            ownerId: req.user!.id
+          };
+          
+          // Validate with schema
+          const validatedData = insertPropertySchema.parse(propertyWithOwner);
+          
+          // Create property in database
+          const createdProperty = await storage.createProperty(validatedData);
+          results.successful++;
+          results.created.push({ id: createdProperty.id, title: createdProperty.title });
+        } catch (error) {
+          results.failed++;
+          if (error instanceof ZodError) {
+            results.errors.push({
+              property: propertyData.title || 'Unknown property',
+              error: fromZodError(error).message
+            });
+          } else {
+            results.errors.push({
+              property: propertyData.title || 'Unknown property',
+              error: error instanceof Error ? error.message : 'Unknown error'
+            });
+          }
+        }
+      }
+      
+      res.status(201).json(results);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // AI-Powered Recommendation Routes
   app.get("/api/properties/recommended", isAuthenticated, async (req, res, next) => {
     try {

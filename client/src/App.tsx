@@ -9,6 +9,7 @@ import SearchResultsPage from "@/pages/search-results";
 import DashboardPage from "@/pages/dashboard";
 import NotificationsDemo from "@/pages/notifications-demo";
 import PropertyComparisonPage from "@/pages/property-comparison";
+import BulkUploadPage from "@/pages/bulk-upload";
 import { ProtectedRoute } from "./lib/protected-route";
 import Navbar from "./components/layout/navbar";
 import Footer from "./components/layout/footer";
@@ -39,6 +40,7 @@ function AppContent() {
           <Route path="/search" component={SearchResultsPage} />
           <Route path="/notifications-demo" component={NotificationsDemo} />
           <ProtectedRoute path="/dashboard" component={DashboardPage} />
+          <ProtectedRoute path="/bulk-upload" component={BulkUploadPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

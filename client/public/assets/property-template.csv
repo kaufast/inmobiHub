@@ -1,0 +1,4 @@
+title,description,price,address,city,state,zipCode,country,latitude,longitude,bedrooms,bathrooms,squareFeet,lotSize,yearBuilt,propertyType,isPremium,isActive,images
+Modern Downtown Condo,Beautiful 2-bedroom condo in the heart of downtown with city views,450000,123 Main St,Seattle,WA,98101,USA,47.6062,-122.3321,2,2,1200,0,2018,condo,false,true,https://example.com/image1.jpg|https://example.com/image2.jpg
+Spacious Family Home,Lovely 4-bedroom family home with large backyard and renovated kitchen,750000,456 Oak Ave,Bellevue,WA,98004,USA,47.6101,-122.2015,4,3,2800,8000,2005,house,false,true,https://example.com/image3.jpg|https://example.com/image4.jpg
+Luxury Waterfront Property,Stunning 5-bedroom luxury home with private dock and panoramic water views,2500000,789 Lake Dr,Kirkland,WA,98033,USA,47.6769,-122.2060,5,4.5,4500,12000,2019,house,true,true,https://example.com/image5.jpg|https://example.com/image6.jpg
