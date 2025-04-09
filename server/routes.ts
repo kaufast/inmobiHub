@@ -1,0 +1,311 @@
+import type { Express, Request, Response, NextFunction } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { setupAuth } from "./auth";
+import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema } from "@shared/schema";
+import { ZodError } from "zod";
+import { fromZodError } from "zod-validation-error";
+
+// Middleware to check if user is authenticated
+const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ message: "Unauthorized" });
+};
+
+// Middleware to check if user has premium access
+const hasPremiumAccess = (req: Request, res: Response, next: NextFunction) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  const user = req.user as Express.User;
+  if (user.subscriptionTier === 'free') {
+    return res.status(403).json({ message: "Premium subscription required" });
+  }
+  
+  next();
+};
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication routes
+  setupAuth(app);
+  
+  // Property routes
+  app.get("/api/properties", async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      
+      const properties = await storage.getProperties(limit, offset);
+      res.json(properties);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/properties/featured", async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 3;
+      const featuredProperties = await storage.getFeaturedProperties(limit);
+      res.json(featuredProperties);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/properties/:id", async (req, res, next) => {
+    try {
+      const property = await storage.getProperty(parseInt(req.params.id));
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      res.json(property);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/properties/search", async (req, res, next) => {
+    try {
+      const searchParams = searchPropertiesSchema.parse(req.body);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+      
+      const properties = await storage.searchProperties(searchParams, limit, offset);
+      res.json(properties);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid search parameters",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  app.post("/api/properties", isAuthenticated, async (req, res, next) => {
+    try {
+      const propertyData = insertPropertySchema.parse({
+        ...req.body,
+        ownerId: req.user!.id,
+      });
+      
+      const property = await storage.createProperty(propertyData);
+      res.status(201).json(property);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid property data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  app.put("/api/properties/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const propertyId = parseInt(req.params.id);
+      const property = await storage.getProperty(propertyId);
+      
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      
+      // Check ownership
+      if (property.ownerId !== req.user!.id && req.user!.role !== 'admin') {
+        return res.status(403).json({ message: "Not authorized to update this property" });
+      }
+      
+      const updatedProperty = await storage.updateProperty(propertyId, req.body);
+      res.json(updatedProperty);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.delete("/api/properties/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const propertyId = parseInt(req.params.id);
+      const property = await storage.getProperty(propertyId);
+      
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      
+      // Check ownership
+      if (property.ownerId !== req.user!.id && req.user!.role !== 'admin') {
+        return res.status(403).json({ message: "Not authorized to delete this property" });
+      }
+      
+      await storage.deleteProperty(propertyId);
+      res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // User properties
+  app.get("/api/user/properties", isAuthenticated, async (req, res, next) => {
+    try {
+      const properties = await storage.getPropertiesByUser(req.user!.id);
+      res.json(properties);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Favorites
+  app.get("/api/user/favorites", isAuthenticated, async (req, res, next) => {
+    try {
+      const favorites = await storage.getFavoritesByUser(req.user!.id);
+      res.json(favorites);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/user/favorites", isAuthenticated, async (req, res, next) => {
+    try {
+      const { propertyId } = insertFavoriteSchema.parse(req.body);
+      
+      // Check if already favorited
+      const existingFavorite = await storage.getFavorite(req.user!.id, propertyId);
+      if (existingFavorite) {
+        return res.status(409).json({ message: "Property already in favorites" });
+      }
+      
+      const favorite = await storage.addFavorite({
+        userId: req.user!.id,
+        propertyId,
+      });
+      
+      res.status(201).json(favorite);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid favorite data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  app.delete("/api/user/favorites/:propertyId", isAuthenticated, async (req, res, next) => {
+    try {
+      const propertyId = parseInt(req.params.propertyId);
+      
+      // Check if in favorites
+      const existingFavorite = await storage.getFavorite(req.user!.id, propertyId);
+      if (!existingFavorite) {
+        return res.status(404).json({ message: "Property not found in favorites" });
+      }
+      
+      await storage.removeFavorite(req.user!.id, propertyId);
+      res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Messages
+  app.get("/api/user/messages", isAuthenticated, async (req, res, next) => {
+    try {
+      const role = req.query.role === 'sent' ? 'sender' : 'recipient';
+      const messages = await storage.getMessagesByUser(req.user!.id, role);
+      res.json(messages);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/messages", isAuthenticated, async (req, res, next) => {
+    try {
+      const messageData = insertMessageSchema.parse({
+        ...req.body,
+        senderId: req.user!.id,
+      });
+      
+      const message = await storage.createMessage(messageData);
+      res.status(201).json(message);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid message data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  app.patch("/api/messages/:id/status", isAuthenticated, async (req, res, next) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!['read', 'replied', 'archived'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const message = await storage.getMessage(messageId);
+      if (!message) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+      
+      // Only recipient can update status
+      if (message.recipientId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized to update this message" });
+      }
+      
+      const updatedMessage = await storage.updateMessageStatus(messageId, status as 'read' | 'replied' | 'archived');
+      res.json(updatedMessage);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Premium data endpoints
+  app.get("/api/neighborhoods", async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      const neighborhoods = await storage.getNeighborhoods(limit);
+      res.json(neighborhoods);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Subscription routes
+  app.get("/api/subscription", isAuthenticated, async (req, res) => {
+    const user = req.user!;
+    res.json({ tier: user.subscriptionTier });
+  });
+  
+  app.post("/api/subscription", isAuthenticated, async (req, res, next) => {
+    try {
+      const { plan } = req.body;
+      
+      if (!['premium', 'enterprise'].includes(plan)) {
+        return res.status(400).json({ message: "Invalid subscription plan" });
+      }
+      
+      // In a real application, you would process payment here
+      // For now, just update the user's subscription tier
+      const updatedUser = await storage.updateUser(req.user!.id, {
+        subscriptionTier: plan
+      });
+      
+      res.json({ tier: updatedUser?.subscriptionTier });
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  const httpServer = createServer(app);
+  return httpServer;
+}

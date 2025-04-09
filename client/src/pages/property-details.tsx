@@ -1,0 +1,288 @@
+import { useQuery } from "@tanstack/react-query";
+import { Property } from "@shared/schema";
+import { useParams, Link } from "wouter";
+import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
+import { useState, useEffect } from "react";
+import PropertyGallery from "@/components/properties/property-gallery";
+import PropertyMap from "@/components/properties/property-map";
+import { formatPrice } from "@/lib/utils";
+
+export default function PropertyDetailsPage() {
+  const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // Set document title
+  useEffect(() => {
+    document.title = "Property Details - Foundation";
+  }, []);
+
+  const { isLoading, error, data: property } = useQuery<Property>({
+    queryKey: [`/api/properties/${id}`],
+  });
+
+  const { data: favorites } = useQuery<Property[]>({
+    queryKey: ["/api/user/favorites"],
+    enabled: !!user,
+  });
+
+  // Check if property is in favorites
+  useEffect(() => {
+    if (favorites && property) {
+      const isFav = favorites.some(fav => fav.id === property.id);
+      setIsFavorite(isFav);
+    }
+  }, [favorites, property]);
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to save properties to your favorites",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        await apiRequest("DELETE", `/api/user/favorites/${property?.id}`);
+        setIsFavorite(false);
+        toast({
+          title: "Removed from favorites",
+          description: "Property removed from your favorites",
+        });
+      } else {
+        await apiRequest("POST", "/api/user/favorites", { propertyId: property?.id });
+        setIsFavorite(true);
+        toast({
+          title: "Added to favorites",
+          description: "Property added to your favorites",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update favorites",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
+      </div>
+    );
+  }
+
+  if (error || !property) {
+    return (
+      <div className="min-h-screen bg-primary-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="bg-white p-8 rounded-xl shadow-md text-center">
+            <h1 className="text-2xl font-bold text-primary-800 mb-4">Property Not Found</h1>
+            <p className="text-primary-600 mb-6">
+              The property you're looking for doesn't exist or has been removed.
+            </p>
+            <Link href="/">
+              <Button>
+                <Home className="mr-2 h-4 w-4" /> Return to Home
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-primary-50 py-8">
+      <div className="container mx-auto px-4">
+        {/* Breadcrumbs */}
+        <div className="flex items-center mb-6 text-sm">
+          <Link href="/">
+            <a className="text-primary-600 hover:text-primary-800 transition">Home</a>
+          </Link>
+          <span className="mx-2 text-primary-400">/</span>
+          <Link href="/search">
+            <a className="text-primary-600 hover:text-primary-800 transition">Properties</a>
+          </Link>
+          <span className="mx-2 text-primary-400">/</span>
+          <span className="text-primary-800 font-medium">{property.title}</span>
+        </div>
+
+        {/* Back button and actions */}
+        <div className="flex flex-wrap justify-between items-center mb-6">
+          <Link href="/search">
+            <Button variant="outline" className="mb-2 sm:mb-0">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Search
+            </Button>
+          </Link>
+          
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={toggleFavorite}>
+              <Heart className={`mr-2 h-4 w-4 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : ''}`} />
+              {isFavorite ? 'Saved' : 'Save'}
+            </Button>
+            <Button variant="outline">
+              <Share className="mr-2 h-4 w-4" /> Share
+            </Button>
+            <Button variant="outline">
+              <Printer className="mr-2 h-4 w-4" /> Print
+            </Button>
+          </div>
+        </div>
+
+        {/* Property Overview */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+          {/* Property Gallery */}
+          <PropertyGallery images={property.images} />
+          
+          <div className="p-6">
+            {/* Property header */}
+            <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6">
+              <div>
+                {property.isPremium && (
+                  <span className="inline-block bg-secondary-500 text-white text-xs font-medium px-2.5 py-1 rounded-full mb-2">
+                    Premium
+                  </span>
+                )}
+                <h1 className="text-2xl md:text-3xl font-bold text-primary-800 mb-2">
+                  {property.title}
+                </h1>
+                <div className="flex items-center text-primary-600 mb-2">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  <span>
+                    {property.address}, {property.city}, {property.state} {property.zipCode}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="mt-4 md:mt-0 text-right">
+                <div className="text-3xl font-bold text-primary-800">
+                  {formatPrice(property.price)}
+                </div>
+                {property.isPremium && (
+                  <div className="text-secondary-500 font-medium text-sm flex items-center justify-end mt-1">
+                    Premium listing
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Property features */}
+            <div className="grid grid-cols-3 gap-4 mb-6 py-4 border-y border-primary-100">
+              <div className="text-center">
+                <div className="flex justify-center">
+                  <Bed className="h-5 w-5 text-primary-600" />
+                </div>
+                <div className="mt-1">
+                  <span className="font-bold text-primary-800">{property.bedrooms}</span>
+                  <span className="text-primary-600 text-sm ml-1">Beds</span>
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex justify-center">
+                  <Bath className="h-5 w-5 text-primary-600" />
+                </div>
+                <div className="mt-1">
+                  <span className="font-bold text-primary-800">{property.bathrooms}</span>
+                  <span className="text-primary-600 text-sm ml-1">Baths</span>
+                </div>
+              </div>
+              
+              <div className="text-center">
+                <div className="flex justify-center">
+                  <svg
+                    className="h-5 w-5 text-primary-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
+                    />
+                  </svg>
+                </div>
+                <div className="mt-1">
+                  <span className="font-bold text-primary-800">{property.squareFeet.toLocaleString()}</span>
+                  <span className="text-primary-600 text-sm ml-1">Sq Ft</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Description */}
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-primary-800 mb-3">About This Property</h2>
+              <p className="text-primary-600">{property.description}</p>
+            </div>
+            
+            {/* Property features list */}
+            {property.features && property.features.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xl font-bold text-primary-800 mb-3">Features</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {property.features.map((feature, index) => (
+                    <div key={index} className="flex items-center">
+                      <svg
+                        className="h-4 w-4 text-secondary-500 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      <span className="text-primary-700">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Contact section */}
+            <div className="bg-primary-50 p-6 rounded-xl">
+              <h2 className="text-xl font-bold text-primary-800 mb-4">Interested in this property?</h2>
+              <div className="flex flex-col md:flex-row gap-4">
+                <Button className="flex-1 bg-secondary-600 hover:bg-secondary-700">Schedule a Viewing</Button>
+                <Button variant="outline" className="flex-1">Contact Agent</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Property Location */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-primary-800 mb-4">Location</h2>
+            <div className="h-[400px] rounded-lg overflow-hidden">
+              <PropertyMap
+                lat={property.latitude}
+                lng={property.longitude}
+                address={`${property.address}, ${property.city}, ${property.state}`}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
