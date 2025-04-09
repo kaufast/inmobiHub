@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Property, Neighborhood } from "@shared/schema";
 import { useParams, Link } from "wouter";
-import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle, Sparkles, BarChart2 } from "lucide-react";
+import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle, Sparkles, BarChart2, TrendingUp } from "lucide-react";
 import PersonalizedDescription from "@/components/properties/personalized-description";
+import PropertyValuePredictor from "@/components/property/PropertyValuePredictor";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -396,6 +397,15 @@ export default function PropertyDetailsPage() {
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* AI Property Value Predictor */}
+        <div className="mb-8">
+          <div className="flex items-center mb-4">
+            <TrendingUp className="h-5 w-5 text-secondary-500 mr-2" />
+            <h2 className="text-xl font-bold text-primary-800">Property Value Trends</h2>
+          </div>
+          <PropertyValuePredictor propertyId={property.id} />
         </div>
         
         {/* Property Location and Neighborhood */}

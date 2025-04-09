@@ -417,6 +417,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Property value predictions
+  app.get("/api/properties/:id/value-prediction", hasPremiumAccess, async (req, res, next) => {
+    try {
+      const propertyId = parseInt(req.params.id);
+      const years = req.query.years ? parseInt(req.query.years as string) : 5;
+      
+      if (years < 1 || years > 10) {
+        return res.status(400).json({ message: "Years parameter must be between 1 and 10" });
+      }
+      
+      const property = await storage.getProperty(propertyId);
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      
+      // Get city trends data
+      const cityTrends = [];
+      const currentYear = new Date().getFullYear();
+      
+      // Generate sample market data
+      // In a production app, this would come from a real market data source
+      for (let i = 5; i >= 0; i--) {
+        const yearGrowth = 0.04 + (Math.random() * 0.02 - 0.01); // 3-5% growth
+        cityTrends.push({
+          year: currentYear - i,
+          growth: yearGrowth
+        });
+      }
+      
+      // Get property's neighborhood data
+      let neighborhoodScores;
+      if (property.neighborhoodId) {
+        const neighborhood = await storage.getNeighborhood(property.neighborhoodId);
+        if (neighborhood) {
+          neighborhoodScores = {
+            safety: neighborhood.safetyScore,
+            schools: neighborhood.schoolScore,
+            amenities: neighborhood.amenitiesScore,
+            transport: neighborhood.transportScore
+          };
+        }
+      }
+      
+      // Fetch some comparable properties
+      const comparableProperties = await storage.searchProperties({
+        propertyType: property.propertyType,
+        minBeds: property.bedrooms > 0 ? property.bedrooms - 1 : 0,
+        maxBeds: property.bedrooms + 1,
+        minBaths: property.bathrooms > 0 ? Math.floor(property.bathrooms) : 0,
+        maxBaths: Math.ceil(property.bathrooms + 1),
+        minPrice: property.price * 0.7,
+        maxPrice: property.price * 1.3,
+        location: property.city
+      }, 5);
+      
+      // Remove the current property from comparables if it's in there
+      const filteredComps = comparableProperties.filter(p => p.id !== propertyId);
+      
+      const simplifiedComps = filteredComps.map(p => ({
+        price: p.price,
+        squareFeet: p.squareFeet,
+        bedrooms: p.bedrooms,
+        bathrooms: p.bathrooms,
+        yearBuilt: p.yearBuilt
+      }));
+      
+      // Economic indicators - in a real app, these would come from an economic data API
+      const economicIndicators = {
+        interestRate: 4.5 + (Math.random() * 0.5 - 0.25), // 4.25-4.75%
+        unemploymentRate: 3.5 + (Math.random() * 1), // 3.5-4.5%
+        gdpGrowth: 2.0 + (Math.random() * 1) // 2-3%
+      };
+      
+      // Construct market data for the prediction
+      const marketData = {
+        cityTrends,
+        neighborhoodScores,
+        comparableProperties: simplifiedComps,
+        economicIndicators
+      };
+      
+      // Import dynamically to avoid circular dependencies
+      const { predictPropertyValueTrends } = await import('./openai');
+      
+      // Get the prediction
+      const prediction = await predictPropertyValueTrends(property, marketData, years);
+      
+      res.json(prediction);
+    } catch (error) {
+      console.error("Error predicting property values:", error);
+      next(error);
+    }
+  });
+  
   // Premium data endpoints
   app.get("/api/neighborhoods", async (req, res, next) => {
     try {
