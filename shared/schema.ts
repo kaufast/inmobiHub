@@ -241,6 +241,11 @@ export const searchPropertiesSchema = z.object({
   baths: z.number().optional(),
   minSqft: z.number().optional(),
   maxSqft: z.number().optional(),
+  minLotSize: z.number().optional(),
+  maxLotSize: z.number().optional(),
+  yearBuiltMin: z.number().optional(),
+  yearBuiltMax: z.number().optional(),
+  listingType: z.enum(['buy', 'sell', 'rent']).optional(),
   features: z.array(z.string()).optional(),
   // Spatial search parameters
   latitude: z.number().optional(),

@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MapPin, Search, Sliders } from "lucide-react";
+import { MapPin, Search, Sliders, Home } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useTranslation } from "react-i18next";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
 
 export default function SearchAndMap() {
   const [, setLocation] = useLocation();
@@ -22,6 +24,11 @@ export default function SearchAndMap() {
     baths: undefined,
     minSqft: undefined,
     maxSqft: undefined,
+    minLotSize: undefined,
+    maxLotSize: undefined,
+    yearBuiltMin: undefined,
+    yearBuiltMax: undefined,
+    listingType: "buy", // Default to buy
     features: [],
   });
 
@@ -61,6 +68,16 @@ export default function SearchAndMap() {
     if (searchParams.baths) params.set("baths", String(searchParams.baths));
     if (searchParams.minSqft) params.set("minSqft", String(searchParams.minSqft));
     if (searchParams.maxSqft) params.set("maxSqft", String(searchParams.maxSqft));
+    if (searchParams.minLotSize) params.set("minLotSize", String(searchParams.minLotSize));
+    if (searchParams.maxLotSize) params.set("maxLotSize", String(searchParams.maxLotSize));
+    if (searchParams.yearBuiltMin) params.set("yearBuiltMin", String(searchParams.yearBuiltMin));
+    if (searchParams.yearBuiltMax) params.set("yearBuiltMax", String(searchParams.yearBuiltMax));
+    if (searchParams.listingType) params.set("listingType", searchParams.listingType);
+    
+    // Handle features array
+    if (searchParams.features && searchParams.features.length > 0) {
+      params.set("features", searchParams.features.join(','));
+    }
     
     // Update URL and trigger new search
     setLocation(`/search?${params.toString()}`);
@@ -76,6 +93,19 @@ export default function SearchAndMap() {
           <div className="lg:w-1/3">
             <div className="glassmorphism-card p-6">
               <h3 className="text-xl font-semibold text-primary-800 mb-4">{t('common.searchProperties')}</h3>
+              
+              {/* Buy/Sell/Rent Tabs */}
+              <Tabs 
+                defaultValue={searchParams.listingType || "buy"} 
+                className="mb-4"
+                onValueChange={(value) => handleInputChange('listingType', value)}
+              >
+                <TabsList className="grid grid-cols-3 w-full">
+                  <TabsTrigger value="buy" className="text-sm">Buy</TabsTrigger>
+                  <TabsTrigger value="rent" className="text-sm">Rent</TabsTrigger>
+                  <TabsTrigger value="sell" className="text-sm">Sell</TabsTrigger>
+                </TabsList>
+              </Tabs>
               
               {/* Search Form */}
               <div className="space-y-4">
@@ -230,6 +260,48 @@ export default function SearchAndMap() {
                             type="number"
                             value={searchParams.maxSqft || ''}
                             onChange={(e) => handleInputChange('maxSqft', e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Lot size */}
+                      <div>
+                        <label htmlFor="lot_size" className="block text-sm font-medium text-primary-700 mb-1">Lot Size (m²)</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Input 
+                            id="min_lot_size" 
+                            placeholder={t('common.min')} 
+                            type="number"
+                            value={searchParams.minLotSize || ''}
+                            onChange={(e) => handleInputChange('minLotSize', e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                          <Input 
+                            id="max_lot_size" 
+                            placeholder={t('common.max')} 
+                            type="number"
+                            value={searchParams.maxLotSize || ''}
+                            onChange={(e) => handleInputChange('maxLotSize', e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                        </div>
+                      </div>
+                      
+                      {/* Year built */}
+                      <div>
+                        <label htmlFor="year_built" className="block text-sm font-medium text-primary-700 mb-1">Year Built</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Input 
+                            id="year_built_min" 
+                            placeholder="From" 
+                            type="number"
+                            value={searchParams.yearBuiltMin || ''}
+                            onChange={(e) => handleInputChange('yearBuiltMin', e.target.value ? Number(e.target.value) : undefined)}
+                          />
+                          <Input 
+                            id="year_built_max" 
+                            placeholder="To" 
+                            type="number"
+                            value={searchParams.yearBuiltMax || ''}
+                            onChange={(e) => handleInputChange('yearBuiltMax', e.target.value ? Number(e.target.value) : undefined)}
                           />
                         </div>
                       </div>
