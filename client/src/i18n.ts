@@ -66,11 +66,13 @@ const enGB = {
     squareFootage: 'Square Footage',
     min: 'Min',
     max: 'Max',
-    features: 'Features',
-    'features.pool': 'Pool',
-    'features.garage': 'Garage',
-    'features.waterfront': 'Waterfront',
-    'features.fireplace': 'Fireplace',
+    features: {
+      title: 'Features',
+      pool: 'Pool',
+      garage: 'Garage',
+      waterfront: 'Waterfront',
+      fireplace: 'Fireplace'
+    },
     saveThisSearch: 'Save this search',
     propertiesFound: '{{count}} properties found',
     view: 'View'
@@ -263,11 +265,13 @@ const esMX = {
     squareFootage: 'Metros Cuadrados',
     min: 'Mínimo',
     max: 'Máximo',
-    features: 'Características',
-    'features.pool': 'Piscina',
-    'features.garage': 'Garaje',
-    'features.waterfront': 'Frente al Agua',
-    'features.fireplace': 'Chimenea',
+    features: {
+      title: 'Características',
+      pool: 'Piscina',
+      garage: 'Garaje',
+      waterfront: 'Frente al Agua',
+      fireplace: 'Chimenea'
+    },
     saveThisSearch: 'Guardar Esta Búsqueda',
     propertiesFound: '{{count}} propiedades encontradas',
     view: 'Ver'
@@ -414,6 +418,7 @@ i18n
     interpolation: {
       escapeValue: false, // React escapes by default
     },
+    returnObjects: true,
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],

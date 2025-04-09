@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .glassmorphism {
+    @apply bg-white/20 backdrop-blur-md border border-white/30 shadow-lg;
+  }
+  
+  .glassmorphism-dark {
+    @apply bg-primary/50 backdrop-blur-md border border-white/10 shadow-lg;
+  }
+  
+  .glassmorphism-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-md rounded-xl;
+  }
+  
+  .glassmorphism-small {
+    @apply bg-white/60 backdrop-blur-sm border border-white/30 shadow-sm;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

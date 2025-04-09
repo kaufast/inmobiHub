@@ -39,7 +39,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="bg-primary-800/90 text-white sticky top-0 z-50 backdrop-blur-sm">
+    <header className="glassmorphism-dark sticky top-0 z-50 text-white">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/">
           <a className="flex items-center gap-2">
@@ -68,18 +68,18 @@ export default function Navbar() {
                 {t('common.services')} <ChevronDown className="ml-1 h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuItem>
+            <DropdownMenuContent className="w-56 glassmorphism-card">
+              <DropdownMenuItem className="hover:bg-white/10">
                 <Link href="/services/buying">
                   <a className="flex w-full">{t('common.buying')}</a>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="hover:bg-white/10">
                 <Link href="/services/selling">
                   <a className="flex w-full">{t('common.selling')}</a>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem className="hover:bg-white/10">
                 <Link href="/services/investing">
                   <a className="flex w-full">{t('common.investing')}</a>
                 </Link>
@@ -111,7 +111,7 @@ export default function Navbar() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-56 glassmorphism-card" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user.fullName}</p>
@@ -120,15 +120,15 @@ export default function Navbar() {
                     </p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="bg-white/10" />
                 <Link href="/dashboard">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-white/10">
                     <User className="mr-2 h-4 w-4" />
                     <span>{t('common.dashboard')}</span>
                   </DropdownMenuItem>
                 </Link>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem onClick={handleLogout} className="hover:bg-white/10">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>{t('common.logout')}</span>
                 </DropdownMenuItem>
@@ -157,7 +157,7 @@ export default function Navbar() {
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="bg-primary-800 text-white p-0">
+            <SheetContent side="right" className="glassmorphism-dark text-white p-0">
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between p-4 border-b border-white/10">
                   <Link href="/">

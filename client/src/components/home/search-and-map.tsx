@@ -74,7 +74,7 @@ export default function SearchAndMap() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Search Panel */}
           <div className="lg:w-1/3">
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="glassmorphism-card p-6">
               <h3 className="text-xl font-semibold text-primary-800 mb-4">{t('common.searchProperties')}</h3>
               
               {/* Search Form */}
@@ -236,7 +236,7 @@ export default function SearchAndMap() {
                       
                       {/* Features checklist */}
                       <div>
-                        <label className="block text-sm font-medium text-primary-700 mb-2">{t('common.features')}</label>
+                        <label className="block text-sm font-medium text-primary-700 mb-2">{t('common.features.title')}</label>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="flex items-center space-x-2">
                             <Checkbox 
@@ -299,7 +299,7 @@ export default function SearchAndMap() {
           </div>
           
           {/* Map */}
-          <div className="lg:w-2/3 rounded-xl overflow-hidden shadow-lg bg-white relative">
+          <div className="lg:w-2/3 rounded-xl overflow-hidden shadow-lg glassmorphism-card relative">
             {/* This would be a real interactive map in production */}
             <div className="h-[500px] bg-primary-100 relative" id="property-map">
               {/* Mock map content */}
@@ -307,23 +307,23 @@ export default function SearchAndMap() {
               
               {/* Map Markers */}
               <div className="absolute" style={{ top: '40%', left: '35%' }}>
-                <div className="bg-secondary-500 text-white font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-secondary-600 cursor-pointer">
+                <div className="glassmorphism-small text-white font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-white/40 cursor-pointer">
                   $1.2M
                 </div>
               </div>
               <div className="absolute" style={{ top: '55%', left: '48%' }}>
-                <div className="bg-secondary-500 text-white font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-secondary-600 cursor-pointer">
+                <div className="glassmorphism-small text-white font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-white/40 cursor-pointer">
                   $785K
                 </div>
               </div>
               <div className="absolute" style={{ top: '30%', left: '60%' }}>
-                <div className="bg-secondary-500 text-white font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-secondary-600 cursor-pointer">
+                <div className="glassmorphism-small text-white font-bold px-2 py-1 rounded-lg shadow-lg hover:bg-white/40 cursor-pointer">
                   $3.4M
                 </div>
               </div>
               
               {/* Map controls */}
-              <div className="absolute top-4 right-4 bg-white rounded-lg shadow-md">
+              <div className="absolute top-4 right-4 glassmorphism-small rounded-lg shadow-md">
                 <button className="p-2 hover:bg-primary-50 transition">
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -360,7 +360,7 @@ export default function SearchAndMap() {
               {/* Horizontal scrolling preview */}
               <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
                 {[1, 2, 3].map((index) => (
-                  <div key={index} className="flex-shrink-0 w-60 bg-white rounded-lg border border-primary-200 overflow-hidden">
+                  <div key={index} className="flex-shrink-0 w-60 glassmorphism-card rounded-lg overflow-hidden">
                     <div className="h-32 overflow-hidden">
                       <img 
                         src={`https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&w=400&h=250&crop=entropy&fit=crop&q=80&index=${index}`} 

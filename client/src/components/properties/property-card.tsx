@@ -68,7 +68,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
   if (layout === "horizontal") {
     return (
       <Link href={`/property/${property.id}`}>
-        <a className="block group bg-white rounded-xl overflow-hidden shadow-lg border border-primary-200 hover:shadow-xl transition-all duration-300">
+        <a className="block group glassmorphism-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex flex-col sm:flex-row">
             {/* Property image */}
             <div className="relative sm:w-1/3 h-52 sm:h-auto overflow-hidden">
@@ -149,7 +149,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
   
   return (
     <Link href={`/property/${property.id}`}>
-      <a className="group bg-white rounded-xl overflow-hidden shadow-lg border border-primary-200 hover:shadow-xl transition-all duration-300 relative">
+      <a className="group glassmorphism-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 relative">
         {/* Premium badge */}
         {property.isPremium && (
           <Badge className="absolute top-4 left-4 z-10 bg-secondary-500 text-white">
