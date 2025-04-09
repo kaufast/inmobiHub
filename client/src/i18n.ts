@@ -474,7 +474,217 @@ const esMX = {
   }
 };
 
-// Initialize i18next
+// Make sure common section is properly extended for language selection
+enGB.common = {
+  ...enGB.common,
+  selectLanguage: 'Select Language'
+};
+
+esMX.common = {
+  ...esMX.common,
+  selectLanguage: 'Seleccionar Idioma'
+};
+
+// French translations (basic set)
+const frFR = {
+  common: {
+    selectLanguage: 'Choisir la langue',
+    home: 'Accueil',
+    properties: 'Propriétés',
+    services: 'Services',
+    buying: 'Achat',
+    selling: 'Vente',
+    investing: 'Investissement',
+    about: 'À propos',
+    contact: 'Contact',
+    login: 'Connexion',
+    register: 'S\'inscrire',
+    logout: 'Se déconnecter',
+    dashboard: 'Tableau de bord',
+    search: 'Rechercher',
+    filters: 'Filtres',
+    viewDetails: 'Voir les détails',
+    addToFavorites: 'Ajouter aux favoris',
+    removeFromFavorites: 'Retirer des favoris',
+    shareListing: 'Partager l\'annonce',
+    copy: 'Copier',
+    copied: 'Copié',
+    close: 'Fermer',
+  },
+  property: {
+    house: 'Maison',
+    apartment: 'Appartement',
+    condo: 'Condominium',
+    townhouse: 'Maison de ville',
+    land: 'Terrain',
+    price: 'Prix',
+    bedrooms: 'Chambres',
+    bathrooms: 'Salles de bain',
+    shareTitle: 'Partager cette propriété',
+    shareDescription: 'Partagez cette propriété avec vos amis et votre famille, ou enregistrez-la pour référence future.'
+  }
+};
+
+// German translations (basic set)
+const deDE = {
+  common: {
+    selectLanguage: 'Sprache auswählen',
+    home: 'Startseite',
+    properties: 'Immobilien',
+    services: 'Dienstleistungen',
+    buying: 'Kaufen',
+    selling: 'Verkaufen',
+    investing: 'Investieren',
+    about: 'Über uns',
+    contact: 'Kontakt',
+    login: 'Anmelden',
+    register: 'Registrieren',
+    logout: 'Abmelden',
+    dashboard: 'Dashboard',
+    search: 'Suchen',
+    filters: 'Filter',
+    viewDetails: 'Details anzeigen',
+    addToFavorites: 'Zu Favoriten hinzufügen',
+    removeFromFavorites: 'Aus Favoriten entfernen',
+    shareListing: 'Angebot teilen',
+    copy: 'Kopieren',
+    copied: 'Kopiert',
+    close: 'Schließen',
+  },
+  property: {
+    house: 'Haus',
+    apartment: 'Wohnung',
+    condo: 'Eigentumswohnung',
+    townhouse: 'Reihenhaus',
+    land: 'Grundstück',
+    price: 'Preis',
+    bedrooms: 'Schlafzimmer',
+    bathrooms: 'Badezimmer',
+    shareTitle: 'Diese Immobilie teilen',
+    shareDescription: 'Teilen Sie diese Immobilie mit Freunden und Familie oder speichern Sie sie für zukünftige Referenz.'
+  }
+};
+
+// Chinese translations (basic set)
+const zhCN = {
+  common: {
+    selectLanguage: '选择语言',
+    home: '首页',
+    properties: '房产',
+    services: '服务',
+    buying: '购买',
+    selling: '出售',
+    investing: '投资',
+    about: '关于我们',
+    contact: '联系我们',
+    login: '登录',
+    register: '注册',
+    logout: '登出',
+    dashboard: '控制面板',
+    search: '搜索',
+    filters: '筛选条件',
+    viewDetails: '查看详情',
+    addToFavorites: '添加到收藏',
+    removeFromFavorites: '从收藏中移除',
+    shareListing: '分享房源',
+    copy: '复制',
+    copied: '已复制',
+    close: '关闭',
+  },
+  property: {
+    house: '独栋房',
+    apartment: '公寓',
+    condo: '共管公寓',
+    townhouse: '联排别墅',
+    land: '土地',
+    price: '价格',
+    bedrooms: '卧室',
+    bathrooms: '浴室',
+    shareTitle: '分享这套房产',
+    shareDescription: '与朋友和家人分享这套房产，或保存以便将来参考。'
+  }
+};
+
+// Japanese translations (basic set)
+const jaJP = {
+  common: {
+    selectLanguage: '言語を選択',
+    home: 'ホーム',
+    properties: '物件',
+    services: 'サービス',
+    buying: '買う',
+    selling: '売る',
+    investing: '投資',
+    about: '会社概要',
+    contact: 'お問い合わせ',
+    login: 'ログイン',
+    register: '登録',
+    logout: 'ログアウト',
+    dashboard: 'ダッシュボード',
+    search: '検索',
+    filters: 'フィルター',
+    viewDetails: '詳細を見る',
+    addToFavorites: 'お気に入りに追加',
+    removeFromFavorites: 'お気に入りから削除',
+    shareListing: '物件を共有',
+    copy: 'コピー',
+    copied: 'コピーしました',
+    close: '閉じる',
+  },
+  property: {
+    house: '一戸建て',
+    apartment: 'アパート',
+    condo: '分譲マンション',
+    townhouse: 'タウンハウス',
+    land: '土地',
+    price: '価格',
+    bedrooms: '寝室',
+    bathrooms: '浴室',
+    shareTitle: 'この物件を共有',
+    shareDescription: 'この物件を友人や家族と共有したり、将来の参考のために保存したりできます。'
+  }
+};
+
+// Arabic translations (basic set with RTL support)
+const arSA = {
+  common: {
+    selectLanguage: 'اختر اللغة',
+    home: 'الرئيسية',
+    properties: 'العقارات',
+    services: 'الخدمات',
+    buying: 'شراء',
+    selling: 'بيع',
+    investing: 'استثمار',
+    about: 'من نحن',
+    contact: 'اتصل بنا',
+    login: 'تسجيل الدخول',
+    register: 'تسجيل جديد',
+    logout: 'تسجيل الخروج',
+    dashboard: 'لوحة التحكم',
+    search: 'بحث',
+    filters: 'الفلاتر',
+    viewDetails: 'عرض التفاصيل',
+    addToFavorites: 'إضافة للمفضلة',
+    removeFromFavorites: 'إزالة من المفضلة',
+    shareListing: 'مشاركة القائمة',
+    copy: 'نسخ',
+    copied: 'تم النسخ',
+    close: 'إغلاق',
+  },
+  property: {
+    house: 'منزل',
+    apartment: 'شقة',
+    condo: 'كوندو',
+    townhouse: 'تاون هاوس',
+    land: 'أرض',
+    price: 'السعر',
+    bedrooms: 'غرف النوم',
+    bathrooms: 'الحمامات',
+    shareTitle: 'مشاركة هذا العقار',
+    shareDescription: 'شارك هذا العقار مع الأصدقاء والعائلة، أو احفظه للرجوع إليه في المستقبل.'
+  }
+};
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -485,6 +695,21 @@ i18n
       },
       'es-MX': {
         translation: esMX
+      },
+      'fr-FR': {
+        translation: frFR
+      },
+      'de-DE': {
+        translation: deDE
+      },
+      'zh-CN': {
+        translation: zhCN
+      },
+      'ja-JP': {
+        translation: jaJP
+      },
+      'ar-SA': {
+        translation: arSA
       }
     },
     fallbackLng: 'en-GB',

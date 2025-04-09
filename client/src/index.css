@@ -2,6 +2,127 @@
 @tailwind components;
 @tailwind utilities;
 
+/* RTL support styles */
+.rtl-menu {
+  text-align: right;
+}
+
+.rtl-menu .dropdown-menu-item {
+  flex-direction: row-reverse;
+}
+
+/* RTL body class for full page RTL support */
+body.rtl {
+  direction: rtl;
+  text-align: right;
+}
+
+body.rtl .flex-row {
+  flex-direction: row-reverse;
+}
+
+body.rtl .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+body.rtl .mr-auto {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* Fix margin classes for RTL */
+body.rtl .ml-1 {
+  margin-left: 0;
+  margin-right: 0.25rem;
+}
+
+body.rtl .ml-2 {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+body.rtl .ml-3 {
+  margin-left: 0;
+  margin-right: 0.75rem;
+}
+
+body.rtl .ml-4 {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+body.rtl .mr-1 {
+  margin-right: 0;
+  margin-left: 0.25rem;
+}
+
+body.rtl .mr-2 {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+body.rtl .mr-3 {
+  margin-right: 0;
+  margin-left: 0.75rem;
+}
+
+body.rtl .mr-4 {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+
+/* RTL text input fields */
+body.rtl input, 
+body.rtl textarea {
+  text-align: right;
+}
+
+/* RTL dropdown alignment fix */
+body.rtl .dropdown-menu-content {
+  right: auto;
+  left: 0;
+}
+
+/* RTL icons adjustment */
+body.rtl .icon-left {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+
+body.rtl .icon-right {
+  margin-left: 0;
+  margin-right: 0.5rem;
+}
+
+/* RTL flexbox adjustments */
+body.rtl .justify-start {
+  justify-content: flex-end;
+}
+
+body.rtl .justify-end {
+  justify-content: flex-start;
+}
+
+/* RTL padding adjustments */
+body.rtl .pl-1, body.rtl .pl-2, body.rtl .pl-3, body.rtl .pl-4 {
+  padding-left: 0;
+}
+
+body.rtl .pl-1 { padding-right: 0.25rem; }
+body.rtl .pl-2 { padding-right: 0.5rem; }
+body.rtl .pl-3 { padding-right: 0.75rem; }
+body.rtl .pl-4 { padding-right: 1rem; }
+
+body.rtl .pr-1, body.rtl .pr-2, body.rtl .pr-3, body.rtl .pr-4 {
+  padding-right: 0;
+}
+
+body.rtl .pr-1 { padding-left: 0.25rem; }
+body.rtl .pr-2 { padding-left: 0.5rem; }
+body.rtl .pr-3 { padding-left: 0.75rem; }
+body.rtl .pr-4 { padding-left: 1rem; }
+
 @layer components {
   .glassmorphism {
     @apply bg-white/20 backdrop-blur-md border border-white/30 shadow-lg;

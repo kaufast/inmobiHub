@@ -23,6 +23,7 @@ import { Loader2 } from "lucide-react";
 import { OrganizationSchema } from "./components/seo/schema-markup";
 import { Helmet } from "react-helmet";
 import { OnboardingTourProvider } from "./hooks/use-onboarding-tour";
+import { useLanguage } from "./hooks/use-language";
 
 function AppContent() {
   return (
@@ -92,6 +93,7 @@ function App() {
   // Base URL for organization schema
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://foundation.com';
   const logoUrl = `${baseUrl}/logo.png`; // Assuming a logo in the public folder
+  const { currentLanguage } = useLanguage(); // Get current language for Helmet metadata
 
   return (
     <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
@@ -102,7 +104,7 @@ function App() {
               <PropertyComparisonProvider maxProperties={4}>
               {/* Global SEO */}
               <Helmet>
-                <html lang="en" />
+                <html lang={currentLanguage.substring(0, 2)} />
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="theme-color" content="#4f46e5" />
