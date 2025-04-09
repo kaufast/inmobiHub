@@ -14,6 +14,15 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
  * @param limit Number of recommendations to return
  * @returns Array of recommended properties with reasons
  */
+/**
+ * Generate smart property recommendations based on user preferences and behavior
+ * @param user User to generate recommendations for
+ * @param properties All available properties
+ * @param searchHistory User's search history
+ * @param favoritedProperties Properties the user has favorited
+ * @param limit Number of recommendations to return
+ * @returns Array of recommended properties with personalized reasons
+ */
 export async function generatePropertyRecommendations(
   user: User,
   properties: Property[],
@@ -22,35 +31,77 @@ export async function generatePropertyRecommendations(
   limit: number = 5
 ): Promise<{ property: Property; reason: string }[]> {
   try {
-    // Create a user profile based on search history and favorited properties
+    // Create an enhanced user profile based on search history and favorited properties
     const userProfile = createUserProfile(user, searchHistory, favoritedProperties);
 
-    // Create a simplified version of properties for the AI to process
-    const simplifiedProperties = properties.map(property => ({
+    // Create a detailed representation of properties for the AI to process
+    const detailedProperties = properties.map(property => ({
       id: property.id,
       title: property.title,
       description: property.description,
       price: property.price,
-      location: `${property.city}, ${property.state}`,
-      bedrooms: property.bedrooms,
-      bathrooms: property.bathrooms,
-      squareFeet: property.squareFeet,
-      propertyType: property.propertyType,
-      features: property.features,
-      isPremium: property.isPremium
+      location: {
+        address: property.address,
+        city: property.city,
+        state: property.state,
+        zipCode: property.zipCode,
+        fullLocation: `${property.address}, ${property.city}, ${property.state} ${property.zipCode}`
+      },
+      specifications: {
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        squareFeet: property.squareFeet,
+        propertyType: property.propertyType,
+        yearBuilt: property.yearBuilt
+      },
+      amenities: {
+        features: property.features,
+        hasParking: property.features?.includes('Parking') || property.features?.includes('Garage') || false,
+        hasPool: property.features?.includes('Pool') || false,
+        hasGarden: property.features?.includes('Garden') || property.features?.includes('Backyard') || false,
+        isNewConstruction: property.yearBuilt ? new Date().getFullYear() - property.yearBuilt < 5 : false
+      },
+      financials: {
+        price: property.price,
+        pricePerSqFt: property.squareFeet ? Math.round(property.price / property.squareFeet) : null,
+        isPremium: property.isPremium,
+        isInvestmentProperty: property.rentalYield ? true : false,
+        estimatedRentalYield: property.rentalYield || null
+      },
+      images: property.images ? property.images.length : 0,
+      listedDate: property.createdAt
     }));
 
     // Generate recommendations using OpenAI
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {
           role: "system",
-          content: "You are a real estate recommendation assistant helping match users with properties they might be interested in based on their preferences and behavior."
+          content: `You are an AI-powered real estate recommendation engine that helps users discover ideal properties based on their preferences and behavior patterns. Your recommendations should be personalized, insightful, and focus on why specific properties would be perfect matches for this particular user.
+          
+Prioritize these factors when making recommendations:
+1. Properties that closely match the user's explicitly searched preferences (location, price range, beds/baths)
+2. Properties with features the user has shown interest in through favorited properties
+3. Properties that match the user's subscription tier expectations (premium properties for premium subscribers)
+4. Properties that represent good value based on price per square foot
+5. Properties with unique selling points that align with the user's search patterns`
         },
         {
           role: "user",
-          content: `Based on this user profile: ${JSON.stringify(userProfile)}\n\nRecommend ${limit} properties from this list that would be most suitable for this user: ${JSON.stringify(simplifiedProperties)}\n\nFor each recommendation, provide a brief, personalized reason why it matches their preferences. Respond with a JSON array where each object has 'propertyId', 'reason' fields.`
+          content: `I need property recommendations for a specific user based on their profile data and available properties.
+
+USER PROFILE:
+${JSON.stringify(userProfile, null, 2)}
+
+AVAILABLE PROPERTIES:
+${JSON.stringify(detailedProperties, null, 2)}
+
+Please recommend exactly ${limit} properties that would be most suitable for this user. For each recommendation, provide:
+1. The property ID
+2. A brief but personalized reason (2-3 sentences) explaining why this property is an excellent match for this specific user based on their preferences, search history, and behavior patterns.
+
+Format your response as a JSON object with a single "recommendations" array containing objects with "propertyId" (number) and "reason" (string) fields.`
         }
       ],
       response_format: { type: "json_object" }
@@ -63,7 +114,10 @@ export async function generatePropertyRecommendations(
     const result = recommendations.recommendations.map((rec: { propertyId: number; reason: string }) => {
       const property = properties.find(p => p.id === rec.propertyId);
       if (!property) return null;
-      return { property, reason: rec.reason };
+      return { 
+        property, 
+        reason: rec.reason 
+      };
     }).filter(Boolean);
 
     return result.slice(0, limit);
@@ -74,13 +128,20 @@ export async function generatePropertyRecommendations(
       .slice(0, limit)
       .map(property => ({ 
         property, 
-        reason: "Property may match your preferences" 
+        reason: "This property may match your preferences based on your browsing history." 
       }));
   }
 }
 
 /**
  * Creates a user profile based on their search history and favorited properties
+ */
+/**
+ * Creates a user profile based on their search history, favorited properties and user data
+ * @param user User data from the database 
+ * @param searchHistory User's search history
+ * @param favoritedProperties Properties the user has favorited
+ * @returns A comprehensive user profile for recommendation generation
  */
 function createUserProfile(
   user: User,
@@ -103,12 +164,17 @@ function createUserProfile(
   const avgMaxPrice = priceRanges.length
     ? priceRanges.reduce((sum, range) => sum + range.max, 0) / priceRanges.length
     : null;
-
+    
+  // Weight recent searches more heavily (most recent searches are at the end of the array)
+  const recentSearches = searchHistory.slice(-5);
+  
   // Extract most frequently searched locations
   const locationCounts: Record<string, number> = {};
-  searchHistory.forEach(search => {
+  searchHistory.forEach((search, index) => {
     if (search.location) {
-      locationCounts[search.location] = (locationCounts[search.location] || 0) + 1;
+      // Give more weight to recent searches
+      const weight = index >= searchHistory.length - 5 ? 2 : 1;
+      locationCounts[search.location] = (locationCounts[search.location] || 0) + weight;
     }
   });
 
@@ -118,20 +184,45 @@ function createUserProfile(
     .slice(0, 3)
     .map(([location]) => location);
 
-  // Extract bedroom and bathroom preferences
+  // Extract bedroom and bathroom preferences with recency bias
   const bedroomPreferences = searchHistory
-    .filter(search => search.beds)
-    .map(search => search.beds);
+    .filter(search => search.beds !== undefined && search.beds !== null)
+    .map((search, index) => {
+      // Apply recency weight
+      const weight = index >= searchHistory.length - 5 ? 2 : 1;
+      return { value: search.beds, weight };
+    });
   
   const bathroomPreferences = searchHistory
-    .filter(search => search.baths)
-    .map(search => search.baths);
+    .filter(search => search.baths !== undefined && search.baths !== null)
+    .map((search, index) => {
+      // Apply recency weight
+      const weight = index >= searchHistory.length - 5 ? 2 : 1;
+      return { value: search.baths, weight };
+    });
+    
+  // Calculate weighted averages
+  let bedroomPreference = null;
+  if (bedroomPreferences.length > 0) {
+    const totalValue = bedroomPreferences.reduce((sum, item) => sum + (item.value * item.weight), 0);
+    const totalWeight = bedroomPreferences.reduce((sum, item) => sum + item.weight, 0);
+    bedroomPreference = Math.round(totalValue / totalWeight);
+  }
+  
+  let bathroomPreference = null;
+  if (bathroomPreferences.length > 0) {
+    const totalValue = bathroomPreferences.reduce((sum, item) => sum + (item.value * item.weight), 0);
+    const totalWeight = bathroomPreferences.reduce((sum, item) => sum + item.weight, 0);
+    bathroomPreference = Math.round(totalValue / totalWeight * 2) / 2; // Round to nearest 0.5
+  }
 
-  // Extract property type preferences
+  // Extract property type preferences with recency bias
   const propertyTypeCounts: Record<string, number> = {};
-  searchHistory.forEach(search => {
+  searchHistory.forEach((search, index) => {
     if (search.propertyType) {
-      propertyTypeCounts[search.propertyType] = (propertyTypeCounts[search.propertyType] || 0) + 1;
+      // Give more weight to recent searches
+      const weight = index >= searchHistory.length - 5 ? 2 : 1;
+      propertyTypeCounts[search.propertyType] = (propertyTypeCounts[search.propertyType] || 0) + weight;
     }
   });
 
@@ -156,27 +247,80 @@ function createUserProfile(
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .map(([feature]) => feature);
+    
+  // Extract square footage preferences
+  const squareFootagePreferences = searchHistory
+    .filter(search => search.minSquareFeet || search.maxSquareFeet)
+    .map(search => ({
+      min: search.minSquareFeet || 0,
+      max: search.maxSquareFeet || 10000
+    }));
+    
+  // Calculate average min and max square footage if available
+  const avgMinSquareFeet = squareFootagePreferences.length
+    ? squareFootagePreferences.reduce((sum, range) => sum + range.min, 0) / squareFootagePreferences.length
+    : null;
+  
+  const avgMaxSquareFeet = squareFootagePreferences.length
+    ? squareFootagePreferences.reduce((sum, range) => sum + range.max, 0) / squareFootagePreferences.length
+    : null;
+    
+  // Get general property category preferences (luxury, budget, etc.)
+  const isPremiumFan = favoritedProperties.filter(p => p.isPremium).length > 
+                      (favoritedProperties.length / 2);
+                      
+  // Calculate average price per square foot of favorited properties
+  let avgPricePerSqFt = null;
+  if (favoritedProperties.length > 0) {
+    const validProperties = favoritedProperties.filter(p => p.price && p.squareFeet);
+    if (validProperties.length > 0) {
+      avgPricePerSqFt = validProperties.reduce((sum, p) => sum + (p.price / p.squareFeet), 0) / validProperties.length;
+    }
+  }
+  
+  // Analyze user browsing history through search parameters
+  const recentSearchTerms = recentSearches.flatMap(search => {
+    const terms = [];
+    if (search.keyword) terms.push(search.keyword);
+    if (search.location) terms.push(search.location);
+    if (search.propertyType) terms.push(search.propertyType);
+    return terms;
+  });
 
-  // Build user profile
+  // Build enhanced user profile
   return {
     userId: user.id,
     username: user.username,
-    priceRange: avgMinPrice !== null && avgMaxPrice !== null
-      ? { min: avgMinPrice, max: avgMaxPrice } 
-      : null,
-    preferredLocations: preferredLocations.length ? preferredLocations : null,
-    bedroomPreference: bedroomPreferences.length
-      ? Math.round(bedroomPreferences.reduce((sum, beds) => sum + beds, 0) / bedroomPreferences.length)
-      : null,
-    bathroomPreference: bathroomPreferences.length
-      ? Math.round(bathroomPreferences.reduce((sum, baths) => sum + baths, 0) / bathroomPreferences.length * 2) / 2 // Round to nearest 0.5
-      : null,
-    preferredPropertyTypes: preferredPropertyTypes.length ? preferredPropertyTypes : null,
-    preferredFeatures: preferredFeatures.length ? preferredFeatures : null,
-    // Include favorited property details
-    favoritedPropertyCount: favoritedProperties.length,
-    favoritedPropertyIds: favoritedProperties.map(p => p.id),
-    subscriptionTier: user.subscriptionTier
+    email: user.email,
+    fullName: user.fullName,
+    preferences: {
+      price: avgMinPrice !== null && avgMaxPrice !== null
+        ? { min: avgMinPrice, max: avgMaxPrice } 
+        : null,
+      locations: preferredLocations.length ? preferredLocations : null,
+      bedrooms: bedroomPreference,
+      bathrooms: bathroomPreference,
+      squareFeet: avgMinSquareFeet !== null && avgMaxSquareFeet !== null
+        ? { min: avgMinSquareFeet, max: avgMaxSquareFeet }
+        : null,
+      propertyTypes: preferredPropertyTypes.length ? preferredPropertyTypes : null,
+      features: preferredFeatures.length ? preferredFeatures : null,
+      avgPricePerSqFt,
+      premiumPreference: isPremiumFan ? "premium" : "standard",
+    },
+    activityInsights: {
+      favoritedCount: favoritedProperties.length,
+      favoritedIds: favoritedProperties.map(p => p.id),
+      searchHistoryCount: searchHistory.length,
+      recentSearchTerms: recentSearchTerms,
+      searchRecency: searchHistory.length > 0 ? "active" : "inactive",
+      lastSearch: searchHistory.length > 0 ? searchHistory[searchHistory.length - 1] : null
+    },
+    userProfile: {
+      subscriptionTier: user.subscriptionTier,
+      role: user.role,
+      accountAge: user.createdAt ? new Date().getTime() - new Date(user.createdAt).getTime() : null,
+    }
   };
 }
 
