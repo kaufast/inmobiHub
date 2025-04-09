@@ -116,70 +116,249 @@ export class DatabaseStorage implements IStorage {
   }
   
   async searchProperties(search: SearchProperties, limit = 10, offset = 0): Promise<Property[]> {
-    let query = db.select().from(properties);
-    
-    // Apply filters
-    if (search.location) {
-      query = query.where(
-        or(
-          like(properties.city, `%${search.location}%`),
-          like(properties.state, `%${search.location}%`),
-          like(properties.zipCode, `%${search.location}%`),
-          like(properties.address, `%${search.location}%`)
+    // If using spatial search with coordinates and radius, use PostGIS
+    if (search.latitude && search.longitude && search.radius) {
+      // Convert radius from kilometers to meters for ST_DWithin
+      const radiusInMeters = search.radius * 1000;
+      
+      // Create parameterized SQL for better safety
+      let query = sql`
+        SELECT * FROM properties
+        WHERE ST_DWithin(
+          location,
+          ST_SetSRID(ST_MakePoint(${search.longitude}, ${search.latitude}), 4326),
+          ${radiusInMeters}
         )
-      );
+      `;
+      
+      // Add additional filters
+      if (search.propertyType) {
+        query = sql`${query} AND property_type = ${search.propertyType}`;
+      }
+      
+      if (search.minPrice) {
+        query = sql`${query} AND price >= ${search.minPrice}`;
+      }
+      
+      if (search.maxPrice) {
+        query = sql`${query} AND price <= ${search.maxPrice}`;
+      }
+      
+      if (search.beds) {
+        query = sql`${query} AND bedrooms >= ${search.beds}`;
+      }
+      
+      if (search.baths) {
+        query = sql`${query} AND bathrooms >= ${search.baths}`;
+      }
+      
+      if (search.minSqft) {
+        query = sql`${query} AND square_feet >= ${search.minSqft}`;
+      }
+      
+      if (search.maxSqft) {
+        query = sql`${query} AND square_feet <= ${search.maxSqft}`;
+      }
+      
+      if (search.features && search.features.length > 0) {
+        // This syntax for jsonb array overlap is specific to PostgreSQL
+        query = sql`${query} AND features ?& ${JSON.stringify(search.features)}`;
+      }
+      
+      // Add ordering and pagination
+      query = sql`
+        ${query}
+        ORDER BY ST_Distance(location, ST_SetSRID(ST_MakePoint(${search.longitude}, ${search.latitude}), 4326))
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+      
+      // Execute the query and convert to required types
+      const results = await db.execute(query);
+      
+      // Check if results is an array (Neon returns an array of rows)
+      if (Array.isArray(results)) {
+        const properties = results.map(row => {
+          // Convert raw database rows to Property type
+          return {
+            id: row.id as number,
+            title: row.title as string,
+            description: row.description as string,
+            price: row.price as number,
+            address: row.address as string,
+            city: row.city as string,
+            state: row.state as string,
+            zipCode: row.zip_code as string,
+            country: row.country as string,
+            latitude: row.latitude as number,
+            longitude: row.longitude as number,
+            bedrooms: row.bedrooms as number,
+            bathrooms: row.bathrooms as number,
+            squareFeet: row.square_feet as number,
+            propertyType: row.property_type as ('house' | 'condo' | 'apartment' | 'townhouse' | 'land'),
+            yearBuilt: row.year_built as number || null,
+            isPremium: row.is_premium as boolean,
+            features: row.features as string[],
+            images: row.images as string[],
+            neighborhoodId: row.neighborhood_id as number || null,
+            ownerId: row.owner_id as number,
+            createdAt: new Date(row.created_at as string),
+            updatedAt: new Date(row.updated_at as string)
+          } as Property;
+        });
+        
+        return properties;
+      }
+      
+      // If results is not an array, it might be an object with rows property
+      if (results && typeof results === 'object' && 'rows' in results && Array.isArray(results.rows)) {
+        const properties = results.rows.map(row => {
+          // Similar conversion as above
+          return {
+            id: row.id as number,
+            title: row.title as string,
+            description: row.description as string,
+            price: row.price as number,
+            address: row.address as string,
+            city: row.city as string,
+            state: row.state as string,
+            zipCode: row.zip_code as string,
+            country: row.country as string,
+            latitude: row.latitude as number,
+            longitude: row.longitude as number,
+            bedrooms: row.bedrooms as number,
+            bathrooms: row.bathrooms as number,
+            squareFeet: row.square_feet as number,
+            propertyType: row.property_type as ('house' | 'condo' | 'apartment' | 'townhouse' | 'land'),
+            yearBuilt: row.year_built as number || null,
+            isPremium: row.is_premium as boolean,
+            features: row.features as string[],
+            images: row.images as string[],
+            neighborhoodId: row.neighborhood_id as number || null,
+            ownerId: row.owner_id as number,
+            createdAt: new Date(row.created_at as string),
+            updatedAt: new Date(row.updated_at as string)
+          } as Property;
+        });
+        
+        return properties;
+      }
+      
+      // If we can't process the results, return an empty array
+      console.error('Unexpected results format:', results);
+      return [];
     }
-    
-    if (search.propertyType) {
-      query = query.where(eq(properties.propertyType, search.propertyType));
+    // Otherwise, use the standard query builder
+    else {
+      let query = db.select().from(properties);
+      
+      // Apply standard location filters
+      if (search.location) {
+        query = query.where(
+          or(
+            like(properties.city, `%${search.location}%`),
+            like(properties.state, `%${search.location}%`),
+            like(properties.zipCode, `%${search.location}%`),
+            like(properties.address, `%${search.location}%`)
+          )
+        );
+      }
+      
+      if (search.propertyType) {
+        query = query.where(eq(properties.propertyType, search.propertyType));
+      }
+      
+      if (search.minPrice) {
+        query = query.where(gte(properties.price, search.minPrice));
+      }
+      
+      if (search.maxPrice) {
+        query = query.where(lte(properties.price, search.maxPrice));
+      }
+      
+      if (search.beds) {
+        query = query.where(gte(properties.bedrooms, search.beds));
+      }
+      
+      if (search.baths) {
+        query = query.where(gte(properties.bathrooms, search.baths));
+      }
+      
+      if (search.minSqft) {
+        query = query.where(gte(properties.squareFeet, search.minSqft));
+      }
+      
+      if (search.maxSqft) {
+        query = query.where(lte(properties.squareFeet, search.maxSqft));
+      }
+      
+      if (search.features && search.features.length > 0) {
+        // Check for any overlap in features
+        query = query.where(
+          sql`${properties.features} ?& ${JSON.stringify(search.features)}`
+        );
+      }
+      
+      return query.limit(limit).offset(offset).orderBy(desc(properties.createdAt));
     }
-    
-    if (search.minPrice) {
-      query = query.where(gte(properties.price, search.minPrice));
-    }
-    
-    if (search.maxPrice) {
-      query = query.where(lte(properties.price, search.maxPrice));
-    }
-    
-    if (search.beds) {
-      query = query.where(gte(properties.bedrooms, search.beds));
-    }
-    
-    if (search.baths) {
-      query = query.where(gte(properties.bathrooms, search.baths));
-    }
-    
-    if (search.minSqft) {
-      query = query.where(gte(properties.squareFeet, search.minSqft));
-    }
-    
-    if (search.maxSqft) {
-      query = query.where(lte(properties.squareFeet, search.maxSqft));
-    }
-    
-    if (search.features && search.features.length > 0) {
-      // This requires a more complex query since features is stored as a JSON array
-      // Simplified approach that checks for any overlap
-      query = query.where(
-        sql`${properties.features} ?& ${JSON.stringify(search.features)}`
-      );
-    }
-    
-    return query.limit(limit).offset(offset).orderBy(desc(properties.createdAt));
   }
   
   async createProperty(property: InsertProperty): Promise<Property> {
-    const [newProperty] = await db.insert(properties).values(property).returning();
+    // Create a new property with PostGIS location data
+    const propertyWithLocation = {
+      ...property,
+    };
+    
+    // Insert the property
+    const [newProperty] = await db.insert(properties).values(propertyWithLocation).returning();
+    
+    // Now update with the PostGIS location point
+    if (newProperty && newProperty.latitude && newProperty.longitude) {
+      await db.execute(sql`
+        UPDATE properties 
+        SET location = ST_SetSRID(ST_MakePoint(${newProperty.longitude}, ${newProperty.latitude}), 4326)
+        WHERE id = ${newProperty.id}
+      `);
+      
+      // Get the updated property with the location
+      const [updatedProperty] = await db.select()
+        .from(properties)
+        .where(eq(properties.id, newProperty.id));
+        
+      return updatedProperty;
+    }
+    
     return newProperty;
   }
   
   async updateProperty(id: number, property: Partial<InsertProperty>): Promise<Property | undefined> {
+    // Update property general data
     const [updatedProperty] = await db
       .update(properties)
       .set({ ...property, updatedAt: new Date() })
       .where(eq(properties.id, id))
       .returning();
+    
+    // If latitude or longitude was updated, update the PostGIS location point
+    if ((property.latitude !== undefined || property.longitude !== undefined) && updatedProperty) {
+      // Get the current values if not provided in the update
+      const latitude = property.latitude !== undefined ? property.latitude : updatedProperty.latitude;
+      const longitude = property.longitude !== undefined ? property.longitude : updatedProperty.longitude;
+      
+      // Update the location point
+      await db.execute(sql`
+        UPDATE properties 
+        SET location = ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)
+        WHERE id = ${id}
+      `);
+      
+      // Get the updated property with the location
+      const [refreshedProperty] = await db.select()
+        .from(properties)
+        .where(eq(properties.id, id));
+        
+      return refreshedProperty;
+    }
+    
     return updatedProperty;
   }
   

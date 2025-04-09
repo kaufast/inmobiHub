@@ -1,7 +1,11 @@
 import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, pgEnum, foreignKey, jsonb } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
+
+// Custom types for PostGIS
+export const point = (name: string) => text(name).$type<any>();
 
 // Enums
 export const roleEnum = pgEnum('role', ['user', 'agent', 'admin']);
@@ -46,6 +50,7 @@ export const properties = pgTable("properties", {
   country: text("country").notNull().default('USA'),
   latitude: doublePrecision("latitude").notNull(),
   longitude: doublePrecision("longitude").notNull(),
+  location: point("location"),
   bedrooms: integer("bedrooms").notNull(),
   bathrooms: integer("bathrooms").notNull(),
   squareFeet: integer("square_feet").notNull(),
@@ -210,6 +215,7 @@ export const loginUserSchema = z.object({
 
 export const insertPropertySchema = createInsertSchema(properties).omit({
   id: true,
+  location: true, 
   createdAt: true,
   updatedAt: true,
 });
@@ -236,6 +242,10 @@ export const searchPropertiesSchema = z.object({
   minSqft: z.number().optional(),
   maxSqft: z.number().optional(),
   features: z.array(z.string()).optional(),
+  // Spatial search parameters
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  radius: z.number().optional(), // in kilometers
 });
 
 export const insertNeighborhoodSchema = createInsertSchema(neighborhoods).omit({
