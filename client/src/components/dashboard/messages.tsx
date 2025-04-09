@@ -2,12 +2,16 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import { User, Message, InsertMessage } from "@shared/schema";
+import { User, Message, InsertMessage, Property } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatTimeAgo } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
+interface MessagesProps {
+  propertyId?: number;
+}
 
 import {
   Card,
@@ -41,6 +45,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Inbox,
   Send,
   PenSquare,
@@ -68,7 +79,7 @@ const messageFormSchema = z.object({
 
 type MessageFormValues = z.infer<typeof messageFormSchema>;
 
-export default function Messages() {
+export default function Messages({ propertyId }: MessagesProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"received" | "sent">("received");
@@ -76,6 +87,12 @@ export default function Messages() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
   const [isReplyDialogOpen, setIsReplyDialogOpen] = useState(false);
+  
+  // Fetch property data if propertyId is provided
+  const { data: property } = useQuery<Property>({
+    queryKey: [`/api/properties/${propertyId}`],
+    enabled: !!propertyId,
+  });
   
   // Fetch received messages
   const { 
@@ -170,6 +187,18 @@ export default function Messages() {
   });
   
   // When a message is selected for reply, update reply form
+  // Set initial property ID if provided
+  useEffect(() => {
+    if (propertyId && property) {
+      form.setValue("propertyId", propertyId);
+      if (!form.getValues("subject")) {
+        form.setValue("subject", `Inquiry about: ${property.title}`);
+      }
+      // Open the new message dialog automatically when property ID is provided
+      setIsNewMessageOpen(true);
+    }
+  }, [propertyId, property, form]);
+
   useEffect(() => {
     if (selectedMessage && isReplyDialogOpen) {
       replyForm.setValue("recipientId", selectedMessage.senderId);

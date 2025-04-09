@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Property, Neighborhood } from "@shared/schema";
 import { useParams, Link } from "wouter";
-import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info } from "lucide-react";
+import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -129,16 +129,75 @@ export default function PropertyDetailsPage() {
             </Button>
           </Link>
           
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={toggleFavorite}>
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant="outline" 
+              onClick={toggleFavorite}
+              className={isFavorite ? 'border-secondary-500 text-secondary-500' : ''}
+            >
               <Heart className={`mr-2 h-4 w-4 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : ''}`} />
               {isFavorite ? 'Saved' : 'Save'}
             </Button>
-            <Button variant="outline">
+            
+            <Button 
+              variant="outline"
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: property.title,
+                    text: `Check out this property: ${property.title}`,
+                    url: window.location.href,
+                  }).catch(err => {
+                    console.error('Error sharing property:', err);
+                    toast({
+                      title: "Sharing failed",
+                      description: "Could not share this property",
+                      variant: "destructive",
+                    });
+                  });
+                } else {
+                  // Fallback: copy to clipboard
+                  navigator.clipboard.writeText(window.location.href);
+                  toast({
+                    title: "Link copied!",
+                    description: "Property link copied to clipboard",
+                  });
+                }
+              }}
+            >
               <Share className="mr-2 h-4 w-4" /> Share
             </Button>
-            <Button variant="outline">
+            
+            <Button 
+              variant="outline"
+              onClick={() => {
+                window.print();
+                toast({
+                  title: "Printing",
+                  description: "Preparing property details for printing",
+                });
+              }}
+            >
               <Printer className="mr-2 h-4 w-4" /> Print
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={() => {
+                if (!user) {
+                  toast({
+                    title: "Authentication Required",
+                    description: "Please login to message the owner",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                
+                // Navigate to messages tab in dashboard
+                window.location.href = "/dashboard?tab=messages&property=" + property.id;
+              }}
+            >
+              <MessageCircle className="mr-2 h-4 w-4" /> Message
             </Button>
           </div>
         </div>
