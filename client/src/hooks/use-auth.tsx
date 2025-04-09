@@ -17,13 +17,35 @@ type AuthContextType = {
   registerMutation: UseMutationResult<User, Error, RegisterUser>;
 };
 
+// Create safe dummy mutations with no-op mutate functions
+const createDummyMutation = <TData, TError, TVariables>() => ({
+  mutate: (_variables: TVariables) => {
+    console.warn("Auth context not ready yet. This mutation will do nothing.");
+  },
+  mutateAsync: async (_variables: TVariables): Promise<TData> => {
+    console.warn("Auth context not ready yet. This mutation will do nothing.");
+    return Promise.reject(new Error("Auth context not initialized"));
+  },
+  isPending: false,
+  isError: false,
+  isSuccess: false,
+  isIdle: true,
+  error: null,
+  data: undefined,
+  failureCount: 0,
+  failureReason: null,
+  // Add other required properties
+  reset: () => {},
+  status: "idle",
+}) as unknown as UseMutationResult<TData, TError, TVariables>;
+
 const defaultContext: AuthContextType = {
   user: null,
   isLoading: false,
   error: null,
-  loginMutation: {} as UseMutationResult<User, Error, LoginUser>,
-  logoutMutation: {} as UseMutationResult<void, Error, void>,
-  registerMutation: {} as UseMutationResult<User, Error, RegisterUser>,
+  loginMutation: createDummyMutation<User, Error, LoginUser>(),
+  logoutMutation: createDummyMutation<void, Error, void>(),
+  registerMutation: createDummyMutation<User, Error, RegisterUser>(),
 };
 
 export const AuthContext = createContext<AuthContextType>(defaultContext);
