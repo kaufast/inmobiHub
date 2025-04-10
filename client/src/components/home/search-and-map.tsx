@@ -375,7 +375,7 @@ export default function SearchAndMap() {
             {/* This would be a real interactive map in production */}
             <div className="h-[500px] bg-primary-100 relative" id="property-map">
               {/* Barcelona map content */}
-              <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/light-v10/static/2.1734,41.3851,12,0/800x500')] bg-cover bg-center"></div>
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1579282240050-352db0a14c21?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768&q=80')] bg-cover bg-center"></div>
               
               {/* Map Markers */}
               <div className="absolute" style={{ top: '40%', left: '35%' }}>
