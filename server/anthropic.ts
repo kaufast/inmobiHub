@@ -82,3 +82,57 @@ When the user asks about this property, use this information to answer their que
     return "I'm sorry, I'm having trouble connecting to my knowledge base right now. Please try again in a moment.";
   }
 }
+
+/**
+ * Analyzes an image using Claude's multimodal capabilities
+ * @param imageData Base64 encoded image data
+ * @returns A natural language description of real estate properties in the image
+ */
+export async function analyzeImage(imageData: string): Promise<string> {
+  try {
+    // Handle data URI format if present
+    const base64Data = imageData.includes('base64,') 
+      ? imageData.split('base64,')[1] 
+      : imageData;
+    
+    // Prepare image content for Claude
+    const imageContent = {
+      type: 'image' as const,
+      source: {
+        type: 'base64' as const,
+        media_type: 'image/jpeg', // Assuming JPEG, but could be other formats
+        data: base64Data
+      }
+    };
+    
+    const textContent = {
+      type: 'text' as const,
+      text: 'Please analyze this real estate property image and describe what you see. Focus on property type, architectural style, notable features, condition, and any distinctive elements that would be relevant for a property search. Provide your analysis in a concise paragraph.'
+    };
+    
+    // Make API request
+    const response = await anthropic.messages.create({
+      model: MODEL,
+      system: `You are a real estate image analysis expert. Your task is to analyze property images 
+      and extract key information that would be useful for real estate search. Focus on identifying 
+      property type, style, features, condition, and surroundings. Be specific but concise, highlighting 
+      the most notable aspects that would be relevant for someone searching for properties.`,
+      max_tokens: 300,
+      temperature: 0.2,
+      messages: [
+        {
+          role: 'user',
+          content: [imageContent, textContent]
+        }
+      ]
+    });
+    
+    return response.content[0].type === 'text' 
+      ? response.content[0].text 
+      : "Unable to analyze the image. Please try a different image or use text search.";
+      
+  } catch (error) {
+    console.error('Error analyzing image with Claude:', error);
+    throw new Error('Failed to analyze the property image. Please try again or use text search instead.');
+  }
+}
