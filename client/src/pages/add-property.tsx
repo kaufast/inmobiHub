@@ -227,20 +227,44 @@ export default function AddPropertyPage() {
   
   // Mock function to upload images (in a real app, this would upload to your server/cloud storage)
   const uploadImages = async () => {
-    // In a real app, you would upload the images to your server or cloud storage
-    // For now, we'll just simulate the upload with a timeout
+    // In a real app, you would upload the images to a cloud storage service
+    // For now, we'll use the Replit asset paths which are already loaded in memory
     setIsUploading(true);
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Return mock URLs for the uploaded images
-    const uploadedUrls = images.map((_, index) => 
-      `https://example.com/property-image-${Date.now()}-${index}.jpg`
-    );
-    
-    setIsUploading(false);
-    return uploadedUrls;
+    try {
+      // In a real implementation, we would use FormData to upload images to a server
+      // For demonstration, we're using the image URLs already in memory
+      console.log(`Processing ${images.length} images for upload`);
+      
+      // For each image, convert to base64 for demonstration
+      const uploadedUrls = await Promise.all(
+        images.map(async (image, index) => {
+          // Convert file to base64 string (for demo/dev only)
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              // In a real app, this would be the URL returned from your image upload service
+              // For now, we'll just use the URLs created by the FileReader (or placeholder URLs)
+              resolve(imageUrls[index] || `https://source.unsplash.com/random/800x600/?property,${index}`);
+            };
+            reader.readAsDataURL(image);
+          });
+        })
+      );
+      
+      console.log(`Successfully processed ${uploadedUrls.length} images`);
+      return uploadedUrls;
+    } catch (error) {
+      console.error('Error uploading images:', error);
+      toast({
+        title: "Image Upload Error",
+        description: "There was a problem uploading your images. Please try again.",
+        variant: "destructive",
+      });
+      return [];
+    } finally {
+      setIsUploading(false);
+    }
   };
   
   // Handle form submission
