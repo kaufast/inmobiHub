@@ -1,135 +1,116 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, Upload, Info } from 'lucide-react';
-import { userAvatar } from '@/lib/constants'; // Replace with actual user avatar path
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { API_ENDPOINTS } from "@/lib/constants";
 
-// Form schema
-const verificationFormSchema = z.object({
-  idVerificationType: z.enum(['passport', 'driver_license', 'national_id']),
-  idVerificationDocument: z.string().min(1, 'Document image is required'),
+const verificationSchema = z.object({
+  idVerificationType: z.enum(["passport", "driver_license", "national_id"], {
+    required_error: "Please select an ID type",
+  }),
+  idVerificationDocument: z.string().min(1, "Please upload a document"),
   notes: z.string().optional(),
 });
 
-type VerificationFormValues = z.infer<typeof verificationFormSchema>;
+type VerificationFormValues = z.infer<typeof verificationSchema>;
 
-interface VerificationRequestFormProps {
-  onSuccess?: () => void;
-}
-
-export const VerificationRequestForm: React.FC<VerificationRequestFormProps> = ({ onSuccess }) => {
+const VerificationRequestForm = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [document, setDocument] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [documentPreview, setDocumentPreview] = useState<string | null>(null);
+  
   const form = useForm<VerificationFormValues>({
-    resolver: zodResolver(verificationFormSchema),
+    resolver: zodResolver(verificationSchema),
     defaultValues: {
-      idVerificationType: 'passport',
-      idVerificationDocument: '',
-      notes: '',
-    }
-  });
-
-  const verificationMutation = useMutation({
-    mutationFn: async (data: VerificationFormValues) => {
-      const res = await apiRequest('POST', '/api/users/verify/id', data);
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Verification request failed');
-      }
-      return await res.json();
+      idVerificationType: "passport",
+      idVerificationDocument: "",
+      notes: "",
     },
-    onSuccess: () => {
-      toast({
-        title: 'Verification Request Submitted',
-        description: 'Your identity verification request has been submitted for review.',
-        variant: 'default',
-      });
-      
-      // Invalidate user data
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-      
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Verification Request Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
   });
-
-  const handleDocumentUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files && event.target.files[0];
+  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
-
+    
+    // Maximum file size of 5MB
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: 'File too large',
-        description: 'The document must be less than 5MB',
-        variant: 'destructive',
+        title: "File too large",
+        description: "Please select a file smaller than 5MB",
+        variant: "destructive",
       });
       return;
     }
-
-    setIsUploading(true);
-
-    // Convert to base64
+    
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      const base64 = base64String.split(',')[1]; // Remove data:image/*;base64, prefix
-      setDocument(base64);
-      form.setValue('idVerificationDocument', base64);
-      setIsUploading(false);
-    };
-    reader.onerror = () => {
-      toast({
-        title: 'Upload Failed',
-        description: 'Failed to upload document. Please try again.',
-        variant: 'destructive',
-      });
-      setIsUploading(false);
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setDocumentPreview(result);
+      form.setValue("idVerificationDocument", result);
     };
     reader.readAsDataURL(file);
   };
-
-  const onSubmit = (data: VerificationFormValues) => {
-    verificationMutation.mutate(data);
+  
+  const onSubmit = async (data: VerificationFormValues) => {
+    if (!user) return;
+    
+    setLoading(true);
+    
+    try {
+      await apiRequest("POST", API_ENDPOINTS.VERIFICATION, {
+        userId: user.id,
+        idVerificationType: data.idVerificationType,
+        idVerificationDocument: data.idVerificationDocument,
+        notes: data.notes,
+      });
+      
+      toast({
+        title: "Verification request submitted",
+        description: "Your verification request has been submitted and will be reviewed",
+      });
+      
+      // Reset form
+      form.reset();
+      setDocumentPreview(null);
+    } catch (error: any) {
+      toast({
+        title: "Error submitting verification",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
-
+  
+  if (!user) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Identity Verification</CardTitle>
+          <CardDescription>You must be logged in to submit a verification request</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+  
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Identity Verification</CardTitle>
-        <CardDescription>
-          Submit your documents to verify your identity and get a blue checkmark on your profile.
-        </CardDescription>
+        <CardDescription>Submit your identification document to verify your identity</CardDescription>
       </CardHeader>
       <CardContent>
-        <Alert variant="default" className="mb-6 bg-blue-50 border-blue-200">
-          <Info className="h-5 w-5 text-blue-500" />
-          <AlertTitle className="text-blue-700">Why verify your identity?</AlertTitle>
-          <AlertDescription className="text-blue-600">
-            Verified users enjoy higher trust from buyers/renters, priority listing placement, and access to premium partnership opportunities.
-          </AlertDescription>
-        </Alert>
-        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -137,68 +118,60 @@ export const VerificationRequestForm: React.FC<VerificationRequestFormProps> = (
               name="idVerificationType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Document Type</FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>ID Type</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select document type" />
+                        <SelectValue placeholder="Select an ID type" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="passport">Passport</SelectItem>
-                        <SelectItem value="driver_license">Driver's License</SelectItem>
-                        <SelectItem value="national_id">National ID Card</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="passport">Passport</SelectItem>
+                      <SelectItem value="driver_license">Driver's License</SelectItem>
+                      <SelectItem value="national_id">National ID</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormDescription>
-                    Choose the type of identification document you'll provide
+                    Please select the type of identification document you will provide
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="idVerificationDocument"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Document Upload</FormLabel>
-                  <FormControl>
-                    <div className="flex flex-col gap-4">
-                      <Input 
-                        type="file" 
-                        accept="image/*,.pdf" 
-                        onChange={handleDocumentUpload}
-                        className="cursor-pointer"
-                      />
-                      
-                      {/* Preview area */}
-                      {document && (
-                        <div className="border rounded-md p-2 mt-2">
-                          <p className="text-sm text-gray-500 mb-2">Document preview:</p>
-                          <img 
-                            src={`data:image/jpeg;base64,${document}`} 
-                            alt="Document preview" 
-                            className="max-h-40 object-contain mx-auto border rounded" 
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Hidden input for the actual base64 data */}
-                      <input 
-                        type="hidden" 
-                        {...field}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Upload a clear image of your document (max 5MB)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem>
+              <FormLabel>Upload Document</FormLabel>
+              <div className="flex flex-col gap-3">
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,application/pdf"
+                  onChange={handleFileChange}
+                  className="cursor-pointer"
+                />
+                <FormDescription>
+                  Upload a clear image or scan of your ID document (JPG, PNG, or PDF format, max 5MB)
+                </FormDescription>
+                
+                {documentPreview && documentPreview.startsWith('data:image') && (
+                  <div className="mt-2 border rounded-md overflow-hidden">
+                    <img 
+                      src={documentPreview} 
+                      alt="Document preview" 
+                      className="max-h-48 mx-auto object-contain"
+                    />
+                  </div>
+                )}
+                
+                {documentPreview && documentPreview.startsWith('data:application/pdf') && (
+                  <div className="mt-2 p-4 border rounded-md bg-gray-100">
+                    <p className="text-sm">PDF document selected</p>
+                  </div>
+                )}
+              </div>
+            </FormItem>
             
             <FormField
               control={form.control}
@@ -208,42 +181,31 @@ export const VerificationRequestForm: React.FC<VerificationRequestFormProps> = (
                   <FormLabel>Additional Notes</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Any additional information you'd like to provide..." 
+                      placeholder="Add any additional information about your verification request" 
                       {...field} 
                     />
                   </FormControl>
                   <FormDescription>
-                    Optional: Add any details that might help us verify your identity
+                    Optional: Add any information that may help us verify your identity
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             
-            {verificationMutation.isError && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>
-                  {verificationMutation.error.message}
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isUploading || verificationMutation.isPending || !document}>
-              {verificationMutation.isPending ? 'Submitting...' : 'Submit Verification Request'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button type="submit" disabled={loading}>
+                {loading ? "Submitting..." : "Submit Verification Request"}
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
-        <div className="text-sm text-gray-500">
-          <p>Your documents are securely stored and only accessed by our verification team.</p>
-          <p>Verification typically takes 1-2 business days.</p>
-        </div>
+      <CardFooter className="flex flex-col items-start">
+        <p className="text-sm text-muted-foreground">
+          Your verification documents are securely stored and only accessed by authorized personnel.
+          Verification typically takes 1-2 business days to process.
+        </p>
       </CardFooter>
     </Card>
   );

@@ -1,130 +1,62 @@
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Shield, AlertCircle } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
-type VerificationStatus = 'none' | 'pending' | 'approved' | 'rejected';
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CheckCircle2 } from "lucide-react";
 
 interface VerificationBadgeProps {
-  isVerified?: boolean;
-  idVerificationStatus?: VerificationStatus;
-  role?: 'user' | 'agent' | 'admin';
-  variant?: 'default' | 'property-card' | 'profile';
+  isVerified: boolean;
+  variant?: "property-card" | "profile" | "inline";
   showTooltip?: boolean;
 }
 
-export const VerificationBadge: React.FC<VerificationBadgeProps> = ({ 
-  isVerified = false, 
-  idVerificationStatus = 'none',
-  role = 'user',
-  variant = 'default',
-  showTooltip = true
+const VerificationBadge: React.FC<VerificationBadgeProps> = ({
+  isVerified,
+  variant = "inline",
+  showTooltip = true,
 }) => {
-  // If user is not verified at all, don't show the badge
-  if (!isVerified && idVerificationStatus === 'none') {
-    return null;
-  }
+  if (!isVerified) return null;
 
-  // Different styles based on verification status
-  const getBadgeStyle = () => {
-    // Verified user with blue checkmark (highest level)
-    if (isVerified) {
-      return {
-        icon: <CheckCircle className="h-4 w-4 mr-1 text-white" />,
-        text: role === 'agent' ? 'Verified Agent' : 'Verified User',
-        class: 'bg-blue-500 hover:bg-blue-600 text-white',
-        tooltip: 'This user has been officially verified by Inmobi and has verified identity credentials'
-      };
-    }
-    
-    // ID verification status badges
-    switch (idVerificationStatus) {
-      case 'approved':
-        return {
-          icon: <Shield className="h-4 w-4 mr-1 text-white" />,
-          text: 'ID Verified',
-          class: 'bg-green-500 hover:bg-green-600 text-white',
-          tooltip: 'This user has verified their identity with official documents'
-        };
-      case 'pending':
-        return {
-          icon: <AlertCircle className="h-4 w-4 mr-1 text-amber-800" />,
-          text: 'Verification Pending',
-          class: 'bg-amber-300 hover:bg-amber-400 text-amber-800',
-          tooltip: 'This user has submitted verification documents, pending review'
-        };
-      case 'rejected':
-        return {
-          icon: <AlertCircle className="h-4 w-4 mr-1 text-white" />,
-          text: 'Verification Failed',
-          class: 'bg-red-500 hover:bg-red-600 text-white',
-          tooltip: 'Identity verification was unsuccessful. Contact support for assistance.'
-        };
+  // Different styles based on where the badge is being used
+  const badgeContent = () => {
+    switch (variant) {
+      case "property-card":
+        return (
+          <span className="flex items-center gap-1 text-xs">
+            <CheckCircle2 className="h-3 w-3 text-blue-500" />
+          </span>
+        );
+      case "profile":
+        return (
+          <Badge className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1 px-2 py-1">
+            <CheckCircle2 className="h-3 w-3" />
+            <span>Verified</span>
+          </Badge>
+        );
+      case "inline":
       default:
-        return null;
+        return (
+          <Badge className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-0.5 text-xs">
+            Verified
+          </Badge>
+        );
     }
   };
 
-  const badgeStyle = getBadgeStyle();
-  if (!badgeStyle) return null;
+  const tooltipContent = "This user's identity has been verified by Inmobi®";
 
-  // For property cards, use a more compact badge with just the icon
-  if (variant === 'property-card') {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge variant="outline" className={`inline-flex px-2 py-0.5 text-xs ${badgeStyle.class}`}>
-              {badgeStyle.icon}
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-sm">{badgeStyle.tooltip}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  // For profile pages, use a larger badge
-  if (variant === 'profile') {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Badge variant="outline" className={`inline-flex px-3 py-1 text-sm ${badgeStyle.class}`}>
-              {badgeStyle.icon}
-              <span>{badgeStyle.text}</span>
-            </Badge>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-sm">{badgeStyle.tooltip}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  // Default badge style
   return showTooltip ? (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge variant="outline" className={`inline-flex items-center px-2 py-0.5 text-xs ${badgeStyle.class}`}>
-            {badgeStyle.icon}
-            <span>{badgeStyle.text}</span>
-          </Badge>
+          {badgeContent()}
         </TooltipTrigger>
         <TooltipContent>
-          <p className="text-sm">{badgeStyle.tooltip}</p>
+          <p>{tooltipContent}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
   ) : (
-    <Badge variant="outline" className={`inline-flex items-center px-2 py-0.5 text-xs ${badgeStyle.class}`}>
-      {badgeStyle.icon}
-      <span>{badgeStyle.text}</span>
-    </Badge>
+    badgeContent()
   );
 };
 

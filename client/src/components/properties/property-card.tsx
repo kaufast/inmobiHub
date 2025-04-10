@@ -209,7 +209,13 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                     <AvatarImage src="https://randomuser.me/api/portraits/women/42.jpg" alt="Agent" />
                     <AvatarFallback>AG</AvatarFallback>
                   </Avatar>
-                  <span className="text-xs text-primary-500">Listed by <span className="font-medium text-primary-700">Agent</span></span>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-primary-500">Listed by <span className="font-medium text-primary-700">Agent</span></span>
+                      {/* Assuming the property has a verified flag or fetch owner info via query */}
+                      <VerificationBadge isVerified={true} variant="property-card" />
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button 
@@ -459,7 +465,13 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                 <AvatarImage src="https://randomuser.me/api/portraits/women/42.jpg" alt="Agent" />
                 <AvatarFallback>AG</AvatarFallback>
               </Avatar>
-              <span className="text-xs text-white/70">Listed by <span className="font-medium text-white">Agent</span></span>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-white/70">Listed by <span className="font-medium text-white">Agent</span></span>
+                  {/* Assuming the property has a verified flag or fetch owner info via query */}
+                  <VerificationBadge isVerified={true} variant="property-card" />
+                </div>
+              </div>
             </div>
             <div className="text-white bg-[#131c28] hover:bg-[#0c1319] px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
               Details

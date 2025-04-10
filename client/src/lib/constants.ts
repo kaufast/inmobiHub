@@ -1,67 +1,135 @@
-// Image paths
-export const propertyPlaceholder = '/images/property-placeholder.jpg';
-export const userAvatar = '/images/user-avatar.jpg';
+// Global application constants
 
-// API endpoints
+// API Endpoints
 export const API_ENDPOINTS = {
-  PROPERTIES: '/api/properties',
-  USER: '/api/user',
-  FAVORITES: '/api/user/favorites',
-  VERIFICATION: '/api/users/verify/id',
-  PASSKEY: '/api/users/passkey',
+  // User authentication
+  LOGIN: "/api/login",
+  REGISTER: "/api/register",
+  LOGOUT: "/api/logout",
+  USER: "/api/user",
+  
+  // Properties
+  PROPERTIES: "/api/properties",
+  PROPERTY_DETAILS: (id: number) => `/api/properties/${id}`,
+  FEATURED_PROPERTIES: "/api/properties/featured",
+  PROPERTY_SEARCH: "/api/properties/search",
+  RECOMMENDED_PROPERTIES: "/api/properties/recommended",
+  
+  // Favorites
+  FAVORITES: "/api/user/favorites",
+  FAVORITE_TOGGLE: (propertyId: number) => `/api/user/favorites/${propertyId}`,
+  
+  // Neighborhoods
+  NEIGHBORHOODS: "/api/neighborhoods",
+  NEIGHBORHOOD_DETAILS: (id: number) => `/api/neighborhoods/${id}`,
+  
+  // Property tours
+  TOURS: "/api/property-tours",
+  TOUR_DETAILS: (id: number) => `/api/property-tours/${id}`,
+  USER_TOURS: "/api/user/tours",
+  AVAILABLE_SLOTS: (propertyId: number, date: string) => 
+    `/api/properties/${propertyId}/tour-slots?date=${date}`,
+  
+  // Messages
+  MESSAGES: "/api/messages",
+  MESSAGE_DETAILS: (id: number) => `/api/messages/${id}`,
+  USER_MESSAGES: "/api/user/messages",
+  
+  // Chat
+  CHAT_ANALYZE: "/api/chat/analyze",
+  CHAT_IMAGE: "/api/chat/analyze-image",
+  
+  // Verification
+  VERIFICATION: "/api/user/verification",
+  VERIFICATION_STATUS: (userId: number) => `/api/user/verification/${userId}`,
+  VERIFICATION_ADMIN: "/api/admin/verification",
+  VERIFICATION_APPROVE: (userId: number) => `/api/admin/verification/${userId}/approve`,
+  VERIFICATION_REJECT: (userId: number) => `/api/admin/verification/${userId}/reject`,
 };
 
-// App settings
+// Image placeholders
+export const propertyPlaceholder = "/images/property-placeholder.jpg";
+export const userAvatar = "/images/user-avatar.jpg";
+
+// Application settings
 export const APP_SETTINGS = {
-  ITEMS_PER_PAGE: 10,
-  MAX_IMAGES_PER_PROPERTY: 10,
-  MAX_IMAGE_SIZE_MB: 5,
-  MAX_COMPARABLE_PROPERTIES: 4,
+  SITE_NAME: "Inmobi®",
+  CONTACT_EMAIL: "info@inmobi.mobi",
+  CONTACT_PHONE: "+34679680000",
+  CONTACT_ADDRESS: "c. de la Ribera 14, 08003 Barcelona",
+  COPYRIGHT_YEAR: new Date().getFullYear(),
+  DEFAULT_LANGUAGE: "en",
+  DEFAULT_CURRENCY: "USD",
 };
 
-// Form validation
+// Validation rules
 export const VALIDATION = {
   PASSWORD_MIN_LENGTH: 8,
   USERNAME_MIN_LENGTH: 3,
   USERNAME_MAX_LENGTH: 30,
+  MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
+  ALLOWED_IMAGE_TYPES: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+  ALLOWED_DOCUMENT_TYPES: ["application/pdf", "image/jpeg", "image/png"],
 };
 
-// UI Constants
+// UI-related constants
 export const UI = {
-  NAVBAR_HEIGHT: '4rem',
-  SIDEBAR_WIDTH: '260px',
-  ANIMATION_DURATION: 300,
+  MOBILE_BREAKPOINT: 768,
+  TABLET_BREAKPOINT: 1024,
+  MAP_DEFAULT_ZOOM: 12,
+  MAP_DEFAULT_CENTER: { lat: 40.416775, lng: -3.703790 }, // Madrid, Spain
+  PROPERTY_CARD_LIMIT: 6,
+  TOAST_DURATION: 5000,
+  TOOLTIP_DELAY: 300,
+  ITEMS_PER_PAGE: 10,
 };
 
-// Feature flags
+// Feature flags and toggles
 export const FEATURES = {
-  ENABLE_AI_RECOMMENDATIONS: true,
   ENABLE_CHAT: true,
-  ENABLE_PASSKEYS: true,
+  ENABLE_DARK_MODE: true,
   ENABLE_NOTIFICATIONS: true,
+  ENABLE_TOURS: true,
+  ENABLE_FAVORITES: true,
+  ENABLE_VERIFICATION: true,
+  ENABLE_PREMIUM_FEATURES: true,
+  ENABLE_RECOMMENDATIONS: true,
+  ENABLE_NEIGHBORHOOD_INSIGHTS: true,
+  ENABLE_VOICE_SEARCH: true,
+  ENABLE_IMAGE_SEARCH: true,
 };
 
-// Authentication
+// Authentication related constants
 export const AUTH = {
-  TOKEN_REFRESH_INTERVAL: 60 * 60 * 1000, // 1 hour
+  TOKEN_STORAGE_KEY: "inmobi_token",
+  USER_STORAGE_KEY: "inmobi_user",
+  SESSION_TIMEOUT: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+  ROLES: {
+    USER: "user",
+    AGENT: "agent",
+    ADMIN: "admin",
+  },
+  VERIFICATION_STATUSES: {
+    NONE: "none",
+    PENDING: "pending",
+    APPROVED: "approved",
+    REJECTED: "rejected",
+  },
+  ID_VERIFICATION_TYPES: {
+    PASSPORT: "passport",
+    DRIVERS_LICENSE: "driver_license",
+    NATIONAL_ID: "national_id",
+  },
 };
 
 // Error messages
 export const ERRORS = {
-  GENERIC: 'Something went wrong. Please try again.',
-  NETWORK: 'Network error. Please check your connection.',
-  UNAUTHORIZED: 'You must be logged in to perform this action.',
-  FORBIDDEN: 'You do not have permission to perform this action.',
-};
-
-export default {
-  propertyPlaceholder,
-  userAvatar,
-  API_ENDPOINTS,
-  APP_SETTINGS,
-  VALIDATION,
-  UI,
-  FEATURES,
-  AUTH,
-  ERRORS,
+  GENERIC: "Something went wrong. Please try again.",
+  UNAUTHORIZED: "You must be logged in to access this feature.",
+  FORBIDDEN: "You don't have permission to access this feature.",
+  NOT_FOUND: "The requested resource was not found.",
+  VALIDATION_FAILED: "Please check your input and try again.",
+  SERVER_ERROR: "There was an error on the server. Please try again later.",
+  NETWORK_ERROR: "Network error. Please check your internet connection.",
+  SESSION_EXPIRED: "Your session has expired. Please log in again.",
 };

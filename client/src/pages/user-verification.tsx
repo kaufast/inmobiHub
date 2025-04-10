@@ -1,93 +1,217 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/hooks/use-auth';
-import { Redirect } from 'wouter';
-import { getQueryFn } from '@/lib/queryClient';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  CheckCircle, 
-  AlertCircle, 
-  ClockIcon, 
-  Shield, 
-  Lock, 
-  Fingerprint,
-  User
-} from 'lucide-react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { User as UserType } from '@shared/schema';
-import VerificationRequestForm from '@/components/users/verification-request-form';
-import VerificationBadge from '@/components/users/verification-badge';
-import { useToast } from '@/hooks/use-toast';
-import { PageHeader } from '@/components/layout/page-header';
+import React, { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { AUTH, API_ENDPOINTS } from "@/lib/constants";
+import VerificationRequestForm from "@/components/users/verification-request-form";
+import VerificationBadge from "@/components/users/verification-badge";
+import PageHeader from "@/components/layout/page-header";
 
-type VerificationStatus = 'none' | 'pending' | 'approved' | 'rejected';
-
-const UserVerificationPage: React.FC = () => {
-  const { user, isLoading } = useAuth();
+const UserVerificationPage = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const [showVerificationForm, setShowVerificationForm] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<string>("verification-status");
   
-  if (isLoading) {
-    return <div className="flex justify-center p-20">Loading...</div>;
-  }
+  // Get the user's verification status
+  const { data: verificationStatus, isLoading } = useQuery({
+    queryKey: ["verification", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      try {
+        const res = await apiRequest("GET", API_ENDPOINTS.VERIFICATION_STATUS(user.id));
+        return await res.json();
+      } catch (error) {
+        console.error("Failed to get verification status", error);
+        return { 
+          status: AUTH.VERIFICATION_STATUSES.NONE,
+          documentType: null,
+          submittedAt: null,
+          approvedAt: null,
+          rejectedAt: null,
+          rejectionReason: null,
+        };
+      }
+    },
+    enabled: !!user,
+  });
   
-  if (!user) {
-    return <Redirect to="/auth" />;
-  }
+  // Get admin verification requests (only for admin users)
+  const { data: verificationRequests, isLoading: isLoadingRequests } = useQuery({
+    queryKey: ["admin-verification-requests"],
+    queryFn: async () => {
+      try {
+        const res = await apiRequest("GET", API_ENDPOINTS.VERIFICATION_ADMIN);
+        return await res.json();
+      } catch (error) {
+        console.error("Failed to get verification requests", error);
+        return [];
+      }
+    },
+    enabled: user?.role === AUTH.ROLES.ADMIN,
+  });
   
-  // Helper to check if user is eligible for verification
-  const isEligibleForVerification = () => {
-    const status = user.idVerificationStatus as VerificationStatus;
-    return status === 'none' || status === 'rejected';
+  // Admin functions to approve/reject verification
+  const approveMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      const res = await apiRequest("POST", API_ENDPOINTS.VERIFICATION_APPROVE(userId));
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-verification-requests"] });
+      toast({
+        title: "Verification approved",
+        description: "The user has been successfully verified",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error approving verification",
+        description: error.message || "Failed to approve verification",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  const rejectMutation = useMutation({
+    mutationFn: async ({ userId, reason }: { userId: number; reason: string }) => {
+      const res = await apiRequest("POST", API_ENDPOINTS.VERIFICATION_REJECT(userId), { reason });
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-verification-requests"] });
+      toast({
+        title: "Verification rejected",
+        description: "The verification request has been rejected",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error rejecting verification",
+        description: error.message || "Failed to reject verification",
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Function to handle rejection with prompt for reason
+  const handleReject = (userId: number) => {
+    const reason = prompt("Please enter a reason for rejection:");
+    if (reason) {
+      rejectMutation.mutate({ userId, reason });
+    }
   };
   
-  const getStatusCard = () => {
-    const status = user.idVerificationStatus as VerificationStatus;
-    
-    if (user.isVerified) {
+  // Determine what to render for the user based on verification status
+  const renderUserVerificationStatus = () => {
+    if (isLoading) {
       return (
-        <Card className="border-4 border-blue-500">
-          <CardHeader className="bg-blue-50">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-8 w-8 text-blue-500" />
-              <div>
-                <CardTitle>Fully Verified</CardTitle>
-                <CardDescription>
-                  You have the official blue checkmark verification
-                </CardDescription>
-              </div>
-            </div>
+        <Card className="w-full">
+          <CardContent className="flex items-center justify-center py-10">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    if (!verificationStatus || verificationStatus.status === AUTH.VERIFICATION_STATUSES.NONE) {
+      return (
+        <Card className="w-full mb-8">
+          <CardHeader>
+            <CardTitle>Verification Status</CardTitle>
+            <CardDescription>You have not submitted a verification request yet</CardDescription>
           </CardHeader>
-          <CardContent className="mt-4">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-2">
-                <VerificationBadge 
-                  isVerified={true}
-                  role={user.role}
-                  variant="profile"
-                />
+          <CardContent>
+            <p className="mb-4">
+              Verify your identity to gain access to additional features and establish trust with other users.
+            </p>
+            <Button onClick={() => setSelectedTab("submit-verification")}>Submit Verification</Button>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    if (verificationStatus.status === AUTH.VERIFICATION_STATUSES.PENDING) {
+      return (
+        <Card className="w-full mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Verification Pending
+              <VerificationBadge isVerified={false} variant="profile" showTooltip={false} />
+            </CardTitle>
+            <CardDescription>
+              Your verification request is being reviewed by our team
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Document Type</span>
+                <span className="text-muted-foreground">
+                  {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.PASSPORT && "Passport"}
+                  {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.DRIVERS_LICENSE && "Driver's License"}
+                  {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.NATIONAL_ID && "National ID"}
+                </span>
               </div>
-              <p>
-                Congratulations! Your account has been fully verified by Inmobi's verification team.
-                You now have increased credibility and trust on the platform.
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Submitted On</span>
+                <span className="text-muted-foreground">
+                  {new Date(verificationStatus.submittedAt).toLocaleDateString()}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                Verification typically takes 1-2 business days to process. You will be notified once your verification is approved or if additional information is needed.
               </p>
-              
-              <div className="mt-4 p-4 bg-blue-50 rounded-md">
-                <h4 className="font-semibold text-blue-700">Benefits of verification:</h4>
-                <ul className="list-disc list-inside mt-2 text-blue-700">
-                  <li>Priority placement in property listings</li>
-                  <li>Higher engagement from potential clients</li>
-                  <li>Access to premium partnership opportunities</li>
-                  <li>Enhanced profile visibility in search results</li>
-                </ul>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    if (verificationStatus.status === AUTH.VERIFICATION_STATUSES.APPROVED) {
+      return (
+        <Card className="w-full mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Verification Approved
+              <VerificationBadge isVerified={true} variant="profile" />
+            </CardTitle>
+            <CardDescription>
+              Your identity has been verified
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Document Type</span>
+                <span className="text-muted-foreground">
+                  {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.PASSPORT && "Passport"}
+                  {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.DRIVERS_LICENSE && "Driver's License"}
+                  {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.NATIONAL_ID && "National ID"}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Verified On</span>
+                <span className="text-muted-foreground">
+                  {new Date(verificationStatus.approvedAt).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-4 p-3 bg-green-50 text-green-800 rounded-md">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <p className="text-sm">
+                  Your verified status is now visible to other users, increasing trust and credibility for your listings and interactions.
+                </p>
               </div>
             </div>
           </CardContent>
@@ -95,310 +219,188 @@ const UserVerificationPage: React.FC = () => {
       );
     }
     
-    switch (status) {
-      case 'pending':
-        return (
-          <Card className="border-4 border-amber-300">
-            <CardHeader className="bg-amber-50">
-              <div className="flex items-center gap-3">
-                <ClockIcon className="h-8 w-8 text-amber-500" />
-                <div>
-                  <CardTitle>Verification Pending</CardTitle>
-                  <CardDescription>
-                    Your verification is being reviewed
-                  </CardDescription>
-                </div>
+    if (verificationStatus.status === AUTH.VERIFICATION_STATUSES.REJECTED) {
+      return (
+        <Card className="w-full mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-600">
+              Verification Rejected
+              <XCircle className="h-5 w-5" />
+            </CardTitle>
+            <CardDescription>
+              Your verification request was not approved
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Document Type</span>
+                <span className="text-muted-foreground">
+                  {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.PASSPORT && "Passport"}
+                  {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.DRIVERS_LICENSE && "Driver's License"}
+                  {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.NATIONAL_ID && "National ID"}
+                </span>
               </div>
-            </CardHeader>
-            <CardContent className="mt-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <VerificationBadge 
-                    idVerificationStatus="pending"
-                    variant="profile"
-                  />
-                </div>
-                <p>
-                  Your verification documents have been submitted and are currently being reviewed 
-                  by our verification team. This process typically takes 1-2 business days.
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Rejected On</span>
+                <span className="text-muted-foreground">
+                  {new Date(verificationStatus.rejectedAt).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Reason</span>
+                <span className="text-muted-foreground">
+                  {verificationStatus.rejectionReason || "No reason provided"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-4 p-3 bg-red-50 text-red-800 rounded-md">
+                <XCircle className="h-5 w-5 text-red-600" />
+                <p className="text-sm">
+                  Please review the rejection reason and submit a new verification request with clearer documentation.
                 </p>
-                
-                <div className="mt-4 p-4 bg-amber-50 rounded-md">
-                  <h4 className="font-semibold">What happens next?</h4>
-                  <ul className="list-disc list-inside mt-2">
-                    <li>Our team reviews your submitted documents</li>
-                    <li>We may contact you if additional information is needed</li>
-                    <li>Once approved, you'll receive a verification badge</li>
-                    <li>You'll be notified by email when the review is complete</li>
-                  </ul>
-                </div>
               </div>
-            </CardContent>
-          </Card>
-        );
-        
-      case 'approved':
-        return (
-          <Card className="border-4 border-green-500">
-            <CardHeader className="bg-green-50">
-              <div className="flex items-center gap-3">
-                <Shield className="h-8 w-8 text-green-500" />
-                <div>
-                  <CardTitle>ID Verified</CardTitle>
-                  <CardDescription>
-                    Your ID has been verified successfully
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="mt-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <VerificationBadge 
-                    idVerificationStatus="approved"
-                    variant="profile"
-                  />
-                </div>
-                <p>
-                  Your identity has been verified successfully. This helps build trust 
-                  with potential clients and partners on Inmobi.
-                </p>
-                
-                <div className="mt-4 p-4 bg-blue-50 rounded-md">
-                  <h4 className="font-semibold text-blue-700">Want the blue checkmark?</h4>
-                  <p className="mt-2 text-blue-700">
-                    You are now eligible for full verification with a blue checkmark.
-                    This is typically granted to established realtors and property professionals.
-                  </p>
-                  <Button 
-                    className="mt-3 bg-blue-500 hover:bg-blue-600"
-                    onClick={() => {
-                      toast({
-                        title: "Blue checkmark request received",
-                        description: "Our team will review your profile. This may take a few days.",
-                      });
-                    }}
-                  >
-                    Request Blue Checkmark
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-        
-      case 'rejected':
-        return (
-          <Card className="border-4 border-red-300">
-            <CardHeader className="bg-red-50">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-8 w-8 text-red-500" />
-                <div>
-                  <CardTitle>Verification Failed</CardTitle>
-                  <CardDescription>
-                    Your verification could not be completed
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="mt-4">
-              <div className="flex flex-col gap-4">
-                <p>
-                  Unfortunately, we couldn't verify your identity with the documents provided.
-                  This could be due to:
-                </p>
-                
-                <ul className="list-disc list-inside">
-                  <li>Document quality issues (blurry, cut-off, or illegible)</li>
-                  <li>Document validity concerns</li>
-                  <li>Information mismatch with your account details</li>
-                </ul>
-                
-                <div className="mt-4 p-4 bg-blue-50 rounded-md">
-                  <h4 className="font-semibold">What to do next?</h4>
-                  <p className="mt-2">
-                    You can submit a new verification request with improved documents.
-                    Ensure all information is clearly visible and matches your account details.
-                  </p>
-                  <Button 
-                    className="mt-3" 
-                    onClick={() => setShowVerificationForm(true)}
-                  >
-                    Try Again
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-        
-      default: // 'none'
-        return (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <User className="h-8 w-8 text-gray-500" />
-                <div>
-                  <CardTitle>Not Verified</CardTitle>
-                  <CardDescription>
-                    Boost your profile credibility with verification
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="mt-4">
-              <div className="flex flex-col gap-4">
-                <p>
-                  Getting verified on Inmobi helps build trust with potential clients and partners.
-                  Verified users enjoy higher engagement and priority placement in search results.
-                </p>
-                
-                <div className="mt-4 p-4 bg-blue-50 rounded-md">
-                  <h4 className="font-semibold">Benefits of verification:</h4>
-                  <ul className="list-disc list-inside mt-2">
-                    <li>Increased trust and credibility</li>
-                    <li>Higher message response rates</li>
-                    <li>More listing views and inquiries</li>
-                    <li>Access to premium features</li>
-                  </ul>
-                </div>
-                
-                <Button 
-                  className="mt-2" 
-                  onClick={() => setShowVerificationForm(true)}
-                >
-                  Start Verification
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        );
+              <Button 
+                onClick={() => setSelectedTab("submit-verification")}
+                className="mt-4"
+              >
+                Submit New Verification
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      );
     }
+    
+    return null;
+  };
+  
+  // Admin panel for handling verification requests
+  const renderAdminPanel = () => {
+    if (user?.role !== AUTH.ROLES.ADMIN) return null;
+    
+    return (
+      <Card className="w-full mt-8">
+        <CardHeader>
+          <CardTitle>Admin: Verification Requests</CardTitle>
+          <CardDescription>
+            Review and manage user identity verification requests
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoadingRequests ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : !verificationRequests || verificationRequests.length === 0 ? (
+            <p className="text-muted-foreground">No pending verification requests</p>
+          ) : (
+            <div className="space-y-6">
+              {verificationRequests.map((request: any) => (
+                <Card key={request.userId} className="overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">{request.user.fullName}</h3>
+                        <p className="text-sm text-muted-foreground">{request.user.email}</p>
+                        <p className="text-sm text-muted-foreground">User ID: {request.userId}</p>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-sm font-medium">Role: {request.user.role}</span>
+                        <span className="text-sm text-muted-foreground">
+                          Submitted: {new Date(request.submittedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-4">
+                      <span className="text-sm font-medium">Document Type:</span>
+                      <span className="ml-2">
+                        {request.documentType === AUTH.ID_VERIFICATION_TYPES.PASSPORT && "Passport"}
+                        {request.documentType === AUTH.ID_VERIFICATION_TYPES.DRIVERS_LICENSE && "Driver's License"}
+                        {request.documentType === AUTH.ID_VERIFICATION_TYPES.NATIONAL_ID && "National ID"}
+                      </span>
+                    </div>
+                    
+                    {request.notes && (
+                      <div className="mb-4">
+                        <span className="text-sm font-medium">Notes:</span>
+                        <p className="text-sm text-muted-foreground mt-1">{request.notes}</p>
+                      </div>
+                    )}
+                    
+                    <div className="border rounded-md p-4 mb-4 bg-gray-50">
+                      <p className="text-sm font-medium mb-2">ID Document</p>
+                      <div className="aspect-video bg-gray-200 rounded-md flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground">
+                          Document preview available in admin dashboard
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3 justify-end">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleReject(request.userId)}
+                        disabled={approveMutation.isPending || rejectMutation.isPending}
+                      >
+                        {rejectMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Rejecting
+                          </>
+                        ) : (
+                          "Reject"
+                        )}
+                      </Button>
+                      <Button 
+                        onClick={() => approveMutation.mutate(request.userId)}
+                        disabled={approveMutation.isPending || rejectMutation.isPending}
+                      >
+                        {approveMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Approving
+                          </>
+                        ) : (
+                          "Approve"
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
   };
   
   return (
-    <div className="container p-4 mx-auto max-w-5xl">
-      <PageHeader
-        title="Account Verification"
-        description="Verify your identity to build trust and credibility"
+    <div className="container py-10">
+      <PageHeader 
+        title="Identity Verification" 
+        description="Verify your identity to gain access to premium features and increased trust"
       />
       
-      <Tabs defaultValue="verification" className="mt-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="verification">Verification Status</TabsTrigger>
-          <TabsTrigger value="security">Security Settings</TabsTrigger>
+      <Tabs 
+        defaultValue="verification-status" 
+        value={selectedTab} 
+        onValueChange={setSelectedTab}
+        className="w-full"
+      >
+        <TabsList className="mb-8">
+          <TabsTrigger value="verification-status">Verification Status</TabsTrigger>
+          <TabsTrigger value="submit-verification">Submit Verification</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="verification" className="mt-6">
-          {showVerificationForm ? (
-            <div className="mt-4">
-              <VerificationRequestForm
-                onSuccess={() => setShowVerificationForm(false)}
-              />
-              <div className="mt-4 text-center">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowVerificationForm(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : (
-            getStatusCard()
-          )}
+        <TabsContent value="verification-status">
+          {renderUserVerificationStatus()}
+          {renderAdminPanel()}
         </TabsContent>
         
-        <TabsContent value="security" className="mt-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <Lock className="h-8 w-8 text-gray-500" />
-                <div>
-                  <CardTitle>Security Settings</CardTitle>
-                  <CardDescription>
-                    Manage your account security options
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="mt-4">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div className="flex items-center gap-3">
-                    <Fingerprint className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <h3 className="font-medium">Passkey Authentication</h3>
-                      <p className="text-sm text-gray-500">
-                        Enable passwordless login with passkeys
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant={user.passkeyEnabled ? "outline" : "default"}
-                    onClick={() => {
-                      toast({
-                        title: user.passkeyEnabled 
-                          ? "Passkey removed successfully" 
-                          : "Passkey setup",
-                        description: user.passkeyEnabled 
-                          ? "Your passkey has been removed from your account." 
-                          : "Follow the prompts to set up your passkey.",
-                      });
-                    }}
-                  >
-                    {user.passkeyEnabled ? "Remove Passkey" : "Set Up Passkey"}
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div className="flex items-center gap-3">
-                    <Shield className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <h3 className="font-medium">Two-Factor Authentication</h3>
-                      <p className="text-sm text-gray-500">
-                        Add an extra layer of security to your account
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="default"
-                    onClick={() => {
-                      toast({
-                        title: "Coming Soon",
-                        description: "This feature will be available soon.",
-                      });
-                    }}
-                  >
-                    Set Up 2FA
-                  </Button>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Lock className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <h3 className="font-medium">Change Password</h3>
-                      <p className="text-sm text-gray-500">
-                        Update your account password
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      toast({
-                        title: "Password Change",
-                        description: "Password change feature coming soon.",
-                      });
-                    }}
-                  >
-                    Change Password
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="submit-verification">
+          <VerificationRequestForm />
         </TabsContent>
       </Tabs>
     </div>
