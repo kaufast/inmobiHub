@@ -96,7 +96,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
             <div className="relative sm:w-1/3 h-52 sm:h-auto overflow-hidden">
               {property.isPremium && (
                 <div className="absolute top-4 right-4 z-10">
-                  <div className="bg-blue-600 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
+                  <div className="bg-[#1d2633] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
                     Premium
                   </div>
                 </div>
@@ -138,7 +138,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                 </button>
                 
                 <button 
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1d2633] text-white hover:bg-[#131c28] transition-colors shadow-sm hover:shadow-md"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -224,7 +224,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                   </button>
                   
                   <button 
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1d2633] text-white hover:bg-[#131c28] transition-colors shadow-sm hover:shadow-md"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -312,7 +312,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
         {/* Premium badge */}
         {property.isPremium && (
           <div className="absolute top-4 right-4 z-10">
-            <div className="bg-blue-600 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
+            <div className="bg-[#1d2633] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
               Premium
             </div>
           </div>
@@ -357,7 +357,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
             </button>
             
             <button 
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1d2633] text-white hover:bg-[#131c28] transition-colors shadow-sm hover:shadow-md"
               onClick={handleShareProperty}
             >
               <Share2 className="h-4 w-4" />

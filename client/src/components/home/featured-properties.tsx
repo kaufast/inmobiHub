@@ -9,9 +9,9 @@ export default function FeaturedProperties() {
     queryKey: ["/api/properties/featured"],
   });
 
-  const blueBackgroundStyle = {
-    backgroundColor: '#1d4ed8',
-    backgroundImage: 'linear-gradient(to bottom, #1d4ed8, #1e40af)',
+  const darkBlueBackgroundStyle = {
+    backgroundColor: '#1d2633',
+    backgroundImage: 'linear-gradient(to bottom, #1d2633, #131c28)',
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
   };
 
@@ -19,7 +19,7 @@ export default function FeaturedProperties() {
     <section 
       id="featured-properties" 
       className="py-16"
-      style={blueBackgroundStyle}>
+      style={darkBlueBackgroundStyle}>
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-baseline justify-between mb-10">
           <div>
@@ -27,7 +27,7 @@ export default function FeaturedProperties() {
             <p className="text-white/80 mt-2">Exclusive listings with premium potential</p>
           </div>
           <Link href="/search">
-            <a className="text-white hover:text-white/80 font-medium mt-4 md:mt-0 inline-flex items-center bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all">
+            <a className="text-white hover:text-white/80 font-medium mt-4 md:mt-0 inline-flex items-center bg-[#1d2633] hover:bg-[#131c28] px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all">
               View all properties
               <svg className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -36,7 +36,7 @@ export default function FeaturedProperties() {
           </Link>
         </div>
         
-        <div className="bg-blue-600 shadow-xl rounded-xl p-8 text-white">
+        <div className="bg-[#1d2633] shadow-xl rounded-xl p-8 text-white">
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-white" />
