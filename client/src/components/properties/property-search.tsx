@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, MapPin, Sliders } from "lucide-react";
+import { Search, MapPin, Sliders, Image, Mic } from "lucide-react";
 
 interface PropertySearchProps {
   initialValues?: Partial<SearchProperties>;
@@ -78,29 +78,61 @@ export default function PropertySearch({
             <Input 
               id="location" 
               placeholder="Enter city, zip or address"
-              className="pl-10"
+              className="pl-10 pr-10 bg-gray-100 focus:bg-white border-gray-300"
               value={searchParams.location || ''}
               onChange={(e) => handleInputChange('location', e.target.value)}
             />
+            <div className="absolute inset-y-0 right-0 flex items-center">
+              <button
+                type="submit"
+                className="h-full px-3 text-gray-500 hover:text-secondary-600 transition-colors"
+              >
+                <Search className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
         
-        {/* Listing Type */}
-        <div>
-          <Label htmlFor="listing_type" className="block text-sm font-medium text-primary-700 mb-1">Listing Type</Label>
-          <Select 
-            value={searchParams.listingType} 
-            onValueChange={(value) => handleInputChange('listingType', value as any)}
+        {/* Listing Type with search mode icons */}
+        <div className="flex items-end space-x-2">
+          <div className="flex-grow">
+            <Label htmlFor="listing_type" className="block text-sm font-medium text-primary-700 mb-1">Listing Type</Label>
+            <Select 
+              value={searchParams.listingType} 
+              onValueChange={(value) => handleInputChange('listingType', value as any)}
+            >
+              <SelectTrigger id="listing_type">
+                <SelectValue placeholder="Buy" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="buy">Buy</SelectItem>
+                <SelectItem value="rent">Rent</SelectItem>
+                <SelectItem value="sell">Sell</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Image search icon */}
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="h-10 w-10 rounded-full"
+            onClick={() => handleInputChange('searchType', 'image')}
           >
-            <SelectTrigger id="listing_type">
-              <SelectValue placeholder="Buy" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="buy">Buy</SelectItem>
-              <SelectItem value="rent">Rent</SelectItem>
-              <SelectItem value="sell">Sell</SelectItem>
-            </SelectContent>
-          </Select>
+            <Image className="h-4 w-4" />
+          </Button>
+          
+          {/* Voice search icon */}
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            className="h-10 w-10 rounded-full"
+            onClick={() => handleInputChange('searchType', 'audio')}
+          >
+            <Mic className="h-4 w-4" />
+          </Button>
         </div>
         
         {/* Property type */}

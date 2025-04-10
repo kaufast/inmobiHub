@@ -283,16 +283,7 @@ export default function HeroSection() {
                   </Collapsible>
                 </div>
                 
-                <div className="flex flex-wrap gap-4">
-                  <Link href="/auth">
-                    <Button variant="link" className="text-white font-medium text-base flex items-center">
-                      {t('common.applyNow')}
-                      <svg className="ml-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </Button>
-                  </Link>
-                </div>
+                {/* Apply button removed as requested */}
               </TabsContent>
               
               <TabsContent value="image" className="mt-0 border border-gray-700 p-4 rounded-b-lg">
