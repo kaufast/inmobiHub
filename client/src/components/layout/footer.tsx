@@ -81,15 +81,15 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <MapPin size={18} className="mr-2 mt-1 text-secondary-500" />
-                <span>1234 Premium Avenue, Madrid, Spain</span>
+                <span>C. de la Ribera 14, 08003 Barcelona</span>
               </li>
               <li className="flex items-center">
                 <Phone size={18} className="mr-2 text-secondary-500" />
-                <span>+34 91 123 4567</span>
+                <span>+34 679 680 000</span>
               </li>
               <li className="flex items-center">
                 <Mail size={18} className="mr-2 text-secondary-500" />
-                <a href="mailto:info@inmobi.com" className="hover:text-secondary-500 transition-colors">info@inmobi.com</a>
+                <a href="mailto:info@inmobi.mobi" className="hover:text-secondary-500 transition-colors">info@inmobi.mobi</a>
               </li>
             </ul>
           </div>
@@ -104,8 +104,8 @@ export default function Footer() {
               &copy; {currentYear} Inmobi. All rights reserved.
             </div>
             <div className="mt-2 md:mt-0">
-              <a href="https://inmobi.com" target="_blank" rel="noopener noreferrer" className="text-secondary-500 hover:text-secondary-400 transition-colors">
-                inmobi.com
+              <a href="https://inmobi.mobi" target="_blank" rel="noopener noreferrer" className="text-secondary-500 hover:text-secondary-400 transition-colors">
+                inmobi.mobi
               </a>
             </div>
           </div>

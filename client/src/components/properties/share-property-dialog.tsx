@@ -187,7 +187,7 @@ export default function SharePropertyDialog({
                   className="flex flex-col items-center gap-2 p-4 border-white/10 hover:bg-white/10 text-white"
                   onClick={() => handleShareButtonClick('whatsapp')}
                 >
-                  <WhatsApp className="h-6 w-6 text-[#25D366]" />
+                  <MessageCircle className="h-6 w-6 text-[#25D366]" />
                   <span className="text-xs">WhatsApp</span>
                 </Button>
                 

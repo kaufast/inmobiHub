@@ -4,6 +4,8 @@ import { ChatWidget } from "@/components/chat/ChatWidget";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
+import AboutPage from "@/pages/about-page";
+import ContactPage from "@/pages/contact-page";
 import PropertyDetailsPage from "@/pages/property-details";
 import PropertyAnalyticsPage from "@/pages/property-analytics";
 import SearchResultsPage from "@/pages/search-results";
@@ -44,6 +46,8 @@ function AppContent() {
           {/* Public Routes */}
           <Route path="/" component={HomePage} />
           <Route path="/auth" component={AuthPage} />
+          <Route path="/about" component={AboutPage} />
+          <Route path="/contact" component={ContactPage} />
           <Route path="/property/:id" component={PropertyDetailsPage} />
           <Route path="/property/:id/analytics" component={PropertyAnalyticsPage} />
           <Route path="/property-comparison" component={PropertyComparisonPage} />
