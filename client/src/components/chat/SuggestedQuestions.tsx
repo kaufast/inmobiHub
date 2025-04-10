@@ -1,6 +1,7 @@
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { SuggestedQuestion } from '@shared/schema';
-import { HelpCircle, TrendingUp, Tag } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface SuggestedQuestionsProps {
   categoryQuestions: SuggestedQuestion[];
@@ -19,77 +20,44 @@ export function SuggestedQuestions({
   propertyType,
   category
 }: SuggestedQuestionsProps) {
-  // No questions available
-  if (!isLoading && categoryQuestions.length === 0 && popularQuestions.length === 0) {
-    return null;
-  }
-
-  // Show loading skeleton
+  // Show loading state
   if (isLoading) {
     return (
-      <div className="my-2">
-        <div className="flex items-center gap-1 mb-2">
-          <HelpCircle size={14} className="text-primary/70" />
-          <span className="text-xs text-gray-400">Loading suggested questions...</span>
-        </div>
-        <div className="space-y-1">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-8 bg-gray-700 animate-pulse rounded-md" />
-          ))}
-        </div>
+      <div className="flex justify-center py-2">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
-  return (
-    <div className="my-2">
-      {/* Category-specific questions */}
-      {categoryQuestions.length > 0 && (
-        <div className="mb-3">
-          <div className="flex items-center gap-1 mb-2">
-            <Tag size={14} className="text-primary/70" />
-            <span className="text-xs text-gray-400">
-              Suggested questions {category ? `about ${category}` : ''}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {categoryQuestions.map((question) => (
-              <Button
-                key={question.id}
-                variant="outline"
-                size="sm"
-                className="text-xs py-0 h-auto bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-200"
-                onClick={() => onQuestionClick(question.question, question.id)}
-              >
-                {question.question}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
+  // Determine which questions to show - prioritize category-specific
+  const questionsToShow = categoryQuestions.length > 0 
+    ? categoryQuestions 
+    : popularQuestions;
+    
+  if (questionsToShow.length === 0) {
+    return null;
+  }
 
-      {/* Popular questions */}
-      {popularQuestions.length > 0 && categoryQuestions.length === 0 && (
-        <div>
-          <div className="flex items-center gap-1 mb-2">
-            <TrendingUp size={14} className="text-primary/70" />
-            <span className="text-xs text-gray-400">Popular questions</span>
-          </div>
-          <div className="flex flex-wrap gap-1">
-            {popularQuestions.map((question) => (
-              <Button
-                key={question.id}
-                variant="outline"
-                size="sm"
-                className="text-xs py-0 h-auto bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-200"
-                onClick={() => onQuestionClick(question.question, question.id)}
-              >
-                {question.question}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-gray-400 mb-1">
+        {categoryQuestions.length > 0 
+          ? 'Suggested questions for this category:' 
+          : 'Popular questions:'}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {questionsToShow.map((question) => (
+          <Button
+            key={question.id}
+            variant="outline"
+            size="sm"
+            className="text-xs py-1 px-3 h-auto bg-gray-700 hover:bg-gray-600 text-white border-gray-600"
+            onClick={() => onQuestionClick(question.question, question.id)}
+          >
+            {question.question}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }

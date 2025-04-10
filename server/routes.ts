@@ -1403,6 +1403,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Suggested Questions API endpoints
+  app.get('/api/suggested-questions', async (req, res) => {
+    try {
+      const category = req.query.category as string | undefined;
+      const propertyType = req.query.propertyType as string | undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      
+      const questions = await storage.getSuggestedQuestions(category, propertyType, limit);
+      res.json(questions);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch suggested questions' });
+    }
+  });
+  
+  app.get('/api/suggested-questions/popular', async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      const questions = await storage.getPopularSuggestedQuestions(limit);
+      res.json(questions);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch popular questions' });
+    }
+  });
+  
+  app.post('/api/suggested-questions/:id/click', async (req, res) => {
+    try {
+      const questionId = parseInt(req.params.id);
+      const success = await storage.incrementQuestionClickCount(questionId);
+      
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ error: 'Question not found' });
+      }
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to increment question click count' });
+    }
+  });
+  
   const httpServer = createServer(app);
   
   // Set up WebSocket server on a distinct path to avoid conflict with Vite's HMR
