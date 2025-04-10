@@ -8,10 +8,7 @@ export default function Footer() {
           {/* Company info */}
           <div>
             <div className="flex items-center mb-4">
-              <svg className="h-8 w-8 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 21H21M5 21V7L13 3V21M19 21V10L13 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span className="text-xl font-bold">Foundation<sup>®</sup></span>
+              <span className="text-xl font-bold">Inmobi<sup>®</sup></span>
             </div>
             <p className="text-white/70 mb-4">Unlocking Smart Capital For Data-Driven Investors</p>
             <div className="flex space-x-4">
@@ -122,7 +119,7 @@ export default function Footer() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 <span className="text-white/70">
-                  9876 Foundation Drive<br />
+                  9876 Inmobi Avenue<br />
                   New York, NY 10001
                 </span>
               </li>
