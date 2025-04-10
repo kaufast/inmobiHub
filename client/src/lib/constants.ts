@@ -45,6 +45,8 @@ export const API_ENDPOINTS = {
   VERIFIED_USERS: "/api/verified-users",
   VERIFICATION_ADMIN: "/api/admin/verification-requests",
   VERIFICATION_UPDATE: (userId: number) => `/api/admin/users/${userId}/verification`,
+  VERIFICATION_APPROVE: (userId: number) => `/api/admin/users/${userId}/verification/approve`,
+  VERIFICATION_REJECT: (userId: number) => `/api/admin/users/${userId}/verification/reject`,
 };
 
 // Image placeholders
