@@ -127,7 +127,7 @@ export default function HeroSection() {
           </p>
           
           {/* Multimodal Search bar */}
-          <div className="w-full max-w-4xl bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/20">
+          <div className="w-full max-w-4xl bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700">
             <Tabs defaultValue="text" className="w-full" onValueChange={(value) => {
               const type = value as "text" | "image" | "audio";
               setSearchType(type);
@@ -136,7 +136,7 @@ export default function HeroSection() {
                 searchType: type
               }));
             }}>
-              <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-700">
                 <TabsTrigger value="text" className="text-white data-[state=active]:bg-secondary-500">
                   <Search className="w-4 h-4 mr-2" />
                   Text Search
@@ -160,7 +160,7 @@ export default function HeroSection() {
                       </div>
                       <Input 
                         placeholder="Enter city, zip or address"
-                        className="pl-10 bg-white/10 border-white/20 text-white h-12"
+                        className="pl-10 bg-gray-700/90 border-gray-600 text-white h-12"
                         value={searchParams.location || ''}
                         onChange={(e) => handleInputChange('location', e.target.value)}
                       />
@@ -171,7 +171,7 @@ export default function HeroSection() {
                       value={searchParams.propertyType} 
                       onValueChange={(value) => handleInputChange('propertyType', value)}
                     >
-                      <SelectTrigger className="bg-white/10 border-white/20 text-white h-12">
+                      <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white h-12">
                         <SelectValue placeholder="Property Type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -218,7 +218,7 @@ export default function HeroSection() {
                       <img 
                         src={imagePreview} 
                         alt="Image to search" 
-                        className="max-h-60 rounded-lg border-2 border-white/30"
+                        className="max-h-60 rounded-lg border-2 border-gray-600"
                       />
                       <button
                         onClick={clearImagePreview}
@@ -229,7 +229,7 @@ export default function HeroSection() {
                     </div>
                   ) : (
                     <div 
-                      className="h-48 w-full max-w-lg border-2 border-dashed border-white/30 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-white/50 mb-4"
+                      className="h-48 w-full max-w-lg border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-500 mb-4 bg-gray-700/70"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <Camera className="h-10 w-10 text-white/60 mb-2" />
@@ -259,7 +259,7 @@ export default function HeroSection() {
               
               <TabsContent value="audio" className="mt-0">
                 <div className="flex flex-col items-center">
-                  <div className="h-48 w-full max-w-lg border-2 border-dashed border-white/30 rounded-lg flex flex-col items-center justify-center mb-4">
+                  <div className="h-48 w-full max-w-lg border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center mb-4 bg-gray-700/70">
                     <button
                       onClick={toggleRecording}
                       className={`h-20 w-20 rounded-full ${isRecording ? 'bg-red-500 animate-pulse' : 'bg-secondary-500'} flex items-center justify-center`}
