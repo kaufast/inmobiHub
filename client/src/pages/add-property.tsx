@@ -61,7 +61,7 @@ import {
 } from '@/components/ui/tooltip';
 import { Link } from 'wouter';
 
-// Create a schema for property data
+// Create a schema for property data based on the DB schema
 const propertySchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(20, 'Description must be at least 20 characters'),
@@ -74,28 +74,36 @@ const propertySchema = z.object({
   bathrooms: z.string().refine(val => !isNaN(Number(val)) && Number(val) >= 0, {
     message: 'Bathrooms must be a valid number',
   }),
-  squareMeters: z.string().refine(val => !isNaN(Number(val)) && Number(val) > 0, {
+  squareFeet: z.string().refine(val => !isNaN(Number(val)) && Number(val) > 0, {
     message: 'Area must be a valid number greater than 0',
   }),
-  propertyType: z.string().min(1, 'Property type is required'),
+  propertyType: z.enum(['house', 'condo', 'apartment', 'townhouse', 'land']),
   listingType: z.string().min(1, 'Listing type is required'),
   address: z.string().min(5, 'Address must be at least 5 characters'),
   city: z.string().min(2, 'City must be at least 2 characters'),
   state: z.string().min(2, 'State/Province must be at least 2 characters'),
   country: z.string().min(2, 'Country must be at least 2 characters'),
-  postalCode: z.string().min(2, 'Postal code must be at least 2 characters'),
+  zipCode: z.string().min(2, 'Postal code must be at least 2 characters'),
   yearBuilt: z.string().refine(val => !isNaN(Number(val)) && Number(val) > 1900 && Number(val) <= new Date().getFullYear(), {
     message: 'Year built must be a valid year',
   }),
-  // Optional fields without validation
-  isPremium: z.boolean().optional(),
-  isFeatured: z.boolean().optional(),
+  // These are needed by the schema but we'll provide default values
+  latitude: z.number().default(0),
+  longitude: z.number().default(0),
+  images: z.array(z.string()).default([]),
+  // Optional fields
+  isPremium: z.boolean().default(false),
+  features: z.array(z.string()).optional(),
+  neighborhoodId: z.number().optional(),
+  lotSize: z.number().optional(),
+  garageSpaces: z.number().optional(),
+  locationScore: z.number().optional(),
+  // Features transformed to JSON
   hasParking: z.boolean().optional(),
   hasAirConditioning: z.boolean().optional(),
   hasHeating: z.boolean().optional(),
   hasInternet: z.boolean().optional(),
   hasFurnished: z.boolean().optional(),
-  neighborhoodId: z.string().optional(),
 });
 
 type PropertyFormData = z.infer<typeof propertySchema>;
@@ -135,23 +143,25 @@ export default function AddPropertyPage() {
       price: '',
       bedrooms: '',
       bathrooms: '',
-      squareMeters: '',
-      propertyType: '',
-      listingType: '',
+      squareFeet: '',
+      propertyType: 'house',
+      listingType: 'sale',
       address: '',
       city: '',
       state: '',
-      country: '',
-      postalCode: '',
+      country: 'USA',
+      zipCode: '',
       yearBuilt: '',
       isPremium: false,
-      isFeatured: false,
       hasParking: false,
       hasAirConditioning: false,
       hasHeating: false,
       hasInternet: false,
       hasFurnished: false,
-      neighborhoodId: '',
+      latitude: 0,
+      longitude: 0,
+      images: [],
+      features: [],
     },
   });
   
@@ -248,11 +258,19 @@ export default function AddPropertyPage() {
         price: Number(data.price),
         bedrooms: Number(data.bedrooms),
         bathrooms: Number(data.bathrooms),
-        squareMeters: Number(data.squareMeters),
+        squareFeet: Number(data.squareFeet),
         yearBuilt: Number(data.yearBuilt),
         images: uploadedImageUrls,
+        // Add features based on checkboxes
+        features: [
+          ...(data.hasParking ? ['parking'] : []),
+          ...(data.hasAirConditioning ? ['air-conditioning'] : []),
+          ...(data.hasHeating ? ['heating'] : []),
+          ...(data.hasInternet ? ['internet'] : []),
+          ...(data.hasFurnished ? ['furnished'] : []),
+        ],
         // Add the current user as the owner
-        userId: user?.id,
+        ownerId: user?.id,
       };
       
       await createPropertyMutation.mutateAsync(preparedData as any);
@@ -447,14 +465,14 @@ export default function AddPropertyPage() {
                         
                         <FormField
                           control={form.control}
-                          name="squareMeters"
+                          name="squareFeet"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Area (m²)</FormLabel>
+                              <FormLabel>Area (sq ft)</FormLabel>
                               <FormControl>
                                 <Input 
                                   type="number" 
-                                  placeholder="e.g. 120" 
+                                  placeholder="e.g. 1200" 
                                   {...field} 
                                 />
                               </FormControl>
@@ -550,7 +568,7 @@ export default function AddPropertyPage() {
                             
                             <FormField
                               control={form.control}
-                              name="postalCode"
+                              name="zipCode"
                               render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
