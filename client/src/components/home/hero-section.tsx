@@ -373,7 +373,14 @@ export default function HeroSection() {
           {/* Map Mockup Section */}
           <div className="w-full max-w-4xl mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
             <div className="relative h-[450px] w-full">
+              {/* Background house image */}
               <div className="absolute inset-0 bg-[url('/assets/modern-house.png')] bg-cover bg-center"></div>
+              
+              {/* Overlay people */}
+              <div className="absolute inset-0 flex justify-center items-end">
+                <div className="w-[50%] h-[25%] bg-[url('/assets/people-standing.jpg')] bg-contain bg-no-repeat bg-bottom"></div>
+              </div>
+              
               <div className="absolute inset-0 bg-gray-900/20"></div>
               
               {/* Map Pins */}
