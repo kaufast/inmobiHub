@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X, ChevronDown, Home, Building, Search, User, LogOut, HelpCircle } from "lucide-react";
+import { Menu, X, ChevronDown, Home, Building, Search, User, LogOut, HelpCircle, LayoutDashboard } from "lucide-react";
 import LanguageSelector from "@/components/i18n/language-selector";
 import PropertyNotificationCenter from "@/components/notifications/property-notification-center";
 import HelpMenu from "@/components/layout/help-menu";
@@ -98,7 +98,7 @@ export default function Navbar() {
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.profileImage || ''} alt={user.fullName} />
                       <AvatarFallback className="bg-secondary-500 text-white">
-                        {user.fullName.split(' ').map(n => n[0]).join('')}
+                        <LayoutDashboard className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -115,7 +115,7 @@ export default function Navbar() {
                   <DropdownMenuSeparator className="bg-white/10" />
                   <Link href="/dashboard">
                     <DropdownMenuItem className="hover:bg-white/10">
-                      <User className="mr-2 h-4 w-4" />
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span>{t('common.dashboard')}</span>
                     </DropdownMenuItem>
                   </Link>
@@ -221,7 +221,7 @@ export default function Navbar() {
                           className="flex items-center py-2 text-white/80 hover:text-white transition"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          <User className="mr-3 h-5 w-5" />
+                          <LayoutDashboard className="mr-3 h-5 w-5" />
                           {t('common.dashboard')}
                         </a>
                       </Link>
