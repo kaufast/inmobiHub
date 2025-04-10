@@ -212,8 +212,8 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1">
                       <span className="text-xs text-primary-500">Listed by <span className="font-medium text-primary-700">Agent</span></span>
-                      {/* Assuming the property has a verified flag or fetch owner info via query */}
-                      <VerificationBadge isVerified={true} variant="property-card" />
+                      {/* Using the correct variant name for the verification badge */}
+                      <VerificationBadge isVerified={true} variant="card" />
                     </div>
                   </div>
                 </div>
@@ -468,8 +468,8 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
               <div className="flex flex-col">
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-white/70">Listed by <span className="font-medium text-white">Agent</span></span>
-                  {/* Assuming the property has a verified flag or fetch owner info via query */}
-                  <VerificationBadge isVerified={true} variant="property-card" />
+                  {/* Using the correct variant name for the verification badge */}
+                  <VerificationBadge isVerified={true} variant="card" />
                 </div>
               </div>
             </div>

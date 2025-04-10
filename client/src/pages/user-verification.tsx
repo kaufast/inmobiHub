@@ -19,124 +19,118 @@ import VerificationRequestForm from "@/components/users/verification-request-for
 import VerificationBadge from "@/components/users/verification-badge";
 import PageHeader from "@/components/layout/page-header";
 
-const UserVerificationPage = () => {
+const UserVerificationPage: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [selectedTab, setSelectedTab] = useState<string>("verification-status");
-  
-  // Get the user's verification status
-  const { data: verificationStatus, isLoading } = useQuery({
-    queryKey: ["verification", user?.id],
+  const [activeTab, setActiveTab] = useState<string>("status");
+
+  const { data: verificationStatus, isLoading: isStatusLoading } = useQuery({
+    queryKey: [API_ENDPOINTS.VERIFICATION_STATUS(user?.id || 0)],
     queryFn: async () => {
       if (!user) return null;
       try {
-        const res = await apiRequest("GET", API_ENDPOINTS.VERIFICATION_STATUS(user.id));
-        return await res.json();
+        const response = await apiRequest(
+          "GET", 
+          API_ENDPOINTS.VERIFICATION_STATUS(user.id)
+        );
+        return await response.json();
       } catch (error) {
-        console.error("Failed to get verification status", error);
-        return { 
-          status: AUTH.VERIFICATION_STATUSES.NONE,
-          documentType: null,
-          submittedAt: null,
-          approvedAt: null,
-          rejectedAt: null,
-          rejectionReason: null,
-        };
+        // If endpoint returns 404, it means no verification request exists
+        if (error instanceof Error && error.message.includes("404")) {
+          return { status: AUTH.VERIFICATION_STATUSES.NONE };
+        }
+        throw error;
       }
     },
     enabled: !!user,
   });
-  
-  // Get admin verification requests (only for admin users)
-  const { data: verificationRequests, isLoading: isLoadingRequests } = useQuery({
-    queryKey: ["admin-verification-requests"],
-    queryFn: async () => {
-      try {
-        const res = await apiRequest("GET", API_ENDPOINTS.VERIFICATION_ADMIN);
-        return await res.json();
-      } catch (error) {
-        console.error("Failed to get verification requests", error);
-        return [];
-      }
-    },
-    enabled: user?.role === AUTH.ROLES.ADMIN,
-  });
-  
-  // Admin functions to approve/reject verification
-  const approveMutation = useMutation({
-    mutationFn: async (userId: number) => {
-      const res = await apiRequest("POST", API_ENDPOINTS.VERIFICATION_APPROVE(userId));
-      return await res.json();
+
+  const updateVerificationMutation = useMutation({
+    mutationFn: async ({ userId, status, reason }: { userId: number; status: string; reason?: string }) => {
+      const response = await apiRequest(
+        "PATCH", 
+        API_ENDPOINTS.VERIFICATION_UPDATE(userId),
+        { status, notes: reason }
+      );
+      return await response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-verification-requests"] });
       toast({
-        title: "Verification approved",
-        description: "The user has been successfully verified",
+        title: "Verification status updated",
+        description: "The verification status has been updated successfully.",
       });
+      queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.VERIFICATION_STATUS(user?.id || 0)] });
+      queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.VERIFICATION_ADMIN] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
-        title: "Error approving verification",
-        description: error.message || "Failed to approve verification",
+        title: "Error updating verification",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
-  
-  const rejectMutation = useMutation({
-    mutationFn: async ({ userId, reason }: { userId: number; reason: string }) => {
-      const res = await apiRequest("POST", API_ENDPOINTS.VERIFICATION_REJECT(userId), { reason });
-      return await res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-verification-requests"] });
-      toast({
-        title: "Verification rejected",
-        description: "The verification request has been rejected",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error rejecting verification",
-        description: error.message || "Failed to reject verification",
-        variant: "destructive",
-      });
-    },
-  });
-  
-  // Function to handle rejection with prompt for reason
-  const handleReject = (userId: number) => {
-    const reason = prompt("Please enter a reason for rejection:");
-    if (reason) {
-      rejectMutation.mutate({ userId, reason });
-    }
-  };
-  
-  // Determine what to render for the user based on verification status
-  const renderUserVerificationStatus = () => {
-    if (isLoading) {
-      return (
-        <Card className="w-full">
-          <CardContent className="flex items-center justify-center py-10">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+
+  // If user is not logged in, redirect to login
+  if (!user) {
+    return (
+      <div className="container max-w-4xl py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Authentication Required</CardTitle>
+            <CardDescription>
+              Please log in to access the verification page.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => window.location.href = "/auth"}>
+              Log In
+            </Button>
           </CardContent>
         </Card>
-      );
-    }
-    
+      </div>
+    );
+  }
+
+  // When still loading verification status
+  if (isStatusLoading) {
+    return (
+      <div className="container max-w-4xl py-8">
+        <PageHeader
+          title="Account Verification"
+          description="Verify your identity to gain access to premium features and build trust with other users."
+          breadcrumbs={[
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Verification" },
+          ]}
+        />
+        
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin mr-2" />
+          <span>Loading verification status...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Display different UI based on verification status
+  const renderVerificationStatus = () => {
     if (!verificationStatus || verificationStatus.status === AUTH.VERIFICATION_STATUSES.NONE) {
       return (
         <Card className="w-full mb-8">
           <CardHeader>
-            <CardTitle>Verification Status</CardTitle>
-            <CardDescription>You have not submitted a verification request yet</CardDescription>
+            <CardTitle>Not Verified</CardTitle>
+            <CardDescription>
+              You have not submitted any verification documents yet.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="mb-4">
-              Verify your identity to gain access to additional features and establish trust with other users.
+            <p className="text-sm text-muted-foreground mb-6">
+              Verify your identity to gain access to premium features, build trust with other users, and unlock the full potential of our platform. The verification process typically takes 1-2 business days.
             </p>
-            <Button onClick={() => setSelectedTab("submit-verification")}>Submit Verification</Button>
+            <Button onClick={() => setActiveTab("request")}>
+              Start Verification Process
+            </Button>
           </CardContent>
         </Card>
       );
@@ -202,16 +196,18 @@ const UserVerificationPage = () => {
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">Verified On</span>
+                <span className="text-sm font-medium">Approved On</span>
                 <span className="text-muted-foreground">
-                  {new Date(verificationStatus.approvedAt).toLocaleDateString()}
+                  {verificationStatus.approvedAt 
+                    ? new Date(verificationStatus.approvedAt).toLocaleDateString() 
+                    : "Unknown"}
                 </span>
               </div>
-              <div className="flex items-center gap-2 mt-4 p-3 bg-green-50 text-green-800 rounded-md">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-                <p className="text-sm">
-                  Your verified status is now visible to other users, increasing trust and credibility for your listings and interactions.
-                </p>
+              <div className="mt-4 flex items-center">
+                <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                <span className="text-green-700">
+                  Your verification badge is now visible on your profile and listings
+                </span>
               </div>
             </div>
           </CardContent>
@@ -223,9 +219,11 @@ const UserVerificationPage = () => {
       return (
         <Card className="w-full mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
+            <CardTitle className="flex items-center gap-2">
               Verification Rejected
-              <XCircle className="h-5 w-5" />
+              <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                Rejected
+              </span>
             </CardTitle>
             <CardDescription>
               Your verification request was not approved
@@ -241,29 +239,30 @@ const UserVerificationPage = () => {
                   {verificationStatus.documentType === AUTH.ID_VERIFICATION_TYPES.NATIONAL_ID && "National ID"}
                 </span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">Rejected On</span>
-                <span className="text-muted-foreground">
-                  {new Date(verificationStatus.rejectedAt).toLocaleDateString()}
+              {verificationStatus.rejectedAt && (
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Rejected On</span>
+                  <span className="text-muted-foreground">
+                    {new Date(verificationStatus.rejectedAt).toLocaleDateString()}
+                  </span>
+                </div>
+              )}
+              {verificationStatus.rejectionReason && (
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">Reason</span>
+                  <span className="text-muted-foreground">
+                    {verificationStatus.rejectionReason}
+                  </span>
+                </div>
+              )}
+              <div className="mt-4 flex items-center">
+                <XCircle className="h-5 w-5 text-red-500 mr-2" />
+                <span className="text-red-700">
+                  Please submit a new verification request with the required corrections
                 </span>
               </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">Reason</span>
-                <span className="text-muted-foreground">
-                  {verificationStatus.rejectionReason || "No reason provided"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mt-4 p-3 bg-red-50 text-red-800 rounded-md">
-                <XCircle className="h-5 w-5 text-red-600" />
-                <p className="text-sm">
-                  Please review the rejection reason and submit a new verification request with clearer documentation.
-                </p>
-              </div>
-              <Button 
-                onClick={() => setSelectedTab("submit-verification")}
-                className="mt-4"
-              >
-                Submit New Verification
+              <Button onClick={() => setActiveTab("request")} className="mt-4">
+                Submit New Verification Request
               </Button>
             </div>
           </CardContent>
@@ -271,138 +270,241 @@ const UserVerificationPage = () => {
       );
     }
     
-    return null;
-  };
-  
-  // Admin panel for handling verification requests
-  const renderAdminPanel = () => {
-    if (user?.role !== AUTH.ROLES.ADMIN) return null;
-    
+    // Fallback for unknown status
     return (
-      <Card className="w-full mt-8">
+      <Card className="w-full mb-8">
         <CardHeader>
-          <CardTitle>Admin: Verification Requests</CardTitle>
+          <CardTitle>Verification Status</CardTitle>
           <CardDescription>
-            Review and manage user identity verification requests
+            Your current verification status is unknown
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoadingRequests ? (
-            <div className="flex justify-center py-10">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : !verificationRequests || verificationRequests.length === 0 ? (
-            <p className="text-muted-foreground">No pending verification requests</p>
-          ) : (
-            <div className="space-y-6">
-              {verificationRequests.map((request: any) => (
-                <Card key={request.userId} className="overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold">{request.user.fullName}</h3>
-                        <p className="text-sm text-muted-foreground">{request.user.email}</p>
-                        <p className="text-sm text-muted-foreground">User ID: {request.userId}</p>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-sm font-medium">Role: {request.user.role}</span>
-                        <span className="text-sm text-muted-foreground">
-                          Submitted: {new Date(request.submittedAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <span className="text-sm font-medium">Document Type:</span>
-                      <span className="ml-2">
-                        {request.documentType === AUTH.ID_VERIFICATION_TYPES.PASSPORT && "Passport"}
-                        {request.documentType === AUTH.ID_VERIFICATION_TYPES.DRIVERS_LICENSE && "Driver's License"}
-                        {request.documentType === AUTH.ID_VERIFICATION_TYPES.NATIONAL_ID && "National ID"}
-                      </span>
-                    </div>
-                    
-                    {request.notes && (
-                      <div className="mb-4">
-                        <span className="text-sm font-medium">Notes:</span>
-                        <p className="text-sm text-muted-foreground mt-1">{request.notes}</p>
-                      </div>
-                    )}
-                    
-                    <div className="border rounded-md p-4 mb-4 bg-gray-50">
-                      <p className="text-sm font-medium mb-2">ID Document</p>
-                      <div className="aspect-video bg-gray-200 rounded-md flex items-center justify-center">
-                        <p className="text-sm text-muted-foreground">
-                          Document preview available in admin dashboard
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex gap-3 justify-end">
-                      <Button
-                        variant="outline"
-                        onClick={() => handleReject(request.userId)}
-                        disabled={approveMutation.isPending || rejectMutation.isPending}
-                      >
-                        {rejectMutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Rejecting
-                          </>
-                        ) : (
-                          "Reject"
-                        )}
-                      </Button>
-                      <Button 
-                        onClick={() => approveMutation.mutate(request.userId)}
-                        disabled={approveMutation.isPending || rejectMutation.isPending}
-                      >
-                        {approveMutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Approving
-                          </>
-                        ) : (
-                          "Approve"
-                        )}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          <p className="text-sm text-muted-foreground mb-6">
+            There seems to be an issue with retrieving your verification status. Please try again later or contact customer support.
+          </p>
+          <Button onClick={() => setActiveTab("request")}>
+            Start Verification Process
+          </Button>
         </CardContent>
       </Card>
     );
   };
-  
+
   return (
-    <div className="container py-10">
-      <PageHeader 
-        title="Identity Verification" 
-        description="Verify your identity to gain access to premium features and increased trust"
+    <div className="container max-w-4xl py-8">
+      <PageHeader
+        title="Account Verification"
+        description="Verify your identity to gain access to premium features and build trust with other users."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Verification" },
+        ]}
       />
       
-      <Tabs 
-        defaultValue="verification-status" 
-        value={selectedTab} 
-        onValueChange={setSelectedTab}
-        className="w-full"
-      >
-        <TabsList className="mb-8">
-          <TabsTrigger value="verification-status">Verification Status</TabsTrigger>
-          <TabsTrigger value="submit-verification">Submit Verification</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="w-full mb-6">
+          <TabsTrigger value="status" className="flex-1">Verification Status</TabsTrigger>
+          <TabsTrigger value="request" className="flex-1">Submit Verification</TabsTrigger>
+          {user.role === "admin" && (
+            <TabsTrigger value="admin" className="flex-1">Admin Panel</TabsTrigger>
+          )}
         </TabsList>
         
-        <TabsContent value="verification-status">
-          {renderUserVerificationStatus()}
-          {renderAdminPanel()}
+        <TabsContent value="status" className="space-y-4">
+          {renderVerificationStatus()}
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Benefits of Verification</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <CheckCircle2 className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                  <span>
+                    <strong>Increased Trust:</strong> Verified users receive a badge visible on their profile and listings
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle2 className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                  <span>
+                    <strong>Premium Access:</strong> Unlock premium features and higher visibility
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle2 className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                  <span>
+                    <strong>Agent Privileges:</strong> Verified agents receive priority support and expanded listing options
+                  </span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle2 className="h-5 w-5 text-primary mr-2 mt-0.5" />
+                  <span>
+                    <strong>Unlimited Listings:</strong> Verified users can post unlimited property listings
+                  </span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
         </TabsContent>
         
-        <TabsContent value="submit-verification">
-          <VerificationRequestForm />
+        <TabsContent value="request">
+          <Card>
+            <CardHeader>
+              <CardTitle>Submit Verification Documents</CardTitle>
+              <CardDescription>
+                Please upload a photo of your government-issued ID to verify your identity
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <VerificationRequestForm />
+            </CardContent>
+          </Card>
         </TabsContent>
+        
+        {user.role === "admin" && (
+          <TabsContent value="admin">
+            <AdminVerificationPanel updateMutation={updateVerificationMutation} />
+          </TabsContent>
+        )}
       </Tabs>
+    </div>
+  );
+};
+
+// Admin panel component
+interface AdminVerificationPanelProps {
+  updateMutation: any;
+}
+
+const AdminVerificationPanel: React.FC<AdminVerificationPanelProps> = ({ updateMutation }) => {
+  const [rejectionReason, setRejectionReason] = useState<string>("");
+  
+  const { data: verificationRequests, isLoading } = useQuery({
+    queryKey: [API_ENDPOINTS.VERIFICATION_ADMIN],
+    queryFn: async () => {
+      const response = await apiRequest("GET", API_ENDPOINTS.VERIFICATION_ADMIN);
+      return await response.json();
+    },
+  });
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin mr-2" />
+        <span>Loading verification requests...</span>
+      </div>
+    );
+  }
+  
+  if (!verificationRequests || verificationRequests.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Verification Requests</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            There are no pending verification requests at this time.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Pending Verification Requests</CardTitle>
+          <CardDescription>
+            Review and approve or reject user verification requests
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {verificationRequests.map((request: any) => (
+              <div key={request.id} className="border rounded-lg p-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div>
+                    <h3 className="font-medium">{request.fullName}</h3>
+                    <p className="text-sm text-muted-foreground">{request.email}</p>
+                    <p className="text-sm text-muted-foreground">{request.role}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm">
+                      <span className="font-medium">Document Type:</span>{" "}
+                      {request.idVerificationType === AUTH.ID_VERIFICATION_TYPES.PASSPORT && "Passport"}
+                      {request.idVerificationType === AUTH.ID_VERIFICATION_TYPES.DRIVERS_LICENSE && "Driver's License"}
+                      {request.idVerificationType === AUTH.ID_VERIFICATION_TYPES.NATIONAL_ID && "National ID"}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Submitted:</span>{" "}
+                      {new Date(request.idVerificationDate).toLocaleDateString()}
+                    </p>
+                    {request.idVerificationNotes && (
+                      <p className="text-sm mt-2">
+                        <span className="font-medium">Notes:</span>{" "}
+                        {request.idVerificationNotes}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex md:justify-end items-start space-x-2">
+                    <Button
+                      variant="outline"
+                      className="border-green-300 hover:bg-green-50 text-green-700"
+                      disabled={updateMutation.isPending}
+                      onClick={() => updateMutation.mutate({ 
+                        userId: request.id, 
+                        status: "approved"
+                      })}
+                    >
+                      Approve
+                    </Button>
+                    <Select
+                      onValueChange={(value) => {
+                        updateMutation.mutate({ 
+                          userId: request.id, 
+                          status: "rejected",
+                          reason: value
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="border-red-300 hover:bg-red-50 text-red-700 w-[160px]">
+                        <SelectValue placeholder="Reject" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Document not clearly visible">
+                          Document not clearly visible
+                        </SelectItem>
+                        <SelectItem value="Document expired">
+                          Document expired
+                        </SelectItem>
+                        <SelectItem value="Information doesn't match account">
+                          Information doesn't match account
+                        </SelectItem>
+                        <SelectItem value="Invalid document type">
+                          Invalid document type
+                        </SelectItem>
+                        <SelectItem value="Other issue">
+                          Other issue
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {updateMutation.isPending && updateMutation.variables?.userId === request.id && (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <span className="text-sm">Processing...</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
