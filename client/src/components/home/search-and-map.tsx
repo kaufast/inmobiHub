@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MapPin, Search, Sliders, Home } from "lucide-react";
+import { MapPin, Search, Sliders, Home, SlidersHorizontal, Bed, Bath, Maximize } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -432,14 +432,19 @@ export default function SearchAndMap() {
               {/* Horizontal scrolling preview */}
               <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
                 {/* Property 1 */}
-                <div className="flex-shrink-0 w-60 glassmorphism-card rounded-lg overflow-hidden">
+                <div className="flex-shrink-0 w-60 rounded-lg overflow-hidden bg-gray-900/90 backdrop-blur-md border border-gray-700 shadow-lg">
                   <div className="h-32 overflow-hidden relative group">
                     <img 
                       src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&w=400&h=250&crop=entropy&fit=crop&q=80" 
                       className="w-full h-full object-cover" 
                       alt="Modern home with large windows" 
                     />
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-2 right-2">
+                      <div className="bg-secondary-500 text-white text-xs font-medium px-2 py-1 rounded">
+                        Featured
+                      </div>
+                    </div>
+                    <div className="absolute top-2 left-2">
                       <button className="bg-white/90 p-1.5 rounded-full shadow-md">
                         <svg className="h-4 w-4 text-primary-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -448,21 +453,50 @@ export default function SearchAndMap() {
                     </div>
                   </div>
                   <div className="p-3">
-                    <h4 className="font-semibold text-primary-800">$1,000,000</h4>
-                    <p className="text-sm text-primary-600">3 bd | 2 ba | 1,900 sqft</p>
-                    <p className="text-xs text-primary-500 truncate">223 Maple Street, Brooklyn</p>
+                    <h4 className="font-bold text-white">$1,000,000</h4>
+                    <p className="text-secondary-400 font-medium">3 bd | 2 ba | 1,900 sqft</p>
+                    
+                    <div className="flex items-center text-gray-400 text-xs mt-1">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      <span>223 Maple Street, Brooklyn</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-700">
+                      <div className="flex space-x-3 text-xs">
+                        <div className="flex items-center text-gray-300">
+                          <Bed className="h-3 w-3 mr-1" />
+                          <span>3</span>
+                        </div>
+                        <div className="flex items-center text-gray-300">
+                          <Bath className="h-3 w-3 mr-1" />
+                          <span>2</span>
+                        </div>
+                        <div className="flex items-center text-gray-300">
+                          <Maximize className="h-3 w-3 mr-1" />
+                          <span>1,900</span>
+                        </div>
+                      </div>
+                      <button className="text-white bg-secondary-500 hover:bg-secondary-600 text-xs py-1 px-3 rounded">
+                        View
+                      </button>
+                    </div>
                   </div>
                 </div>
                 
                 {/* Property 2 */}
-                <div className="flex-shrink-0 w-60 glassmorphism-card rounded-lg overflow-hidden">
+                <div className="flex-shrink-0 w-60 rounded-lg overflow-hidden bg-gray-900/90 backdrop-blur-md border border-gray-700 shadow-lg">
                   <div className="h-32 overflow-hidden relative group">
                     <img 
                       src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&w=400&h=250&crop=entropy&fit=crop&q=80" 
                       className="w-full h-full object-cover" 
                       alt="Luxury home with pool" 
                     />
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-2 right-2">
+                      <div className="bg-secondary-500 text-white text-xs font-medium px-2 py-1 rounded">
+                        Featured
+                      </div>
+                    </div>
+                    <div className="absolute top-2 left-2">
                       <button className="bg-white/90 p-1.5 rounded-full shadow-md">
                         <svg className="h-4 w-4 text-primary-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -471,21 +505,45 @@ export default function SearchAndMap() {
                     </div>
                   </div>
                   <div className="p-3">
-                    <h4 className="font-semibold text-primary-800">$1,100,000</h4>
-                    <p className="text-sm text-primary-600">4 bd | 2 ba | 2,000 sqft</p>
-                    <p className="text-xs text-primary-500 truncate">323 Maple Street, Brooklyn</p>
+                    <h4 className="font-bold text-white">$1,100,000</h4>
+                    <p className="text-secondary-400 font-medium">4 bd | 2 ba | 2,000 sqft</p>
+                    
+                    <div className="flex items-center text-gray-400 text-xs mt-1">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      <span>323 Maple Street, Brooklyn</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-700">
+                      <div className="flex space-x-3 text-xs">
+                        <div className="flex items-center text-gray-300">
+                          <Bed className="h-3 w-3 mr-1" />
+                          <span>4</span>
+                        </div>
+                        <div className="flex items-center text-gray-300">
+                          <Bath className="h-3 w-3 mr-1" />
+                          <span>2</span>
+                        </div>
+                        <div className="flex items-center text-gray-300">
+                          <Maximize className="h-3 w-3 mr-1" />
+                          <span>2,000</span>
+                        </div>
+                      </div>
+                      <button className="text-white bg-secondary-500 hover:bg-secondary-600 text-xs py-1 px-3 rounded">
+                        View
+                      </button>
+                    </div>
                   </div>
                 </div>
                 
                 {/* Property 3 */}
-                <div className="flex-shrink-0 w-60 glassmorphism-card rounded-lg overflow-hidden">
+                <div className="flex-shrink-0 w-60 rounded-lg overflow-hidden bg-gray-900/90 backdrop-blur-md border border-gray-700 shadow-lg">
                   <div className="h-32 overflow-hidden relative group">
                     <img 
                       src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&w=400&h=250&crop=entropy&fit=crop&q=80" 
                       className="w-full h-full object-cover" 
                       alt="Modern single family home" 
                     />
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-2 left-2">
                       <button className="bg-white/90 p-1.5 rounded-full shadow-md">
                         <svg className="h-4 w-4 text-primary-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -494,9 +552,33 @@ export default function SearchAndMap() {
                     </div>
                   </div>
                   <div className="p-3">
-                    <h4 className="font-semibold text-primary-800">$1,200,000</h4>
-                    <p className="text-sm text-primary-600">5 bd | 2 ba | 2,100 sqft</p>
-                    <p className="text-xs text-primary-500 truncate">423 Maple Street, Brooklyn</p>
+                    <h4 className="font-bold text-white">$1,200,000</h4>
+                    <p className="text-secondary-400 font-medium">5 bd | 2 ba | 2,100 sqft</p>
+                    
+                    <div className="flex items-center text-gray-400 text-xs mt-1">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      <span>423 Maple Street, Brooklyn</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-700">
+                      <div className="flex space-x-3 text-xs">
+                        <div className="flex items-center text-gray-300">
+                          <Bed className="h-3 w-3 mr-1" />
+                          <span>5</span>
+                        </div>
+                        <div className="flex items-center text-gray-300">
+                          <Bath className="h-3 w-3 mr-1" />
+                          <span>2</span>
+                        </div>
+                        <div className="flex items-center text-gray-300">
+                          <Maximize className="h-3 w-3 mr-1" />
+                          <span>2,100</span>
+                        </div>
+                      </div>
+                      <button className="text-white bg-secondary-500 hover:bg-secondary-600 text-xs py-1 px-3 rounded">
+                        View
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
