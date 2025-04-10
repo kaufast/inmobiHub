@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema, insertPropertyTourSchema, updatePropertyTourSchema, passkeyRegisterSchema, passkeyAuthenticateSchema, idVerificationRequestSchema, updateVerificationStatusSchema, userVerificationSchema } from "@shared/schema";
+import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema, insertPropertyTourSchema, updatePropertyTourSchema, passkeyRegisterSchema, passkeyAuthenticateSchema, idVerificationRequestSchema, updateVerificationStatusSchema, userVerificationSchema, insertSuggestedQuestionSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
@@ -1317,6 +1317,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const pendingRequests = await storage.getVerificationRequests();
       res.json(pendingRequests);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Suggested Questions API
+  app.get("/api/suggested-questions", async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      const category = req.query.category as string | undefined;
+      const propertyType = req.query.propertyType as string | undefined;
+      
+      const questions = await storage.getSuggestedQuestions(category, propertyType, limit);
+      res.json(questions);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/suggested-questions/popular", async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      const questions = await storage.getPopularSuggestedQuestions(limit);
+      res.json(questions);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/suggested-questions/:id/click", async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.incrementQuestionClickCount(id);
+      res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Admin routes for managing suggested questions
+  app.post("/api/admin/suggested-questions", isAdmin, async (req, res, next) => {
+    try {
+      const questionData = insertSuggestedQuestionSchema.parse(req.body);
+      const question = await storage.createSuggestedQuestion(questionData);
+      res.status(201).json(question);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid question data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  app.put("/api/admin/suggested-questions/:id", isAdmin, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedQuestion = await storage.updateSuggestedQuestion(id, req.body);
+      
+      if (!updatedQuestion) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+      
+      res.json(updatedQuestion);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.delete("/api/admin/suggested-questions/:id", isAdmin, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteSuggestedQuestion(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+      
+      res.status(204).end();
     } catch (error) {
       next(error);
     }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useChatAgent } from '@/hooks/use-chat-agent';
+import { useSuggestedQuestions } from '@/hooks/use-suggested-questions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { MessageCircle, X, Send, Minimize2, Loader2, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { SuggestedQuestions } from './SuggestedQuestions';
 
 interface ChatWidgetProps {
   propertyId?: number;
