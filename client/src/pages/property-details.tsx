@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Property, Neighborhood } from "@shared/schema";
 import { useParams, Link } from "wouter";
-import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle, Sparkles, BarChart2, TrendingUp } from "lucide-react";
+import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle, Sparkles, BarChart2, TrendingUp, CalendarClock } from "lucide-react";
 import PersonalizedDescription from "@/components/properties/personalized-description";
 import PropertyValuePredictor from "@/components/property/PropertyValuePredictor";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,9 @@ import { formatPrice } from "@/lib/utils";
 import { PropertySchema, BreadcrumbsSchema } from "@/components/seo/schema-markup";
 import { PropertyMetaTags } from "@/components/seo/meta-tags";
 import { ChatWidget } from "@/components/chat/ChatWidget";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import PropertyTourWidget from "@/components/properties/property-tour-widget";
+import TourScheduler from "@/components/properties/tour-scheduler";
 
 export default function PropertyDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -393,20 +396,42 @@ export default function PropertyDetailsPage() {
             <div className="bg-primary-50 p-6 rounded-xl">
               <h2 className="text-xl font-bold text-primary-800 mb-4">Interested in this property?</h2>
               <div className="flex flex-col md:flex-row gap-4">
-                <Button className="flex-1 bg-secondary-600 hover:bg-secondary-700">Schedule a Viewing</Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="flex-1 bg-secondary-600 hover:bg-secondary-700">
+                      <CalendarClock className="mr-2 h-4 w-4" />
+                      Schedule a Viewing
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[900px] p-0">
+                    <TourScheduler 
+                      propertyId={property.id} 
+                      propertyTitle={property.title} 
+                      propertyAddress={`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`}
+                    />
+                  </DialogContent>
+                </Dialog>
                 <Button variant="outline" className="flex-1">Contact Agent</Button>
               </div>
             </div>
           </div>
         </div>
         
-        {/* AI Property Value Predictor */}
-        <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <TrendingUp className="h-5 w-5 text-secondary-500 mr-2" />
-            <h2 className="text-xl font-bold text-primary-800">Property Value Trends</h2>
+        {/* Property value predictor and tour scheduling */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          {/* AI Property Value Predictor */}
+          <div>
+            <div className="flex items-center mb-4">
+              <TrendingUp className="h-5 w-5 text-secondary-500 mr-2" />
+              <h2 className="text-xl font-bold text-primary-800">Property Value Trends</h2>
+            </div>
+            <PropertyValuePredictor propertyId={property.id} />
           </div>
-          <PropertyValuePredictor propertyId={property.id} />
+          
+          {/* Property Tour Widget */}
+          <div>
+            <PropertyTourWidget property={property} />
+          </div>
         </div>
         
         {/* Property Location and Neighborhood */}
