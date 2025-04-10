@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Search, MapPin, Sliders } from "lucide-react";
 
 interface PropertySearchProps {
-  initialValues?: SearchProperties;
+  initialValues?: Partial<SearchProperties>;
   onSearch: (params: SearchProperties) => void;
   compact?: boolean;
 }
@@ -21,7 +21,9 @@ export default function PropertySearch({
 }: PropertySearchProps) {
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [searchParams, setSearchParams] = useState<SearchProperties>({
+    searchType: initialValues.searchType || "text",
     location: initialValues.location || "",
+    listingType: initialValues.listingType || "buy",
     propertyType: initialValues.propertyType,
     minPrice: initialValues.minPrice,
     maxPrice: initialValues.maxPrice,
@@ -81,6 +83,24 @@ export default function PropertySearch({
               onChange={(e) => handleInputChange('location', e.target.value)}
             />
           </div>
+        </div>
+        
+        {/* Listing Type */}
+        <div>
+          <Label htmlFor="listing_type" className="block text-sm font-medium text-primary-700 mb-1">Listing Type</Label>
+          <Select 
+            value={searchParams.listingType} 
+            onValueChange={(value) => handleInputChange('listingType', value as any)}
+          >
+            <SelectTrigger id="listing_type">
+              <SelectValue placeholder="Buy" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="buy">Buy</SelectItem>
+              <SelectItem value="rent">Rent</SelectItem>
+              <SelectItem value="sell">Sell</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         
         {/* Property type */}

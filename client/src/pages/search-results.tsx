@@ -38,6 +38,7 @@ export default function SearchResultsPage() {
     
     // Parse other search parameters
     if (params.get("location")) newSearchParams.location = params.get("location") || undefined;
+    if (params.get("listingType")) newSearchParams.listingType = params.get("listingType") as any || undefined;
     if (params.get("propertyType")) newSearchParams.propertyType = params.get("propertyType") as any || undefined;
     if (params.get("minPrice")) newSearchParams.minPrice = Number(params.get("minPrice")) || undefined;
     if (params.get("maxPrice")) newSearchParams.maxPrice = Number(params.get("maxPrice")) || undefined;
@@ -132,6 +133,7 @@ export default function SearchResultsPage() {
     const params = new URLSearchParams();
     
     if (newParams.location) params.set("location", newParams.location);
+    if (newParams.listingType) params.set("listingType", newParams.listingType);
     if (newParams.propertyType) params.set("propertyType", newParams.propertyType);
     if (newParams.minPrice) params.set("minPrice", String(newParams.minPrice));
     if (newParams.maxPrice) params.set("maxPrice", String(newParams.maxPrice));
@@ -153,12 +155,27 @@ export default function SearchResultsPage() {
   // Generate descriptive title/meta info based on search parameters
   const getSearchDescription = () => {
     const parts = [];
+    // Add listing type to description
+    if (searchParams.listingType) {
+      switch(searchParams.listingType) {
+        case 'buy':
+          parts.push('Properties for sale');
+          break;
+        case 'rent':
+          parts.push('Properties for rent');
+          break;
+        case 'sell':
+          parts.push('Properties to sell');
+          break;
+      }
+    }
     if (searchParams.location) parts.push(`in ${searchParams.location}`);
     if (searchParams.propertyType) parts.push(`${searchParams.propertyType} properties`);
     if (searchParams.minPrice && searchParams.maxPrice) parts.push(`$${searchParams.minPrice.toLocaleString()}-$${searchParams.maxPrice.toLocaleString()}`);
     else if (searchParams.minPrice) parts.push(`from $${searchParams.minPrice.toLocaleString()}`);
     else if (searchParams.maxPrice) parts.push(`up to $${searchParams.maxPrice.toLocaleString()}`);
     if (searchParams.beds) parts.push(`${searchParams.beds}+ bedrooms`);
+    if (searchParams.baths) parts.push(`${searchParams.baths}+ bathrooms`);
     
     return parts.length > 0 ? parts.join(', ') : 'all properties';
   };
@@ -309,11 +326,105 @@ export default function SearchResultsPage() {
                   )}
                 </h1>
                 {searchParams.location && (
-                  <div className="flex items-center text-primary-600 text-sm mt-1">
+                  <div className="flex items-center text-primary-600 text-sm mt-1 mb-2">
                     <MapPin className="h-3 w-3 mr-1" />
                     <span>Results for: {searchParams.location}</span>
                   </div>
                 )}
+                
+                {/* Search parameter badges */}
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {searchParams.listingType && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {searchParams.listingType === 'buy' && 'For Sale'}
+                      {searchParams.listingType === 'rent' && 'For Rent'}
+                      {searchParams.listingType === 'sell' && 'For Selling'}
+                      <button 
+                        className="ml-1 hover:bg-secondary-200 rounded-full p-0.5"
+                        onClick={() => {
+                          const newParams = {...searchParams};
+                          delete newParams.listingType;
+                          handleSearch(newParams);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {searchParams.propertyType && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {searchParams.propertyType.charAt(0).toUpperCase() + searchParams.propertyType.slice(1)}
+                      <button 
+                        className="ml-1 hover:bg-secondary-200 rounded-full p-0.5"
+                        onClick={() => {
+                          const newParams = {...searchParams};
+                          delete newParams.propertyType;
+                          handleSearch(newParams);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {searchParams.beds && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {searchParams.beds}+ Beds
+                      <button 
+                        className="ml-1 hover:bg-secondary-200 rounded-full p-0.5"
+                        onClick={() => {
+                          const newParams = {...searchParams};
+                          delete newParams.beds;
+                          handleSearch(newParams);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {searchParams.baths && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {searchParams.baths}+ Baths
+                      <button 
+                        className="ml-1 hover:bg-secondary-200 rounded-full p-0.5"
+                        onClick={() => {
+                          const newParams = {...searchParams};
+                          delete newParams.baths;
+                          handleSearch(newParams);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {(searchParams.minPrice || searchParams.maxPrice) && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      {searchParams.minPrice && !searchParams.maxPrice && `$${searchParams.minPrice.toLocaleString()}+`}
+                      {!searchParams.minPrice && searchParams.maxPrice && `Up to $${searchParams.maxPrice.toLocaleString()}`}
+                      {searchParams.minPrice && searchParams.maxPrice && `$${searchParams.minPrice.toLocaleString()} - $${searchParams.maxPrice.toLocaleString()}`}
+                      <button 
+                        className="ml-1 hover:bg-secondary-200 rounded-full p-0.5"
+                        onClick={() => {
+                          const newParams = {...searchParams};
+                          delete newParams.minPrice;
+                          delete newParams.maxPrice;
+                          handleSearch(newParams);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  )}
+                  {Object.keys(searchParams).length > 1 && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-xs h-6 px-2 border-primary-200"
+                      onClick={() => handleSearch({ searchType: searchParams.searchType || "text" })}
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                </div>
               </div>
               
               <div className="flex items-center space-x-2 w-full sm:w-auto">
