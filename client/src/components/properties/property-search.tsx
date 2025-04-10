@@ -93,46 +93,61 @@ export default function PropertySearch({
           </div>
         </div>
         
-        {/* Listing Type with search mode icons */}
-        <div className="flex items-end space-x-2">
-          <div className="flex-grow">
-            <Label htmlFor="listing_type" className="block text-sm font-medium text-primary-700 mb-1">Listing Type</Label>
-            <Select 
-              value={searchParams.listingType} 
-              onValueChange={(value) => handleInputChange('listingType', value as any)}
+        {/* Search by section */}
+        <div className="mb-4">
+          <Label className="block text-sm font-semibold text-secondary-600 mb-2">Search by</Label>
+          <div className="flex items-center space-x-3">
+            {/* Text search button */}
+            <Button
+              type="button"
+              size="icon"
+              variant={searchParams.searchType === 'text' ? 'default' : 'outline'}
+              className="h-11.5 w-11.5 rounded-full bg-primary-800" 
+              onClick={() => handleInputChange('searchType', 'text')}
             >
-              <SelectTrigger id="listing_type">
-                <SelectValue placeholder="Buy" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="buy">Buy</SelectItem>
-                <SelectItem value="rent">Rent</SelectItem>
-                <SelectItem value="sell">Sell</SelectItem>
-              </SelectContent>
-            </Select>
+              <Search className="h-5 w-5" />
+            </Button>
+            
+            {/* Image search icon */}
+            <Button
+              type="button"
+              size="icon"
+              variant={searchParams.searchType === 'image' ? 'default' : 'outline'}
+              className="h-11.5 w-11.5 rounded-full"
+              onClick={() => handleInputChange('searchType', 'image')}
+            >
+              <Image className="h-5 w-5" />
+            </Button>
+            
+            {/* Voice search icon */}
+            <Button
+              type="button"
+              size="icon"
+              variant={searchParams.searchType === 'audio' ? 'default' : 'outline'}
+              className="h-11.5 w-11.5 rounded-full"
+              onClick={() => handleInputChange('searchType', 'audio')}
+            >
+              <Mic className="h-5 w-5" />
+            </Button>
           </div>
-          
-          {/* Image search icon */}
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            className="h-10 w-10 rounded-full"
-            onClick={() => handleInputChange('searchType', 'image')}
+        </div>
+        
+        {/* Listing Type */}
+        <div>
+          <Label htmlFor="listing_type" className="block text-sm font-medium text-primary-700 mb-1">Listing Type</Label>
+          <Select 
+            value={searchParams.listingType} 
+            onValueChange={(value) => handleInputChange('listingType', value as any)}
           >
-            <Image className="h-4 w-4" />
-          </Button>
-          
-          {/* Voice search icon */}
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            className="h-10 w-10 rounded-full"
-            onClick={() => handleInputChange('searchType', 'audio')}
-          >
-            <Mic className="h-4 w-4" />
-          </Button>
+            <SelectTrigger id="listing_type">
+              <SelectValue placeholder="Buy" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="buy">Buy</SelectItem>
+              <SelectItem value="rent">Rent</SelectItem>
+              <SelectItem value="sell">Sell</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         
         {/* Property type */}
