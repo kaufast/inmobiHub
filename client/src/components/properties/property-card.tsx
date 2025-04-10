@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Property } from "@shared/schema";
 import { formatPrice, truncateText } from "@/lib/utils";
-import { Heart, MapPin, Bed, Bath } from "lucide-react";
+import { Heart, MapPin, Bed, Bath, Share2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -121,18 +121,32 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
             
             {/* Action buttons below the image visible only on small screens */}
             <div className="sm:hidden flex justify-between p-2 border-b border-gray-100">
-              <button 
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md ${isFavorite ? 'text-secondary-500 bg-secondary-50' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleFavoriteToggle(e);
-                }}
-                disabled={isLoading}
-              >
-                <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500' : ''}`} />
-                <span className="text-sm font-medium">{isFavorite ? 'Saved' : 'Save'}</span>
-              </button>
+              <div className="flex items-center gap-1">
+                <button 
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md ${isFavorite ? 'text-secondary-500 bg-secondary-50' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleFavoriteToggle(e);
+                  }}
+                  disabled={isLoading}
+                >
+                  <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500' : ''}`} />
+                  <span className="text-sm font-medium">{isFavorite ? 'Saved' : 'Save'}</span>
+                </button>
+                
+                <button 
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleShareProperty(e);
+                  }}
+                >
+                  <Share2 className="h-4 w-4" />
+                  <span className="text-sm font-medium">Share</span>
+                </button>
+              </div>
               
               <div 
                 onClick={(e) => {
@@ -207,6 +221,18 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                     <span className="text-sm font-medium">{isFavorite ? 'Saved' : 'Save'}</span>
                   </button>
                   
+                  <button 
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleShareProperty(e);
+                    }}
+                  >
+                    <Share2 className="h-4 w-4" />
+                    <span className="text-sm font-medium">Share</span>
+                  </button>
+                  
                   <div 
                     onClick={(e) => {
                       e.preventDefault();
@@ -232,6 +258,51 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
       </Link>
     );
   }
+  
+  const handleShareProperty = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const url = `${window.location.origin}/property/${property.id}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: property.title,
+        text: `Check out this property: ${property.title}`,
+        url: url,
+      })
+      .then(() => {
+        toast({
+          title: "Shared successfully",
+          description: "Property link has been shared",
+        });
+      })
+      .catch((error) => {
+        console.error('Error sharing:', error);
+        // Fallback for when sharing fails
+        fallbackShare(url);
+      });
+    } else {
+      // Fallback for browsers that don't support the Share API
+      fallbackShare(url);
+    }
+  };
+  
+  const fallbackShare = (url: string) => {
+    // Copy to clipboard
+    navigator.clipboard.writeText(url).then(() => {
+      toast({
+        title: "Link copied to clipboard",
+        description: "Property link has been copied to your clipboard",
+      });
+    }).catch(err => {
+      toast({
+        title: "Failed to copy link",
+        description: "Could not copy the property link",
+        variant: "destructive",
+      });
+    });
+  };
   
   return (
     <Link href={`/property/${property.id}`}>
@@ -267,18 +338,28 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
         
         {/* Action buttons below the image */}
         <div className="flex justify-between p-2 border-b border-gray-100">
-          <button 
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md ${isFavorite ? 'text-secondary-500 bg-secondary-50' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleFavoriteToggle(e);
-            }}
-            disabled={isLoading}
-          >
-            <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500' : ''}`} />
-            <span className="text-sm font-medium">{isFavorite ? 'Saved' : 'Save'}</span>
-          </button>
+          <div className="flex items-center gap-1">
+            <button 
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md ${isFavorite ? 'text-secondary-500 bg-secondary-50' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleFavoriteToggle(e);
+              }}
+              disabled={isLoading}
+            >
+              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-secondary-500' : ''}`} />
+              <span className="text-sm font-medium">{isFavorite ? 'Saved' : 'Save'}</span>
+            </button>
+            
+            <button 
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 transition-colors"
+              onClick={handleShareProperty}
+            >
+              <Share2 className="h-4 w-4" />
+              <span className="text-sm font-medium">Share</span>
+            </button>
+          </div>
           
           <div 
             onClick={(e) => {

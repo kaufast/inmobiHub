@@ -131,9 +131,6 @@ export default function HeroSection() {
           <h1 className="text-[2.6rem] md:text-[3.2rem] lg:text-[3.8rem] font-bold text-white leading-none tracking-tight mb-8">
             OPENING<br/>MORE<br/>DOORS
           </h1>
-          <p className="mt-2 text-xl text-white/90 max-w-2xl mx-auto mb-10">
-            {t('common.findYourDreamProperty')}
-          </p>
           
           {/* Multimodal Search bar */}
           <div className="w-full max-w-4xl bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700">
@@ -367,6 +364,10 @@ export default function HeroSection() {
               </TabsContent>
             </Tabs>
           </div>
+          
+          <p className="mt-8 text-xl text-white/90 max-w-2xl mx-auto mb-8">
+            {t('common.findYourDreamProperty')}
+          </p>
           
           {/* Map Mockup Section */}
           <div className="w-full max-w-4xl mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
