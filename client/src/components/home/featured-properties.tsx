@@ -9,8 +9,17 @@ export default function FeaturedProperties() {
     queryKey: ["/api/properties/featured"],
   });
 
+  const blueBackgroundStyle = {
+    backgroundColor: '#1d4ed8',
+    backgroundImage: 'linear-gradient(to bottom, #1d4ed8, #1e40af)',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+  };
+
   return (
-    <section className="py-16 bg-blue-500 text-white" id="featured-properties">
+    <section 
+      id="featured-properties" 
+      className="py-16 text-white"
+      style={blueBackgroundStyle}>
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-baseline justify-between mb-10">
           <div>
@@ -27,7 +36,6 @@ export default function FeaturedProperties() {
           </Link>
         </div>
         
-        {/* Properties Grid */}
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-white" />
