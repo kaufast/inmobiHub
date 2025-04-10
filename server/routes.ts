@@ -965,8 +965,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.saveSearchHistory(userId, searchParams);
       }
       
-      // Get AI-powered recommendations
-      const recommendations = await storage.getRecommendedProperties(userId, limit);
+      // Get user data for personalized recommendations
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Get search history for this user
+      const searchHistory = await storage.getSearchHistory(userId);
+      
+      // Get favorited properties
+      const favoritedProperties = await storage.getFavoritesByUser(userId);
+      
+      // Get all properties that can be recommended
+      const allProperties = await storage.getProperties(100); // Get a larger pool to recommend from
+      
+      // Use OpenAI's recommendation engine for more personalized results with match scores
+      let recommendations;
+      try {
+        recommendations = await generatePropertyRecommendations(
+          user,
+          allProperties,
+          searchHistory,
+          favoritedProperties,
+          limit
+        );
+      } catch (aiError) {
+        console.error("Error generating AI recommendations:", aiError);
+        // Fallback to database recommendations if AI fails
+        recommendations = await storage.getRecommendedProperties(userId, limit);
+      }
       
       res.json(recommendations);
     } catch (error) {
