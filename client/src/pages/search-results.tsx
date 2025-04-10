@@ -371,7 +371,7 @@ export default function SearchResultsPage() {
                         <p className="text-primary-600 mb-6">
                           Try adjusting your search criteria to find more properties.
                         </p>
-                        <Button onClick={() => handleSearch({})}>
+                        <Button onClick={() => handleSearch({ searchType: "text" })}>
                           Reset Filters
                         </Button>
                       </div>
@@ -392,7 +392,7 @@ export default function SearchResultsPage() {
                         <p className="text-primary-600 mb-6">
                           Try adjusting your search criteria to find more properties.
                         </p>
-                        <Button onClick={() => handleSearch({})}>
+                        <Button onClick={() => handleSearch({ searchType: "text" })}>
                           Reset Filters
                         </Button>
                       </div>
@@ -421,7 +421,7 @@ export default function SearchResultsPage() {
                             <p className="text-primary-600 mb-6">
                               Try adjusting your search criteria to find more properties.
                             </p>
-                            <Button onClick={() => handleSearch({})}>
+                            <Button onClick={() => handleSearch({ searchType: "text" })}>
                               Reset Filters
                             </Button>
                           </div>
