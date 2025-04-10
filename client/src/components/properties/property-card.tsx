@@ -95,9 +95,11 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
             {/* Property image */}
             <div className="relative sm:w-1/3 h-52 sm:h-auto overflow-hidden">
               {property.isPremium && (
-                <Badge className="absolute top-4 left-4 z-10 bg-secondary-500 text-white">
-                  Premium
-                </Badge>
+                <div className="absolute top-4 right-4 z-10">
+                  <div className="bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
+                    Premium
+                  </div>
+                </div>
               )}
               {property.images && property.images.length > 0 ? (
                 <img 
@@ -136,7 +138,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                 </button>
                 
                 <button 
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-sm hover:shadow-md"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -222,7 +224,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                   </button>
                   
                   <button 
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-sm hover:shadow-md"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -309,9 +311,11 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
       <a className="group glassmorphism-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 relative">
         {/* Premium badge */}
         {property.isPremium && (
-          <Badge className="absolute top-4 left-4 z-10 bg-secondary-500 text-white">
-            Premium
-          </Badge>
+          <div className="absolute top-4 right-4 z-10">
+            <div className="bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
+              Premium
+            </div>
+          </div>
         )}
         
         {/* Property image */}
@@ -353,7 +357,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
             </button>
             
             <button 
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-sm hover:shadow-md"
               onClick={handleShareProperty}
             >
               <Share2 className="h-4 w-4" />
