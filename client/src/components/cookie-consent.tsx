@@ -253,6 +253,8 @@ export default function CookieConsent() {
           </Tabs>
         </DialogContent>
       </Dialog>
+        </Suspense>
+      )}
     </>
   );
 }

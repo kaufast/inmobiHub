@@ -63,6 +63,11 @@ export default function Navbar() {
                   <a className="flex w-full">{t('common.investing')}</a>
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem className="hover:bg-white/10">
+                <Link href="/neighborhoods">
+                  <a className="flex w-full">Neighborhood Insights</a>
+                </Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Link href="/about">
@@ -213,6 +218,15 @@ export default function Navbar() {
                           />
                         </svg>
                         {t('common.contact')}
+                      </a>
+                    </Link>
+                    <Link href="/neighborhoods">
+                      <a 
+                        className="flex items-center py-2 text-white/80 hover:text-white transition"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Building className="mr-3 h-5 w-5" />
+                        Neighborhood Insights
                       </a>
                     </Link>
                     {user && (
