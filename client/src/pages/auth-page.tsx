@@ -272,38 +272,27 @@ export default function AuthPage() {
                 
                 <div className="mt-6">
                   <SocialAuthButtons 
-                    onSuccess={async (userData) => {
-                      // Handle successful Firebase auth
-                      try {
-                        // For login tab, try to login first
-                        if (activeTab === 'login') {
-                          try {
-                            // Try to login with the given email as username
-                            await login({
-                              username: userData.email,
-                              password: userData.password
-                            });
-                            return; // If login succeeds, return
-                          } catch (error) {
-                            // If login fails, it might be a new user - continue to register
-                            console.log("Firebase user not found in our system, registering...");
-                          }
+                    onLoginSuccess={async (provider, uid) => {
+                      if (provider === 'phone') {
+                        // For phone auth, we need to create or find a user in our system
+                        try {
+                          // For now, let's just log the success. In a real implementation,
+                          // we would link this to the account if logged in
+                          console.log(`Successfully authenticated with phone. UID: ${uid}`);
+                          // We could automatically navigate to a "complete profile" page here
+                        } catch (error) {
+                          console.error("Error handling phone auth:", error);
                         }
-                        
-                        // Register the user with our API
-                        await register({
-                          username: userData.username,
-                          email: userData.email,
-                          password: userData.password,
-                          fullName: userData.fullName || userData.email.split('@')[0] // Use email prefix if no name
-                        });
-                      } catch (error) {
-                        console.error("Error in Firebase auth flow:", error);
                       }
                     }}
-                    onError={(error) => {
-                      console.error("Social auth error:", error);
-                    }}
+                    credentials={
+                      activeTab === 'login' ? 
+                        loginForm.getValues() : 
+                        {
+                          username: registerForm.getValues().username,
+                          password: registerForm.getValues().password
+                        }
+                    }
                   />
                 </div>
               </div>

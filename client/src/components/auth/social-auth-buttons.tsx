@@ -1,143 +1,147 @@
-import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { FaGoogle, FaApple } from "react-icons/fa";
-import { signInWithGoogle, signInWithApple, handleRedirectResult, auth } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Phone, KeyRound, Fingerprint } from "lucide-react";
+import { PhoneAuth } from "./phone-auth";
+import { supportsAppleKeychain, storeCredentialsInKeychain } from "@/lib/firebase";
 
 interface SocialAuthButtonsProps {
-  onSuccess?: (userData: any) => void;
-  onError?: (error: Error) => void;
+  onLoginSuccess?: (provider: string, uid?: string) => void;
+  credentials?: { username: string; password: string };
 }
 
-export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps) {
+export function SocialAuthButtons({ onLoginSuccess, credentials }: SocialAuthButtonsProps) {
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  const [keychainDialogOpen, setKeychainDialogOpen] = useState(false);
   const { toast } = useToast();
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isAppleLoading, setIsAppleLoading] = useState(false);
-
-  // Handle redirect result when component mounts
-  useEffect(() => {
-    const checkRedirectResult = async () => {
-      try {
-        const user = await handleRedirectResult();
-        if (user) {
-          const userData = {
-            email: user.email || '',
-            username: user.email || '',
-            fullName: user.displayName || '',
-            password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
-            profileImage: user.photoURL || null
-          };
-          
-          onSuccess?.(userData);
-        }
-      } catch (error) {
-        console.error('Redirect result error:', error);
-        toast({
-          title: "Authentication failed",
-          description: "Could not complete sign in. Please try again.",
-          variant: "destructive",
-        });
-        onError?.(error as Error);
-      }
-    };
-
-    checkRedirectResult();
-
-    // Also listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userData = {
-          email: user.email || '',
-          username: user.email || '',
-          fullName: user.displayName || '',
-          password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
-          profileImage: user.photoURL || null
-        };
-        
-        onSuccess?.(userData);
-      }
+  
+  // Check if browser supports keychain (Apple platform)
+  const keychainSupported = supportsAppleKeychain();
+  
+  const handlePhoneVerified = (phoneNumber: string, uid: string) => {
+    setPhoneDialogOpen(false);
+    if (onLoginSuccess) {
+      onLoginSuccess("phone", uid);
+    }
+  };
+  
+  const handlePasskeyLogin = () => {
+    // This is a placeholder - actual passkey implementation would go here
+    toast({
+      title: "Passkey Login",
+      description: "Passkey authentication is coming soon",
     });
-
-    return () => unsubscribe();
-  }, [onSuccess, onError, toast]);
-
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsGoogleLoading(true);
-      
-      await signInWithGoogle();
-      // Note: The actual success handling is done in the useEffect through
-      // either the redirect result or the auth state change
-      
-    } catch (error) {
-      console.error('Google sign-in error:', error);
+  };
+  
+  const handleStoreInKeychain = async () => {
+    if (!keychainSupported || !credentials) {
       toast({
-        title: "Authentication failed",
-        description: "Could not sign in with Google. Please try again.",
         variant: "destructive",
+        title: "Not Supported",
+        description: "This browser or device doesn't support secure credential storage",
       });
-      onError?.(error as Error);
-      setIsGoogleLoading(false);
+      return;
+    }
+    
+    try {
+      const stored = await storeCredentialsInKeychain(
+        credentials.username, 
+        credentials.password
+      );
+      
+      if (stored) {
+        toast({
+          title: "Saved to Keychain",
+          description: "Your login credentials have been securely saved",
+        });
+      } else {
+        throw new Error("Failed to store credentials");
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save credentials securely",
+      });
+    } finally {
+      setKeychainDialogOpen(false);
     }
   };
-
-  const handleAppleSignIn = async () => {
-    try {
-      setIsAppleLoading(true);
-      
-      await signInWithApple();
-      // Note: The actual success handling is done in the useEffect through
-      // either the redirect result or the auth state change
-      
-    } catch (error) {
-      console.error('Apple sign-in error:', error);
-      toast({
-        title: "Authentication failed", 
-        description: "Could not sign in with Apple. Please try again.",
-        variant: "destructive",
-      });
-      onError?.(error as Error);
-      setIsAppleLoading(false);
-    }
-  };
-
+  
   return (
-    <div className="flex flex-col space-y-3 w-full">
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={handleGoogleSignIn}
-        disabled={isGoogleLoading || isAppleLoading}
-        className="w-full flex items-center justify-center"
-      >
-        {isGoogleLoading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
-        )}
-        Continue with Google
-      </Button>
+    <div className="space-y-4">
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Or continue with
+          </span>
+        </div>
+      </div>
       
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={handleAppleSignIn}
-        disabled={isGoogleLoading || isAppleLoading}
-        className="w-full flex items-center justify-center bg-black text-white hover:bg-gray-800"
-      >
-        {isAppleLoading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <FaApple className="mr-2 h-5 w-5" />
-        )}
-        Continue with Apple
-      </Button>
+      <div className="grid grid-cols-2 gap-3">
+        {/* Phone Authentication */}
+        <Dialog open={phoneDialogOpen} onOpenChange={setPhoneDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <Phone className="mr-2 h-4 w-4" />
+              Phone
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <PhoneAuth 
+              onVerified={handlePhoneVerified}
+              onCancel={() => setPhoneDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+        
+        {/* Passkey Authentication */}
+        <Button variant="outline" className="w-full" onClick={handlePasskeyLogin}>
+          <Fingerprint className="mr-2 h-4 w-4" />
+          Passkey
+        </Button>
+      </div>
       
-      <p className="text-xs text-center text-gray-500 mt-2">
-        Note: Apple Sign In may require additional setup in production environments
-      </p>
+      {/* Apple Keychain / Credential Management API */}
+      {keychainSupported && credentials && (
+        <Dialog open={keychainDialogOpen} onOpenChange={setKeychainDialogOpen}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" className="w-full text-sm">
+              <KeyRound className="mr-2 h-4 w-4" />
+              Save credentials securely
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center space-x-2">
+                  <KeyRound className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-medium">Save to Keychain</h3>
+                </div>
+                
+                <p className="text-sm">
+                  Would you like to securely save your login credentials for this site?
+                  Your credentials will be stored securely in your device's keychain.
+                </p>
+                
+                <div className="flex space-x-2 justify-end">
+                  <Button variant="outline" onClick={() => setKeychainDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleStoreInKeychain}>
+                    Save Credentials
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

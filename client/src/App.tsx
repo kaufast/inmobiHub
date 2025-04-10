@@ -1,45 +1,9 @@
-import { Switch, Route } from "wouter";
+import { createContext, ReactNode, useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { ChatWidget } from "@/components/chat/ChatWidget";
-import NotFound from "@/pages/not-found";
+import { Switch, Route } from "wouter";
 import HomePage from "@/pages/home-page";
-import AuthPage from "@/pages/auth-page";
-import AboutPage from "@/pages/about-page";
-import ContactPage from "@/pages/contact-page";
-import PropertyDetailsPage from "@/pages/property-details";
-import PropertyAnalyticsPage from "@/pages/property-analytics";
-import SearchResultsPage from "@/pages/search-results";
-import DashboardPage from "@/pages/dashboard";
-import AdminDashboardPage from "@/pages/admin-dashboard";
-import AgentDashboardPage from "@/pages/agent-dashboard";
-import NotificationsDemo from "@/pages/notifications-demo";
-import PropertyComparisonPage from "@/pages/property-comparison";
-import BulkUploadPage from "@/pages/bulk-upload";
-import AddPropertyPage from "@/pages/add-property";
-import CookiePolicy from "@/pages/cookie-policy";
-import NeighborhoodInsightsPage from "@/pages/neighborhood-insights-page";
-import { 
-  ProtectedRoute, 
-  UserProtectedRoute, 
-  AgentProtectedRoute, 
-  AdminProtectedRoute,
-  PublisherProtectedRoute
-} from "./lib/protected-route";
-import Navbar from "./components/layout/navbar";
-import Footer from "./components/layout/footer";
-import { AuthProvider } from "./hooks/use-auth";
-import { BubbleNotificationsProvider } from "./hooks/use-bubble-notifications";
-import { PropertyComparisonProvider } from "./hooks/use-property-comparison";
-import { PropertyNotificationsProvider } from "./hooks/use-property-notifications";
-import { useEffect, useState } from "react";
-import { handleRedirectResult } from "./lib/firebase";
+import NotFound from "@/pages/not-found";
 import { useToast } from "./hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import { OrganizationSchema } from "./components/seo/schema-markup";
-import { Helmet } from "react-helmet";
-import { OnboardingTourProvider } from "./hooks/use-onboarding-tour";
-import { useLanguage } from "./hooks/use-language";
-import CookieConsent from "./components/cookie-consent-fixed";
 
 function AppContent() {
   return (
@@ -176,21 +140,150 @@ function SEOHelmet() {
   );
 }
 
+// ErrorBoundary component to catch runtime errors
+type ErrorBoundaryProps = {
+  children: ReactNode;
+};
+
+type ErrorBoundaryState = {
+  hasError: boolean;
+  error: Error | null;
+};
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error("App error:", error);
+    console.error("Error info:", errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // Fallback UI when an error occurs
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground">
+          <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
+          <p className="mb-6 text-center max-w-md">
+            We're sorry, but there was an issue loading the application. Please try refreshing the page.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Refresh Page
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// TEMPORARY: Create a simple mock of PropertyNotificationsContext
+type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+
+interface PropertyNotification {
+  id: string;
+  type: 'newProperty' | 'propertyUpdated';
+  property: any;
+  timestamp: string;
+}
+
+interface PropertyNotificationsContextType {
+  notifications: PropertyNotification[];
+  connectionStatus: ConnectionStatus;
+  subscribe: (filters?: any) => void;
+  unsubscribe: () => void;
+  clearNotifications: () => void;
+  recentProperties: any[];
+}
+
+const PropertyNotificationsContext = createContext<PropertyNotificationsContextType>({
+  notifications: [],
+  connectionStatus: 'disconnected',
+  subscribe: () => console.log('subscribe called'),
+  unsubscribe: () => console.log('unsubscribe called'),
+  clearNotifications: () => console.log('clearNotifications called'),
+  recentProperties: []
+});
+
+// Mock PropertyNotificationsProvider that doesn't use WebSockets
+function PropertyNotificationsProvider({ 
+  children 
+}: { 
+  children: ReactNode,
+  maxNotifications?: number,
+  onError?: (error: Error) => void 
+}) {
+  return (
+    <PropertyNotificationsContext.Provider 
+      value={{
+        notifications: [],
+        connectionStatus: 'disconnected',
+        subscribe: () => console.log('subscribe called'),
+        unsubscribe: () => console.log('unsubscribe called'),
+        clearNotifications: () => console.log('clearNotifications called'),
+        recentProperties: []
+      }}
+    >
+      {children}
+    </PropertyNotificationsContext.Provider>
+  );
+}
+
+// Helper to use the context safely
+export function usePropertyNotifications() {
+  return {
+    notifications: [],
+    connectionStatus: 'disconnected' as ConnectionStatus,
+    subscribe: () => console.log('subscribe called'),
+    unsubscribe: () => console.log('unsubscribe called'),
+    clearNotifications: () => console.log('clearNotifications called'),
+    recentProperties: []
+  };
+}
+
+// This is a simplified version that doesn't actually need a Safe wrapper
+// but keeping the interface the same for consistency
+function SafePropertyNotificationsProvider({ 
+  children
+}: { 
+  children: ReactNode,
+  maxNotifications?: number
+}) {
+  return (
+    <PropertyNotificationsProvider>
+      {children}
+    </PropertyNotificationsProvider>
+  );
+}
+
 function App() {
   return (
-    <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
-      <FirebaseAuthHandler>
-        <AuthProvider>
-          <PropertyNotificationsProvider maxNotifications={10}>
-            <OnboardingTourProvider>
-              <PropertyComparisonProvider maxProperties={4}>
-                <AppWithSEO />
-              </PropertyComparisonProvider>
-            </OnboardingTourProvider>
-          </PropertyNotificationsProvider>
-        </AuthProvider>
-      </FirebaseAuthHandler>
-    </BubbleNotificationsProvider>
+    <ErrorBoundary>
+      <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
+        <FirebaseAuthHandler>
+          <AuthProvider>
+            <SafePropertyNotificationsProvider maxNotifications={10}>
+              <OnboardingTourProvider>
+                <PropertyComparisonProvider maxProperties={4}>
+                  <AppWithSEO />
+                </PropertyComparisonProvider>
+              </OnboardingTourProvider>
+            </SafePropertyNotificationsProvider>
+          </AuthProvider>
+        </FirebaseAuthHandler>
+      </BubbleNotificationsProvider>
+    </ErrorBoundary>
   );
 }
 

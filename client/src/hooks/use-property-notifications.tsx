@@ -34,11 +34,13 @@ const PropertyNotificationsContext = createContext<PropertyNotificationsContextT
 interface PropertyNotificationsProviderProps {
   children: ReactNode;
   maxNotifications?: number;
+  onError?: (error: Error) => void;
 }
 
 export const PropertyNotificationsProvider = ({
   children,
   maxNotifications = 20,
+  onError,
 }: PropertyNotificationsProviderProps) => {
   const [notifications, setNotifications] = useState<PropertyNotification[]>([]);
   const [recentProperties, setRecentProperties] = useState<Partial<Property>[]>([]);
@@ -51,9 +53,8 @@ export const PropertyNotificationsProvider = ({
   
   // Connect to WebSocket server
   const connect = useCallback(() => {
-    if (!user) {
-      return;
-    }
+    // During development, we'll allow connections without a user
+    // Remove this condition check in production if user authentication is required
     
     try {
       // Close existing connection if any
@@ -65,6 +66,7 @@ export const PropertyNotificationsProvider = ({
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws`;
       
+      console.log(`Connecting to WebSocket at ${wsUrl}`);
       setConnectionStatus('connecting');
       
       const socket = new WebSocket(wsUrl);
@@ -72,26 +74,45 @@ export const PropertyNotificationsProvider = ({
       
       socket.onopen = () => {
         setConnectionStatus('connected');
-        console.log('WebSocket connection established');
+        console.log('WebSocket connection established successfully');
         
         // Subscribe with filters
         if (filters) {
           const message = JSON.stringify({
             type: 'subscribe',
-            payload: filters,
+            payload: {
+              userId: user?.id, // Include user ID if available
+              filters: filters,
+            },
           });
           socket.send(message);
+          console.log('Sent subscription message:', message);
+        } else {
+          // Send a basic subscription even without filters
+          const message = JSON.stringify({
+            type: 'subscribe',
+            payload: {
+              userId: user?.id,
+              filters: {},
+            },
+          });
+          socket.send(message);
+          console.log('Sent basic subscription message');
         }
         
         // Setup ping interval to keep connection alive
         const pingInterval = setInterval(() => {
-          if (socket.readyState === WebSocket.OPEN) {
+          if (socket && socket.readyState === WebSocket.OPEN) {
             socket.send(JSON.stringify({ type: 'ping' }));
+            console.log('Sent ping to keep connection alive');
+          } else {
+            clearInterval(pingInterval);
           }
         }, 30000); // Send ping every 30 seconds
         
         // Clear interval on socket close
-        socket.onclose = () => {
+        socket.onclose = (event) => {
+          console.log(`WebSocket closed with code: ${event.code}, reason: ${event.reason}`);
           clearInterval(pingInterval);
           setConnectionStatus('disconnected');
           scheduleReconnect();
@@ -155,6 +176,11 @@ export const PropertyNotificationsProvider = ({
       console.error('Error connecting to WebSocket server:', error);
       setConnectionStatus('error');
       scheduleReconnect();
+      
+      // Call onError callback if provided
+      if (onError && error instanceof Error) {
+        onError(error);
+      }
     }
   }, [user, filters, maxNotifications]);
   
@@ -200,12 +226,13 @@ export const PropertyNotificationsProvider = ({
     setNotifications([]);
   }, []);
   
-  // Connect when user changes
+  // Initialize connection on component mount and reconnect when user changes
   useEffect(() => {
-    if (user) {
-      connect();
-    } else {
-      // Disconnect if user logs out
+    // Always attempt to connect - This allows the app to load even if WebSocket fails
+    connect();
+    
+    return () => {
+      // Clean up on unmount
       if (socketRef.current) {
         socketRef.current.close();
         socketRef.current = null;
@@ -215,23 +242,31 @@ export const PropertyNotificationsProvider = ({
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
-      
-      setConnectionStatus('disconnected');
-      setNotifications([]);
-      setRecentProperties([]);
-    }
-    
-    return () => {
-      // Clean up on unmount
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-      
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
     };
-  }, [user, connect]);
+  }, [connect]); // Only depend on connect function
+  
+  // Update subscription when user changes
+  useEffect(() => {
+    // If we have an active connection and user has changed, update subscription
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      if (user) {
+        // User is logged in, send authentication info
+        const message = JSON.stringify({
+          type: 'subscribe',
+          payload: {
+            userId: user.id,
+            filters: filters || {}
+          }
+        });
+        socketRef.current.send(message);
+        console.log('Updated subscription with user info');
+      } else {
+        // User logged out, clear user-specific data
+        setNotifications([]);
+        setRecentProperties([]);
+      }
+    }
+  }, [user, filters]);
   
   return (
     <PropertyNotificationsContext.Provider

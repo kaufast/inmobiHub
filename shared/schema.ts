@@ -354,6 +354,17 @@ export const userVerificationSchema = z.object({
   notes: z.string().optional(),
 });
 
+// SMS Verification
+export const smsVerificationSchema = z.object({
+  phoneNumber: z.string().min(10, "Valid phone number is required"),
+  recaptchaToken: z.string().min(1, "reCAPTCHA token is required"),
+});
+
+export const smsVerifyCodeSchema = z.object({
+  verificationId: z.string().min(1, "Verification ID is required"),
+  code: z.string().min(4, "Verification code is required"),
+});
+
 export const insertNeighborhoodSchema = createInsertSchema(neighborhoods).omit({
   id: true,
   createdAt: true,
@@ -445,3 +456,5 @@ export type PasskeyAuthenticate = z.infer<typeof passkeyAuthenticateSchema>;
 export type IdVerificationRequest = z.infer<typeof idVerificationRequestSchema>;
 export type UpdateVerificationStatus = z.infer<typeof updateVerificationStatusSchema>;
 export type UserVerification = z.infer<typeof userVerificationSchema>;
+export type SmsVerification = z.infer<typeof smsVerificationSchema>;
+export type SmsVerifyCode = z.infer<typeof smsVerifyCodeSchema>;
