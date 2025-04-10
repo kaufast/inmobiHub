@@ -133,7 +133,7 @@ export default function HeroSection() {
           </p>
           
           <h1 className="text-[2.6rem] md:text-[3.2rem] lg:text-[3.8rem] font-bold text-white leading-none tracking-tight mb-8">
-            OPENING DOORS
+            OPENING MORE DOORS
           </h1>
           
           {/* Multimodal Search bar */}
