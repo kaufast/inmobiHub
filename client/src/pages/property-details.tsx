@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import PropertyGallery from "@/components/properties/property-gallery";
 import PropertyShare from "@/components/properties/property-share";
+import PropertyActionButtons from "@/components/properties/property-action-buttons";
 import EnhancedPropertyMap from "@/components/map/enhanced-property-map";
 import NeighborhoodScoreCard from "@/components/neighborhoods/neighborhood-score-card";
 import { formatPrice } from "@/lib/utils";
