@@ -186,7 +186,7 @@ export default function PropertyActionButtons({
                             <div className="flex flex-col items-center">
                               <h3 className="text-lg font-semibold mb-4">Share this property</h3>
                               <div className="flex justify-center gap-4 mb-6">
-                                <FacebookShareButton url={propertyUrl} quote={propertyTitle} className="focus:outline-none">
+                                <FacebookShareButton url={propertyUrl} className="focus:outline-none">
                                   <FacebookIcon size={40} round />
                                 </FacebookShareButton>
                                 <TwitterShareButton url={propertyUrl} title={propertyTitle} className="focus:outline-none">
@@ -195,10 +195,10 @@ export default function PropertyActionButtons({
                                 <WhatsappShareButton url={propertyUrl} title={propertyTitle} className="focus:outline-none">
                                   <WhatsappIcon size={40} round />
                                 </WhatsappShareButton>
-                                <LinkedinShareButton url={propertyUrl} title={propertyTitle} className="focus:outline-none">
+                                <LinkedinShareButton url={propertyUrl} className="focus:outline-none">
                                   <LinkedinIcon size={40} round />
                                 </LinkedinShareButton>
-                                <EmailShareButton url={propertyUrl} subject={propertyTitle} className="focus:outline-none">
+                                <EmailShareButton url={propertyUrl} subject={propertyTitle} body={propertyTitle} className="focus:outline-none">
                                   <EmailIcon size={40} round />
                                 </EmailShareButton>
                               </div>
@@ -279,7 +279,7 @@ export default function PropertyActionButtons({
           <div className="flex flex-col items-center">
             <h3 className="text-lg font-semibold mb-4">Share this property</h3>
             <div className="flex justify-center gap-4 mb-6">
-              <FacebookShareButton url={propertyUrl} quote={propertyTitle} className="focus:outline-none">
+              <FacebookShareButton url={propertyUrl} className="focus:outline-none">
                 <FacebookIcon size={40} round />
               </FacebookShareButton>
               <TwitterShareButton url={propertyUrl} title={propertyTitle} className="focus:outline-none">
@@ -288,10 +288,10 @@ export default function PropertyActionButtons({
               <WhatsappShareButton url={propertyUrl} title={propertyTitle} className="focus:outline-none">
                 <WhatsappIcon size={40} round />
               </WhatsappShareButton>
-              <LinkedinShareButton url={propertyUrl} title={propertyTitle} className="focus:outline-none">
+              <LinkedinShareButton url={propertyUrl} className="focus:outline-none">
                 <LinkedinIcon size={40} round />
               </LinkedinShareButton>
-              <EmailShareButton url={propertyUrl} subject={propertyTitle} className="focus:outline-none">
+              <EmailShareButton url={propertyUrl} subject={propertyTitle} body={propertyTitle} className="focus:outline-none">
                 <EmailIcon size={40} round />
               </EmailShareButton>
             </div>

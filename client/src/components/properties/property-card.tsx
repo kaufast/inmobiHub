@@ -21,6 +21,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
   const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
 
   // Fetch favorites data to check if this property is already favorited
   const { data: favorites } = useQuery({
@@ -325,9 +326,15 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
               src={property.images[0]} 
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
               alt={property.title} 
+              onMouseEnter={() => setShowQuickActions(true)}
+              onMouseLeave={() => setShowQuickActions(false)}
             />
           ) : (
-            <div className="w-full h-full bg-primary-100 flex items-center justify-center">
+            <div 
+              className="w-full h-full bg-primary-100 flex items-center justify-center"
+              onMouseEnter={() => setShowQuickActions(true)}
+              onMouseLeave={() => setShowQuickActions(false)}
+            >
               <svg className="h-12 w-12 text-primary-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 22V12h6v10" />
@@ -337,6 +344,40 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           <div className="absolute bottom-3 left-3 text-white">
             <span className="font-bold text-xl">{formatPrice(property.price)}</span>
+          </div>
+          
+          {/* Quick action buttons */}
+          <div 
+            className={`absolute top-4 right-4 flex gap-2 transition-opacity duration-300 ${
+              showQuickActions ? 'opacity-100' : 'opacity-0'
+            }`}
+            onMouseEnter={() => setShowQuickActions(true)}
+            onMouseLeave={() => setShowQuickActions(false)}
+          >
+            <button 
+              className={`h-9 w-9 rounded-full flex items-center justify-center shadow-lg ${
+                isFavorite 
+                  ? 'bg-red-500 text-white hover:bg-red-600' 
+                  : 'bg-white/90 text-gray-700 hover:bg-white'
+              } transition-all`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleFavoriteToggle(e);
+              }}
+              disabled={isLoading}
+              title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            >
+              <Heart className={`h-4 w-4 ${isFavorite ? 'fill-white' : ''}`} />
+            </button>
+            
+            <button 
+              className="h-9 w-9 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg hover:bg-blue-600 transition-all"
+              onClick={handleShareProperty}
+              title="Share property"
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
           </div>
         </div>
         

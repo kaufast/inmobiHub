@@ -165,6 +165,14 @@ export default function PropertyDetailsPage() {
         baseUrl={baseUrl}
       />
       
+      {/* Floating Action Buttons for one-click saving and sharing */}
+      <PropertyActionButtons 
+        property={property}
+        isFavorite={isFavorite}
+        setIsFavorite={setIsFavorite}
+        variant="floating"
+      />
+      
       <div className="container mx-auto px-4">
         {/* Breadcrumbs */}
         <div className="flex items-center mb-6 text-sm">
