@@ -122,12 +122,12 @@ export default function HeroSection() {
   
   return (
     <section className="relative bg-gradient-to-b from-gray-900 to-gray-800 overflow-hidden min-h-[800px] h-auto">
-      {/* Barcelona Background with Overlay */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1539037116277-4db20889f2d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768&q=80')] bg-cover bg-center opacity-30"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-primary-900/80 to-gray-900/90"></div>
+      {/* Modern Entrance Background with Overlay */}
+      <div className="absolute inset-0 bg-[url('/attached_assets/1343bf2110a2bb98bbaea9ec41addc3a.jpg')] bg-cover bg-center opacity-40"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-primary-900/90 to-gray-900/95"></div>
       
       <div className="container mx-auto px-4 py-16 md:py-24 lg:py-28 relative z-10">
-        <div className="flex flex-col items-center text-center">
+        <div className="flex flex-col items-center text-center" style={{ marginTop: "5%" }}>
           <p className="mt-2 text-xl text-white/90 max-w-2xl mx-auto mb-6">
             {t('common.findYourDreamProperty')}
           </p>
