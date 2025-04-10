@@ -137,17 +137,23 @@ export default function HeroSection() {
               }));
             }}>
               <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-700">
-                <TabsTrigger value="text" className="text-white data-[state=active]:bg-secondary-500">
-                  <Search className="w-4 h-4 mr-2" />
-                  Text Search
+                <TabsTrigger value="text" className="text-white data-[state=active]:bg-secondary-500 relative group">
+                  <Search className="w-5 h-5" />
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Text Search
+                  </div>
                 </TabsTrigger>
-                <TabsTrigger value="image" className="text-white data-[state=active]:bg-secondary-500">
-                  <Image className="w-4 h-4 mr-2" />
-                  Image Search
+                <TabsTrigger value="image" className="text-white data-[state=active]:bg-secondary-500 relative group">
+                  <Image className="w-5 h-5" />
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Image Search
+                  </div>
                 </TabsTrigger>
-                <TabsTrigger value="audio" className="text-white data-[state=active]:bg-secondary-500">
-                  <Mic className="w-4 h-4 mr-2" />
-                  Voice Search
+                <TabsTrigger value="audio" className="text-white data-[state=active]:bg-secondary-500 relative group">
+                  <Mic className="w-5 h-5" />
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    Voice Search
+                  </div>
                 </TabsTrigger>
               </TabsList>
               
