@@ -1,22 +1,18 @@
-import { Toaster } from "@/components/ui/toaster";
-
 function App() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="py-4 px-6 bg-primary text-primary-foreground">
-        <h1 className="text-2xl font-bold">Inmobi Real Estate</h1>
-      </header>
-      <main className="container mx-auto py-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold mb-6">Welcome to Inmobi</h2>
-          <p className="text-lg mb-8">The modern real estate platform for finding your dream home.</p>
-          <div className="p-8 border rounded-lg shadow-md">
-            <p className="mb-4">Our application is currently undergoing maintenance.</p>
-            <p>Please check back shortly.</p>
-          </div>
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <h1 className="text-2xl font-bold text-center mb-6">Inmobi Real Estate</h1>
+        <p className="text-gray-600 mb-4 text-center">
+          The modern real estate platform for finding your dream home.
+        </p>
+        <div className="border-t pt-4 mt-4">
+          <p className="text-center text-gray-500">
+            Our application is currently undergoing maintenance.
+            Please check back shortly.
+          </p>
         </div>
-      </main>
-      <Toaster />
+      </div>
     </div>
   );
 }
