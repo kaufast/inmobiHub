@@ -4,8 +4,6 @@ import { Link } from "wouter";
 export default function CallToAction() {
   return (
     <section className="py-20 bg-primary-800 relative overflow-hidden" id="apply">
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3')] bg-cover bg-center opacity-20"></div>
-      
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">Ready to Transform Your Investment Strategy?</h2>
