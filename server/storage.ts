@@ -5,7 +5,8 @@ import {
   messages, type Message, type InsertMessage,
   searchHistory, type SearchProperties, neighborhoods, type Neighborhood,
   propertyTours, type PropertyTour, type InsertPropertyTour, type UpdatePropertyTour,
-  chatAnalytics, type ChatAnalytics, type InsertChatAnalytics
+  chatAnalytics, type ChatAnalytics, type InsertChatAnalytics,
+  suggestedQuestions, type SuggestedQuestion, type InsertSuggestedQuestion
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, like, gte, lte, desc, sql } from "drizzle-orm";
@@ -75,6 +76,15 @@ export interface IStorage {
   // User Verification
   getVerifiedUsers(): Promise<User[]>;
   getVerificationRequests(): Promise<User[]>;
+  
+  // Suggested Questions
+  getSuggestedQuestions(category?: string, propertyType?: string, limit?: number): Promise<SuggestedQuestion[]>;
+  getSuggestedQuestion(id: number): Promise<SuggestedQuestion | undefined>;
+  createSuggestedQuestion(question: InsertSuggestedQuestion): Promise<SuggestedQuestion>;
+  updateSuggestedQuestion(id: number, question: Partial<InsertSuggestedQuestion>): Promise<SuggestedQuestion | undefined>;
+  deleteSuggestedQuestion(id: number): Promise<boolean>;
+  incrementQuestionClickCount(id: number): Promise<boolean>;
+  getPopularSuggestedQuestions(limit?: number): Promise<SuggestedQuestion[]>;
   
   // Session store
   sessionStore: session.Store;
@@ -837,6 +847,106 @@ export class DatabaseStorage implements IStorage {
       return pendingRequests;
     } catch (error) {
       console.error('Error getting verification requests:', error);
+      return [];
+    }
+  }
+
+  // Suggested Questions
+  async getSuggestedQuestions(category?: string, propertyType?: string, limit = 5): Promise<SuggestedQuestion[]> {
+    try {
+      let query = db.select()
+        .from(suggestedQuestions)
+        .where(eq(suggestedQuestions.isActive, true));
+      
+      if (category) {
+        query = query.where(eq(suggestedQuestions.category, category));
+      }
+      
+      if (propertyType) {
+        query = query.where(eq(suggestedQuestions.propertyType, propertyType as any));
+      }
+      
+      return query
+        .orderBy(desc(suggestedQuestions.displayOrder))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error getting suggested questions:', error);
+      return [];
+    }
+  }
+  
+  async getSuggestedQuestion(id: number): Promise<SuggestedQuestion | undefined> {
+    try {
+      const [question] = await db.select()
+        .from(suggestedQuestions)
+        .where(eq(suggestedQuestions.id, id));
+      return question;
+    } catch (error) {
+      console.error('Error getting suggested question:', error);
+      return undefined;
+    }
+  }
+  
+  async createSuggestedQuestion(question: InsertSuggestedQuestion): Promise<SuggestedQuestion> {
+    try {
+      const [newQuestion] = await db.insert(suggestedQuestions)
+        .values(question)
+        .returning();
+      return newQuestion;
+    } catch (error) {
+      console.error('Error creating suggested question:', error);
+      throw error;
+    }
+  }
+  
+  async updateSuggestedQuestion(id: number, question: Partial<InsertSuggestedQuestion>): Promise<SuggestedQuestion | undefined> {
+    try {
+      const [updatedQuestion] = await db.update(suggestedQuestions)
+        .set({ ...question, updatedAt: new Date() })
+        .where(eq(suggestedQuestions.id, id))
+        .returning();
+      return updatedQuestion;
+    } catch (error) {
+      console.error('Error updating suggested question:', error);
+      return undefined;
+    }
+  }
+  
+  async deleteSuggestedQuestion(id: number): Promise<boolean> {
+    try {
+      await db.delete(suggestedQuestions)
+        .where(eq(suggestedQuestions.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting suggested question:', error);
+      return false;
+    }
+  }
+  
+  async incrementQuestionClickCount(id: number): Promise<boolean> {
+    try {
+      await db.update(suggestedQuestions)
+        .set({
+          clickCount: sql`${suggestedQuestions.clickCount} + 1`,
+          updatedAt: new Date()
+        })
+        .where(eq(suggestedQuestions.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error incrementing question click count:', error);
+      return false;
+    }
+  }
+  
+  async getPopularSuggestedQuestions(limit = 5): Promise<SuggestedQuestion[]> {
+    try {
+      return db.select()
+        .from(suggestedQuestions)
+        .where(eq(suggestedQuestions.isActive, true))
+        .orderBy(desc(suggestedQuestions.clickCount))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error getting popular suggested questions:', error);
       return [];
     }
   }
