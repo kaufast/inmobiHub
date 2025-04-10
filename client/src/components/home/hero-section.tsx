@@ -123,7 +123,7 @@ export default function HeroSection() {
   return (
     <section className="relative bg-primary-800 overflow-hidden">
       {/* Map Background with Overlay */}
-      <div className="absolute inset-0 bg-[url('https://maps.googleapis.com/maps/api/staticmap?center=41.387,2.170&zoom=13&size=1200x800&scale=2&maptype=roadmap&style=feature:all|element:labels|visibility:off&style=feature:landscape|color:0x222222&style=feature:water|color:0x444444&style=feature:road|color:0x666666&key=AIzaSyBmUCtQ_hRnIJOOeYVOCH2Wrj3kg9ZjwMU')] bg-cover bg-center opacity-40"></div>
+      <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/2.170,41.387,11,0/1200x800?access_token=pk.eyJ1IjoiZGVtb21hcCIsImEiOiJja3E2bGN1ZmMwMnhvMnZtZm40OHlhdGFrIn0.MvJ9qQU75O8bpYm-l0z8vA')] bg-cover bg-center opacity-40"></div>
       
       <div className="container mx-auto px-4 py-16 md:py-24 lg:py-28 relative z-10">
         <div className="flex flex-col items-center text-center">
