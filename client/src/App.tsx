@@ -95,8 +95,20 @@ function FirebaseAuthHandler({ children }: { children: React.ReactNode }) {
       }
     };
     
+    // Add a timeout to prevent getting stuck on authentication check
+    const authTimeout = setTimeout(() => {
+      if (isCheckingRedirect) {
+        console.log("Authentication check timed out, continuing to app");
+        setIsCheckingRedirect(false);
+      }
+    }, 3000); // 3 second timeout
+    
     checkRedirectResult();
-  }, [toast]);
+    
+    return () => {
+      clearTimeout(authTimeout);
+    };
+  }, [toast, isCheckingRedirect]);
   
   if (isCheckingRedirect) {
     return (
