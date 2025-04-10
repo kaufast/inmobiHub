@@ -15,6 +15,7 @@ import AgentDashboardPage from "@/pages/agent-dashboard";
 import NotificationsDemo from "@/pages/notifications-demo";
 import PropertyComparisonPage from "@/pages/property-comparison";
 import BulkUploadPage from "@/pages/bulk-upload";
+import AddPropertyPage from "@/pages/add-property";
 import { 
   ProtectedRoute, 
   UserProtectedRoute, 
@@ -58,6 +59,7 @@ function AppContent() {
           <UserProtectedRoute path="/dashboard" component={DashboardPage} />
           <AdminProtectedRoute path="/admin/dashboard" component={AdminDashboardPage} />
           <AgentProtectedRoute path="/agent/dashboard" component={AgentDashboardPage} />
+          <UserProtectedRoute path="/dashboard/properties/new" component={AddPropertyPage} />
           
           {/* Premium Features */}
           <PublisherProtectedRoute path="/bulk-upload" component={BulkUploadPage} />
