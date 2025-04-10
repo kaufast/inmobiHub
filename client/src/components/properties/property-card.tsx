@@ -249,7 +249,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                       className="text-gray-600 hover:text-secondary-500 hover:bg-gray-50 transition"
                     />
                   </div>
-                  <div className="text-secondary-500 hover:text-secondary-600 text-sm font-medium">
+                  <div className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
                     View Details
                   </div>
                 </div>
@@ -419,7 +419,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
               </Avatar>
               <span className="text-xs text-primary-500">Listed by <span className="font-medium text-primary-700">Agent</span></span>
             </div>
-            <div className="text-secondary-500 hover:text-secondary-600 text-sm font-medium">
+            <div className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
               Details
             </div>
           </div>
