@@ -128,7 +128,7 @@ export default function HeroSection() {
       
       <div className="container mx-auto px-4 py-16 md:py-24 lg:py-28 relative z-10">
         <div className="flex flex-col items-center text-center">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-none tracking-tight mb-8">
+          <h1 className="text-[2.6rem] md:text-[3.2rem] lg:text-[3.8rem] font-bold text-white leading-none tracking-tight mb-8">
             OPENING<br/>MORE<br/>DOORS
           </h1>
           <p className="mt-2 text-xl text-white/90 max-w-2xl mx-auto mb-10">
