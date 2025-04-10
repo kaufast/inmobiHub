@@ -36,10 +36,10 @@ export default function FeaturedProperties() {
           </Link>
         </div>
         
-        <div className="bg-white shadow-xl rounded-xl p-8 text-gray-800">
+        <div className="bg-blue-600 shadow-xl rounded-xl p-8 text-white">
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+              <Loader2 className="h-8 w-8 animate-spin text-white" />
             </div>
           ) : error ? (
             <div className="text-center py-8">
@@ -53,7 +53,7 @@ export default function FeaturedProperties() {
                 ))
               ) : (
                 <div className="col-span-full text-center py-8">
-                  <p className="text-white bg-blue-600 px-4 py-3 rounded-lg inline-block shadow-sm">No featured properties available at the moment</p>
+                  <p className="text-blue-600 bg-white px-4 py-3 rounded-lg inline-block shadow-sm">No featured properties available at the moment</p>
                 </div>
               )}
             </div>
