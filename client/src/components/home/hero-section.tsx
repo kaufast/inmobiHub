@@ -402,7 +402,7 @@ export default function HeroSection() {
               <div className="absolute top-[15%] right-[14px] w-80 bg-gray-900/90 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700 shadow-lg">
                 <div className="relative">
                   <img 
-                    src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3" 
+                    src="https://images.unsplash.com/photo-1576941089067-2de3c901e126?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400" 
                     alt="Featured property" 
                     className="w-full h-36 object-cover"
                   />
@@ -411,30 +411,37 @@ export default function HeroSection() {
                       Featured
                     </div>
                   </div>
+                  <div className="absolute top-2 left-2">
+                    <button className="bg-white/90 p-1.5 rounded-full shadow-md">
+                      <svg className="h-4 w-4 text-primary-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="p-3">
-                  <h3 className="font-bold text-white">Luxury Barcelona Apartment</h3>
-                  <p className="text-secondary-400 font-medium">€950,000</p>
+                  <h3 className="font-bold text-white">Modern Penthouse with Terrace</h3>
+                  <p className="text-secondary-400 font-medium">€1,450,000</p>
                   
                   <div className="flex items-center text-gray-400 text-xs mt-1">
                     <MapPin className="h-3 w-3 mr-1" />
-                    <span>Eixample, Barcelona</span>
+                    <span>Diagonal Mar, Barcelona</span>
                   </div>
                   
                   <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-700">
                     <div className="flex space-x-3 text-xs">
                       <div className="flex items-center text-gray-300">
                         <Bed className="h-3 w-3 mr-1" />
-                        <span>3</span>
+                        <span>4</span>
                       </div>
                       <div className="flex items-center text-gray-300">
                         <Bath className="h-3 w-3 mr-1" />
-                        <span>2</span>
+                        <span>3</span>
                       </div>
                       <div className="flex items-center text-gray-300">
                         <Maximize className="h-3 w-3 mr-1" />
-                        <span>120 m²</span>
+                        <span>180 m²</span>
                       </div>
                     </div>
                     <button className="text-white bg-secondary-500 hover:bg-secondary-600 text-xs py-1 px-3 rounded">
