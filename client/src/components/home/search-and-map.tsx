@@ -374,8 +374,8 @@ export default function SearchAndMap() {
           <div className="lg:w-2/3 rounded-xl overflow-hidden shadow-lg glassmorphism-card relative">
             {/* This would be a real interactive map in production */}
             <div className="h-[500px] bg-primary-100 relative" id="property-map">
-              {/* Mock map content */}
-              <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/light-v10/static/-73.9857,40.7484,12,0/800x500')] bg-cover bg-center"></div>
+              {/* Barcelona map content */}
+              <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/light-v10/static/2.1734,41.3851,12,0/800x500')] bg-cover bg-center"></div>
               
               {/* Map Markers */}
               <div className="absolute" style={{ top: '40%', left: '35%' }}>

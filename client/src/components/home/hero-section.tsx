@@ -122,8 +122,8 @@ export default function HeroSection() {
   
   return (
     <section className="relative bg-gradient-to-b from-gray-900 to-gray-800 overflow-hidden min-h-[800px] h-auto">
-      {/* Map Background with Overlay */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768&q=80')] bg-cover bg-center opacity-30"></div>
+      {/* Barcelona Background with Overlay */}
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1539037116277-4db20889f2d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768&q=80')] bg-cover bg-center opacity-30"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-primary-900/80 to-gray-900/90"></div>
       
       <div className="container mx-auto px-4 py-16 md:py-24 lg:py-28 relative z-10">
@@ -373,7 +373,7 @@ export default function HeroSection() {
           {/* Map Mockup Section */}
           <div className="w-full max-w-4xl mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
             <div className="relative h-[450px] w-full">
-              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1570698473651-b2de99bae12f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768')] bg-cover bg-center"></div>
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1558642084-fd07fae5282e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768')] bg-cover bg-center"></div>
               <div className="absolute inset-0 bg-gray-900/50"></div>
               
               {/* Map Pins */}
