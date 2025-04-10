@@ -138,7 +138,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                 </button>
                 
                 <button 
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1d2633] text-white hover:bg-[#131c28] transition-colors shadow-sm hover:shadow-md"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#131c28] text-white hover:bg-[#0c1319] transition-colors shadow-sm hover:shadow-md"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -171,13 +171,13 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
             {/* Property details */}
             <div className="p-6 flex-1 flex flex-col">
               <div className="flex-grow">
-                <h3 className="font-semibold text-lg text-primary-800 mb-1">{property.title}</h3>
-                <p className="text-primary-500 text-sm flex items-center mb-3">
+                <h3 className="font-semibold text-lg text-white mb-1">{property.title}</h3>
+                <p className="text-white/80 text-sm flex items-center mb-3">
                   <MapPin className="h-4 w-4 mr-1" />
                   {property.address}, {property.city}, {property.state} {property.zipCode}
                 </p>
                 
-                <p className="text-primary-600 text-sm mb-4">
+                <p className="text-white/70 text-sm mb-4">
                   {truncateText(property.description, 120)}
                 </p>
               </div>
@@ -224,7 +224,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                   </button>
                   
                   <button 
-                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1d2633] text-white hover:bg-[#131c28] transition-colors shadow-sm hover:shadow-md"
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#131c28] text-white hover:bg-[#0c1319] transition-colors shadow-sm hover:shadow-md"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -249,7 +249,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                       className="text-gray-600 hover:text-secondary-500 hover:bg-gray-50 transition"
                     />
                   </div>
-                  <div className="text-white bg-[#1d2633] hover:bg-[#131c28] px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
+                  <div className="text-white bg-[#131c28] hover:bg-[#0c1319] px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
                     View Details
                   </div>
                 </div>
@@ -357,7 +357,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
             </button>
             
             <button 
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1d2633] text-white hover:bg-[#131c28] transition-colors shadow-sm hover:shadow-md"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#131c28] text-white hover:bg-[#0c1319] transition-colors shadow-sm hover:shadow-md"
               onClick={handleShareProperty}
             >
               <Share2 className="h-4 w-4" />
@@ -386,14 +386,14 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
         {/* Property details */}
         <div className="p-4">
           
-          <h3 className="font-semibold text-lg text-primary-800 mb-1">{property.title}</h3>
-          <p className="text-primary-500 text-sm flex items-center">
+          <h3 className="font-semibold text-lg text-white mb-1">{property.title}</h3>
+          <p className="text-white/80 text-sm flex items-center">
             <MapPin className="h-4 w-4 mr-1" />
             {property.address}, {property.city}, {property.state}
           </p>
           
           {/* Property features */}
-          <div className="flex justify-between mt-3 text-sm text-primary-600">
+          <div className="flex justify-between mt-3 text-sm text-white/70">
             <div className="flex items-center">
               <Bed className="h-4 w-4 mr-1" />
               <span>{property.bedrooms} beds</span>
@@ -411,15 +411,15 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
           </div>
           
           {/* Agent info and CTA */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-primary-100">
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
             <div className="flex items-center">
               <Avatar className="h-8 w-8 mr-2">
                 <AvatarImage src="https://randomuser.me/api/portraits/women/42.jpg" alt="Agent" />
                 <AvatarFallback>AG</AvatarFallback>
               </Avatar>
-              <span className="text-xs text-primary-500">Listed by <span className="font-medium text-primary-700">Agent</span></span>
+              <span className="text-xs text-white/70">Listed by <span className="font-medium text-white">Agent</span></span>
             </div>
-            <div className="text-white bg-[#1d2633] hover:bg-[#131c28] px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
+            <div className="text-white bg-[#131c28] hover:bg-[#0c1319] px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
               Details
             </div>
           </div>
