@@ -543,6 +543,11 @@ export default function SearchAndMap() {
                       className="w-full h-full object-cover" 
                       alt="Modern single family home" 
                     />
+                    <div className="absolute top-2 right-2">
+                      <div className="bg-secondary-500 text-white text-xs font-medium px-2 py-1 rounded">
+                        Featured
+                      </div>
+                    </div>
                     <div className="absolute top-2 left-2">
                       <button className="bg-white/90 p-1.5 rounded-full shadow-md">
                         <svg className="h-4 w-4 text-primary-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
