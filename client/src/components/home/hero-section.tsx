@@ -373,8 +373,12 @@ export default function HeroSection() {
           {/* Map Mockup Section */}
           <div className="w-full max-w-4xl mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
             <div className="relative h-[450px] w-full">
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800"></div>
-              <img src="https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/-86.8516,21.1619,10,0/1366x768?access_token=pk.eyJ1IjoidGVzdHVzZXIiLCJhIjoiY2thd2Y5Y3ppMGN5MTJ5bXhua2QxZGdiaiJ9.HECbqEHApMfpgVU2FNDXNQ" alt="Satellite view of Cancún" className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-75" />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-900 to-gray-900"></div>
+              <div className="absolute inset-0" style={{ 
+                backgroundImage: `radial-gradient(circle at 20% 30%, rgba(60, 100, 150, 0.3) 0%, transparent 20%), 
+                                  radial-gradient(circle at 60% 70%, rgba(60, 100, 150, 0.3) 0%, transparent 20%),
+                                  radial-gradient(circle at 90% 40%, rgba(60, 100, 150, 0.3) 0%, transparent 20%)`
+              }}></div>
               
               {/* Map Pins */}
               <div className="absolute left-1/4 top-1/3 w-6 h-6">
