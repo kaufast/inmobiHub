@@ -48,33 +48,37 @@ export default function Navbar() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 glassmorphism-card">
-              <DropdownMenuItem className="hover:bg-white/10" asChild>
-                <Link href="/services/buying" className="flex w-full">
-                  {t('common.buying')}
+              <DropdownMenuItem className="hover:bg-white/10">
+                <Link href="/services/buying">
+                  <a className="flex w-full">{t('common.buying')}</a>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-white/10" asChild>
-                <Link href="/services/selling" className="flex w-full">
-                  {t('common.selling')}
+              <DropdownMenuItem className="hover:bg-white/10">
+                <Link href="/services/selling">
+                  <a className="flex w-full">{t('common.selling')}</a>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-white/10" asChild>
-                <Link href="/services/investing" className="flex w-full">
-                  {t('common.investing')}
+              <DropdownMenuItem className="hover:bg-white/10">
+                <Link href="/services/investing">
+                  <a className="flex w-full">{t('common.investing')}</a>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-white/10" asChild>
-                <Link href="/neighborhoods" className="flex w-full">
-                  Neighborhood Insights
+              <DropdownMenuItem className="hover:bg-white/10">
+                <Link href="/neighborhoods">
+                  <a className="flex w-full">Neighborhood Insights</a>
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Link href="/about" className={`text-white/80 hover:text-white transition ${location === '/about' ? 'text-white' : ''}`}>
-            {t('common.about')}
+          <Link href="/about">
+            <a className={`text-white/80 hover:text-white transition ${location === '/about' ? 'text-white' : ''}`}>
+              {t('common.about')}
+            </a>
           </Link>
-          <Link href="/contact" className={`text-white/80 hover:text-white transition ${location === '/contact' ? 'text-white' : ''}`}>
-            {t('common.contact')}
+          <Link href="/contact">
+            <a className={`text-white/80 hover:text-white transition ${location === '/contact' ? 'text-white' : ''}`}>
+              {t('common.contact')}
+            </a>
           </Link>
         </nav>
         
@@ -114,12 +118,12 @@ export default function Navbar() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem className="hover:bg-white/10" asChild>
-                    <Link href="/dashboard" className="flex items-center w-full">
+                  <Link href="/dashboard">
+                    <DropdownMenuItem className="hover:bg-white/10">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span>{t('common.dashboard')}</span>
-                    </Link>
-                  </DropdownMenuItem>
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem onClick={handleLogout} className="hover:bg-white/10">
                     <LogOut className="mr-2 h-4 w-4" />
@@ -156,8 +160,10 @@ export default function Navbar() {
             <SheetContent side="right" className="glassmorphism-dark text-white p-0">
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between p-4 border-b border-white/10">
-                  <Link href="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                    <span className="text-xl font-bold">Inmobi<sup>®</sup></span>
+                  <Link href="/">
+                    <a className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                      <span className="text-xl font-bold">Inmobi<sup>®</sup></span>
+                    </a>
                   </Link>
                   <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
                     <X className="h-6 w-6" />
@@ -165,67 +171,73 @@ export default function Navbar() {
                 </div>
                 <nav className="flex-1 overflow-auto py-4">
                   <div className="space-y-2 px-4">
-                    <Link 
-                      href="/search"
-                      className="flex items-center py-2 text-white/80 hover:text-white transition"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Search className="mr-3 h-5 w-5" />
-                      {t('common.search')}
-                    </Link>
-                    <Link 
-                      href="/services"
-                      className="flex items-center py-2 text-white/80 hover:text-white transition"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Building className="mr-3 h-5 w-5" />
-                      {t('common.services')}
-                    </Link>
-                    <Link 
-                      href="/about"
-                      className="flex items-center py-2 text-white/80 hover:text-white transition"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <User className="mr-3 h-5 w-5" />
-                      {t('common.about')}
-                    </Link>
-                    <Link 
-                      href="/contact"
-                      className="flex items-center py-2 text-white/80 hover:text-white transition"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <svg 
-                        className="mr-3 h-5 w-5" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                        />
-                      </svg>
-                      {t('common.contact')}
-                    </Link>
-                    <Link 
-                      href="/neighborhoods"
-                      className="flex items-center py-2 text-white/80 hover:text-white transition"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Building className="mr-3 h-5 w-5" />
-                      Neighborhood Insights
-                    </Link>
-                    {user && (
-                      <Link 
-                        href="/dashboard"
+                    <Link href="/search">
+                      <a 
                         className="flex items-center py-2 text-white/80 hover:text-white transition"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <LayoutDashboard className="mr-3 h-5 w-5" />
-                        {t('common.dashboard')}
+                        <Search className="mr-3 h-5 w-5" />
+                        {t('common.search')}
+                      </a>
+                    </Link>
+                    <Link href="/services">
+                      <a 
+                        className="flex items-center py-2 text-white/80 hover:text-white transition"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Building className="mr-3 h-5 w-5" />
+                        {t('common.services')}
+                      </a>
+                    </Link>
+                    <Link href="/about">
+                      <a 
+                        className="flex items-center py-2 text-white/80 hover:text-white transition"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <User className="mr-3 h-5 w-5" />
+                        {t('common.about')}
+                      </a>
+                    </Link>
+                    <Link href="/contact">
+                      <a 
+                        className="flex items-center py-2 text-white/80 hover:text-white transition"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <svg 
+                          className="mr-3 h-5 w-5" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={2} 
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
+                        </svg>
+                        {t('common.contact')}
+                      </a>
+                    </Link>
+                    <Link href="/neighborhoods">
+                      <a 
+                        className="flex items-center py-2 text-white/80 hover:text-white transition"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Building className="mr-3 h-5 w-5" />
+                        Neighborhood Insights
+                      </a>
+                    </Link>
+                    {user && (
+                      <Link href="/dashboard">
+                        <a 
+                          className="flex items-center py-2 text-white/80 hover:text-white transition"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          <LayoutDashboard className="mr-3 h-5 w-5" />
+                          {t('common.dashboard')}
+                        </a>
                       </Link>
                     )}
                     <div 

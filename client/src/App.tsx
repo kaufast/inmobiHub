@@ -31,8 +31,8 @@ import { AuthProvider } from "./hooks/use-auth";
 import { BubbleNotificationsProvider } from "./hooks/use-bubble-notifications";
 import { PropertyComparisonProvider } from "./hooks/use-property-comparison";
 import { PropertyNotificationsProvider } from "./hooks/use-property-notifications";
-import { useState, useEffect } from "react";
-import { handleRedirectResult, isFirebaseConfigured } from "./lib/firebase";
+import { useEffect, useState } from "react";
+import { handleRedirectResult } from "./lib/firebase";
 import { useToast } from "./hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { OrganizationSchema } from "./components/seo/schema-markup";
@@ -40,7 +40,6 @@ import { Helmet } from "react-helmet";
 import { OnboardingTourProvider } from "./hooks/use-onboarding-tour";
 import { useLanguage } from "./hooks/use-language";
 import CookieConsent from "./components/cookie-consent-fixed";
-import { FirebaseAuthProvider } from "./hooks/use-firebase-auth";
 
 function AppContent() {
   return (
@@ -178,56 +177,19 @@ function SEOHelmet() {
 }
 
 function App() {
-  const [isFirebaseReady, setIsFirebaseReady] = useState<boolean>(false);
-  
-  // Check Firebase configuration on mount
-  useEffect(() => {
-    try {
-      const configured = isFirebaseConfigured();
-      console.log("Firebase configuration status in App.tsx:", configured);
-      setIsFirebaseReady(configured);
-    } catch (error) {
-      console.error("Error checking Firebase configuration:", error);
-      setIsFirebaseReady(false);
-    }
-  }, []);
-
-  // Fallback approach to ensure the app doesn't wait for Firebase if there's an issue
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (!isFirebaseReady) {
-        console.log("Firebase initialization timed out, continuing without Firebase");
-        setIsFirebaseReady(false);
-      }
-    }, 2000);
-    
-    return () => clearTimeout(timeout);
-  }, [isFirebaseReady]);
-  
-  // Simple main app content for either auth case
-  const AppContent = () => (
-    <AuthProvider>
-      <PropertyNotificationsProvider maxNotifications={10}>
-        <OnboardingTourProvider>
-          <PropertyComparisonProvider maxProperties={4}>
-            <AppWithSEO />
-          </PropertyComparisonProvider>
-        </OnboardingTourProvider>
-      </PropertyNotificationsProvider>
-    </AuthProvider>
-  );
-  
   return (
     <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
-      {isFirebaseReady ? (
-        <FirebaseAuthProvider>
-          <FirebaseAuthHandler>
-            <AppContent />
-          </FirebaseAuthHandler>
-        </FirebaseAuthProvider>
-      ) : (
-        <AppContent />
-      )}
+      <FirebaseAuthHandler>
+        <AuthProvider>
+          <PropertyNotificationsProvider maxNotifications={10}>
+            <OnboardingTourProvider>
+              <PropertyComparisonProvider maxProperties={4}>
+                <AppWithSEO />
+              </PropertyComparisonProvider>
+            </OnboardingTourProvider>
+          </PropertyNotificationsProvider>
+        </AuthProvider>
+      </FirebaseAuthHandler>
     </BubbleNotificationsProvider>
   );
 }

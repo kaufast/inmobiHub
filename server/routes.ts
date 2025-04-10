@@ -2,19 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { 
-  searchPropertiesSchema, 
-  insertPropertySchema, 
-  insertMessageSchema, 
-  insertFavoriteSchema, 
-  insertPropertyTourSchema, 
-  updatePropertyTourSchema,
-  passkeyRegisterSchema,
-  passkeyAuthenticateSchema,
-  idVerificationRequestSchema,
-  updateVerificationStatusSchema,
-  userVerificationSchema
-} from "@shared/schema";
+import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema, insertPropertyTourSchema, updatePropertyTourSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
@@ -1128,13 +1116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
   // Set up WebSocket server on a distinct path to avoid conflict with Vite's HMR
-  // Set up WebSocket server with more explicit configuration
-  const wss = new WebSocketServer({ 
-    server: httpServer, 
-    path: '/ws',
-    clientTracking: true 
-  });
-  console.log("WebSocket server initialized at /ws path");
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
   // Types for WebSocket messages
   type WebSocketMessage = {

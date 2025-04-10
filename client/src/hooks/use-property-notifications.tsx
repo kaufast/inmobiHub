@@ -36,27 +36,6 @@ interface PropertyNotificationsProviderProps {
   maxNotifications?: number;
 }
 
-// Create a fallback component that renders when there are WebSocket issues
-const PropertyNotificationsFallback = ({ children }: { children: ReactNode }) => {
-  console.log("Using PropertyNotifications fallback component");
-  
-  // Provide minimal context values that allow the app to function
-  const fallbackValues: PropertyNotificationsContextType = {
-    notifications: [],
-    connectionStatus: 'disconnected',
-    subscribe: () => console.log("Subscribe called on fallback provider"),
-    unsubscribe: () => console.log("Unsubscribe called on fallback provider"),
-    clearNotifications: () => console.log("Clear notifications called on fallback provider"),
-    recentProperties: []
-  };
-  
-  return (
-    <PropertyNotificationsContext.Provider value={fallbackValues}>
-      {children}
-    </PropertyNotificationsContext.Provider>
-  );
-};
-
 export const PropertyNotificationsProvider = ({
   children,
   maxNotifications = 20,
@@ -72,8 +51,9 @@ export const PropertyNotificationsProvider = ({
   
   // Connect to WebSocket server
   const connect = useCallback(() => {
-    // Don't require user - allow anonymous connections for property updates
-    // This makes the WebSocket connection more resilient
+    if (!user) {
+      return;
+    }
     
     try {
       // Close existing connection if any
@@ -81,22 +61,13 @@ export const PropertyNotificationsProvider = ({
         socketRef.current.close();
       }
       
-      // Determine WebSocket URL with explicit port for development
+      // Determine WebSocket URL
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const host = window.location.host;
-      const wsUrl = `${protocol}//${host}/ws`;
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
       
-      console.log("Connecting to WebSocket at:", wsUrl);
       setConnectionStatus('connecting');
       
-      // Create socket with error handling
       const socket = new WebSocket(wsUrl);
-      
-      // Add global error event handler
-      socket.addEventListener('error', (event) => {
-        console.error("WebSocket error occurred:", event);
-        setConnectionStatus('error');
-      });
       socketRef.current = socket;
       
       socket.onopen = () => {
@@ -185,7 +156,7 @@ export const PropertyNotificationsProvider = ({
       setConnectionStatus('error');
       scheduleReconnect();
     }
-  }, [filters, maxNotifications]);
+  }, [user, filters, maxNotifications]);
   
   // Schedule reconnection
   const scheduleReconnect = () => {
@@ -229,19 +200,12 @@ export const PropertyNotificationsProvider = ({
     setNotifications([]);
   }, []);
   
-  // Connect on component mount and when user changes
+  // Connect when user changes
   useEffect(() => {
-    // Always try to connect, not only for authenticated users
-    // This lets visitors see property notifications
-    connect();
-    
-    // Enhance user experience when authenticated
     if (user) {
-      // If user just authenticated, could customize notifications here
-    }
-    
-    return () => {
-      // Clean up on unmount
+      connect();
+    } else {
+      // Disconnect if user logs out
       if (socketRef.current) {
         socketRef.current.close();
         socketRef.current = null;
@@ -251,13 +215,14 @@ export const PropertyNotificationsProvider = ({
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
       }
-    };
-  }, [connect, user]);
-  
-  // Handle cleanup on unmount
-  useEffect(() => {
+      
+      setConnectionStatus('disconnected');
+      setNotifications([]);
+      setRecentProperties([]);
+    }
+    
     return () => {
-      // Ensure WebSocket is closed and timeout cleared
+      // Clean up on unmount
       if (socketRef.current) {
         socketRef.current.close();
       }
@@ -266,7 +231,7 @@ export const PropertyNotificationsProvider = ({
         clearTimeout(reconnectTimeoutRef.current);
       }
     };
-  }, []);
+  }, [user, connect]);
   
   return (
     <PropertyNotificationsContext.Provider
