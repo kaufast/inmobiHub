@@ -154,7 +154,7 @@ export default function AuthPage() {
                       
                       <Button 
                         type="submit" 
-                        className="w-full bg-secondary-600 hover:bg-secondary-700"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                         disabled={isAuthenticating}
                       >
                         {isAuthenticating ? (
@@ -247,7 +247,7 @@ export default function AuthPage() {
                       
                       <Button 
                         type="submit" 
-                        className="w-full bg-secondary-600 hover:bg-secondary-700"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
                         disabled={isAuthenticating}
                       >
                         {isAuthenticating ? (
