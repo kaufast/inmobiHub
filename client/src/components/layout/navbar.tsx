@@ -82,11 +82,12 @@ export default function Navbar() {
           <HelpMenu />
           
           {/* Add Property CTA Button */}
-          <Link href={user ? "/dashboard/properties/new" : "/auth"}>
-            <Button className="hidden md:flex bg-primary-500 hover:bg-primary-600 text-white">
-              {t('common.addProperty')}
-            </Button>
-          </Link>
+          <Button 
+            className="hidden md:flex bg-primary-500 hover:bg-primary-600 text-white"
+            onClick={() => window.location.href = user ? "/dashboard/properties/new" : "/auth"}
+          >
+            Add Property
+          </Button>
           
           {user ? (
             <>
@@ -128,16 +129,19 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link href="/auth">
-                <Button variant="ghost" className="hidden md:inline-block text-white hover:bg-white/10">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/auth">
-                <Button className="bg-secondary-500 hover:bg-secondary-600">
-                  Join
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                className="hidden md:inline-block text-white hover:bg-white/10"
+                onClick={() => window.location.href = "/auth"}
+              >
+                Sign In
+              </Button>
+              <Button 
+                className="bg-secondary-500 hover:bg-secondary-600"
+                onClick={() => window.location.href = "/auth"}
+              >
+                Join
+              </Button>
             </>
           )}
           
@@ -238,14 +242,15 @@ export default function Navbar() {
                 <div className="p-4 border-t border-white/10">
                   {user ? (
                     <div className="flex flex-col space-y-2">
-                      <Link href="/dashboard/properties/new">
-                        <Button 
-                          className="w-full bg-primary-500 hover:bg-primary-600"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {t('common.addProperty')}
-                        </Button>
-                      </Link>
+                      <Button 
+                        className="w-full bg-primary-500 hover:bg-primary-600"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          window.location.href = "/dashboard/properties/new";
+                        }}
+                      >
+                        Add Property
+                      </Button>
                       <Button 
                         className="w-full bg-secondary-500 hover:bg-secondary-600"
                         onClick={() => {
@@ -259,31 +264,34 @@ export default function Navbar() {
                     </div>
                   ) : (
                     <div className="flex flex-col space-y-2">
-                      <Link href="/auth">
-                        <Button 
-                          className="w-full bg-secondary-500 hover:bg-secondary-600"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Join
-                        </Button>
-                      </Link>
-                      <Link href="/auth">
-                        <Button 
-                          variant="outline" 
-                          className="w-full text-white border-white/20 hover:bg-white/10"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          Sign In
-                        </Button>
-                      </Link>
-                      <Link href="/auth">
-                        <Button 
-                          className="w-full bg-primary-500 hover:bg-primary-600"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {t('common.addProperty')}
-                        </Button>
-                      </Link>
+                      <Button 
+                        className="w-full bg-secondary-500 hover:bg-secondary-600"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          window.location.href = "/auth";
+                        }}
+                      >
+                        Join
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full text-white border-white/20 hover:bg-white/10"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          window.location.href = "/auth";
+                        }}
+                      >
+                        Sign In
+                      </Button>
+                      <Button 
+                        className="w-full bg-primary-500 hover:bg-primary-600"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          window.location.href = "/auth";
+                        }}
+                      >
+                        Add Property
+                      </Button>
                     </div>
                   )}
                 </div>
