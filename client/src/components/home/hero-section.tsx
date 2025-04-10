@@ -399,7 +399,7 @@ export default function HeroSection() {
               </div>
               
               {/* Property Card Overlay */}
-              <div className="absolute top-4 right-4 w-80 bg-gray-900/90 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700 shadow-lg">
+              <div className="absolute top-[15%] right-[14px] w-80 bg-gray-900/90 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700 shadow-lg">
                 <div className="relative">
                   <img 
                     src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3" 
