@@ -429,7 +429,7 @@ export default function HeroSection() {
                 
                 <div className="p-3">
                   <h3 className="font-bold text-white">Modern Mexican Villa</h3>
-                  <p className="text-blue-400 font-medium">€1,450,000</p>
+                  <p className="text-[#1d2633] font-medium">€1,450,000</p>
                   
                   <div className="flex items-center text-gray-400 text-xs mt-1">
                     <MapPin className="h-3 w-3 mr-1" />
@@ -451,7 +451,7 @@ export default function HeroSection() {
                         <span>180 m²</span>
                       </div>
                     </div>
-                    <button className="text-white bg-blue-500 hover:bg-blue-600 text-xs py-1.5 px-3 rounded-md shadow-sm transition-all hover:shadow-md">
+                    <button className="text-white bg-[#1d2633] hover:bg-[#131c28] text-xs py-1.5 px-3 rounded-md shadow-sm transition-all hover:shadow-md">
                       View
                     </button>
                   </div>

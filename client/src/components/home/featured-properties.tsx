@@ -45,14 +45,16 @@ export default function FeaturedProperties() {
               <p className="text-white bg-red-500 px-4 py-2 rounded-lg inline-block">Failed to load featured properties</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
               {properties && properties.length > 0 ? (
                 properties.map((property) => (
-                  <PropertyCard key={property.id} property={property} />
+                  <div key={property.id} className="lg:col-span-1">
+                    <PropertyCard property={property} />
+                  </div>
                 ))
               ) : (
                 <div className="col-span-full text-center py-8">
-                  <p className="text-blue-600 bg-white px-4 py-3 rounded-lg inline-block shadow-sm">No featured properties available at the moment</p>
+                  <p className="text-[#1d2633] bg-white px-4 py-3 rounded-lg inline-block shadow-sm">No featured properties available at the moment</p>
                 </div>
               )}
             </div>
