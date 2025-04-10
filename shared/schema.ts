@@ -429,6 +429,30 @@ export const chatAnalyticsRelations = relations(chatAnalytics, ({ one }) => ({
   }),
 }));
 
+// Suggested Questions for Chat
+export const suggestedQuestions = pgTable("suggested_questions", {
+  id: serial("id").primaryKey(),
+  question: text("question").notNull(),
+  category: text("category"),
+  propertyType: propertyTypeEnum("property_type"),
+  isGeneralQuestion: boolean("is_general_question").default(true).notNull(),
+  displayOrder: integer("display_order").default(0),
+  clickCount: integer("click_count").default(0),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSuggestedQuestionSchema = createInsertSchema(suggestedQuestions).omit({
+  id: true,
+  clickCount: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSuggestedQuestion = z.infer<typeof insertSuggestedQuestionSchema>;
+export type SuggestedQuestion = typeof suggestedQuestions.$inferSelect;
+
 export const insertChatAnalyticsSchema = createInsertSchema(chatAnalytics).omit({
   id: true,
   timestamp: true,
