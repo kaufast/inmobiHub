@@ -122,8 +122,8 @@ export default function HeroSection() {
   
   return (
     <section className="relative bg-primary-800 overflow-hidden">
-      {/* Hero Background with Overlay */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3')] bg-cover bg-center opacity-20"></div>
+      {/* Map Background with Overlay */}
+      <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/2.170,41.387,11,0/1200x800?access_token=pk.eyJ1IjoiZGVtb21hcCIsImEiOiJja3E2bGN1ZmMwMnhvMnZtZm40OHlhdGFrIn0.MvJ9qQU75O8bpYm-l0z8vA')] bg-cover bg-center opacity-40"></div>
       
       <div className="container mx-auto px-4 py-16 md:py-24 lg:py-28 relative z-10">
         <div className="flex flex-col items-center text-center">
@@ -365,6 +365,75 @@ export default function HeroSection() {
                 </div>
               </TabsContent>
             </Tabs>
+          </div>
+          
+          {/* Map Mockup Section */}
+          <div className="w-full max-w-4xl mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
+            <div className="relative h-[450px] w-full">
+              <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/pin-l+f05541(2.159,41.39),pin-l+f05541(2.197,41.405),pin-l+f05541(2.175,41.377),pin-l+f05541(2.148,41.403)/2.170,41.387,12.5,0/1200x800@2x?access_token=pk.eyJ1IjoiZGVtb21hcCIsImEiOiJja3E2bGN1ZmMwMnhvMnZtZm40OHlhdGFrIn0.MvJ9qQU75O8bpYm-l0z8vA')] bg-cover bg-center"></div>
+              
+              {/* Property Card Overlay */}
+              <div className="absolute top-4 right-4 w-80 bg-gray-900/90 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700 shadow-lg">
+                <div className="relative">
+                  <img 
+                    src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3" 
+                    alt="Featured property" 
+                    className="w-full h-36 object-cover"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <div className="bg-secondary-500 text-white text-xs font-medium px-2 py-1 rounded">
+                      Featured
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-3">
+                  <h3 className="font-bold text-white">Luxury Barcelona Apartment</h3>
+                  <p className="text-secondary-400 font-medium">€950,000</p>
+                  
+                  <div className="flex items-center text-gray-400 text-xs mt-1">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    <span>Eixample, Barcelona</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-700">
+                    <div className="flex space-x-3 text-xs">
+                      <div className="flex items-center text-gray-300">
+                        <Bed className="h-3 w-3 mr-1" />
+                        <span>3</span>
+                      </div>
+                      <div className="flex items-center text-gray-300">
+                        <Bath className="h-3 w-3 mr-1" />
+                        <span>2</span>
+                      </div>
+                      <div className="flex items-center text-gray-300">
+                        <Maximize className="h-3 w-3 mr-1" />
+                        <span>120 m²</span>
+                      </div>
+                    </div>
+                    <button className="text-white bg-secondary-500 hover:bg-secondary-600 text-xs py-1 px-3 rounded">
+                      View
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Search Filters Overlay */}
+              <div className="absolute bottom-4 left-4 flex items-center space-x-2">
+                <div className="bg-gray-900/80 backdrop-blur-md rounded-lg px-3 py-2 flex items-center space-x-1 border border-gray-700">
+                  <div className="text-white text-xs font-medium">Barcelona</div>
+                </div>
+                <div className="bg-gray-900/80 backdrop-blur-md rounded-lg px-3 py-2 flex items-center space-x-1 border border-gray-700">
+                  <div className="text-white text-xs font-medium">Buy</div>
+                </div>
+                <div className="bg-gray-900/80 backdrop-blur-md rounded-lg px-3 py-2 flex items-center space-x-1 border border-gray-700">
+                  <div className="text-white text-xs font-medium">2+ Beds</div>
+                </div>
+                <div className="bg-gray-900/80 backdrop-blur-md rounded-lg px-3 py-2 flex items-center space-x-1 border border-gray-700">
+                  <div className="text-white text-xs font-medium">Any Price</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
