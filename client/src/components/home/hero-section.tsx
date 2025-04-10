@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, MapPin, Image, Mic, Camera, X, ChevronDown } from "lucide-react";
+import { Search, MapPin, Image, Mic, Camera, X, ChevronDown, Bed, Bath, Maximize } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchProperties } from "@shared/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
