@@ -17,6 +17,7 @@ import PropertyComparisonPage from "@/pages/property-comparison";
 import BulkUploadPage from "@/pages/bulk-upload";
 import AddPropertyPage from "@/pages/add-property";
 import CookiePolicy from "@/pages/cookie-policy";
+import NeighborhoodInsightsPage from "@/pages/neighborhood-insights-page";
 import { 
   ProtectedRoute, 
   UserProtectedRoute, 
@@ -55,6 +56,7 @@ function AppContent() {
           <Route path="/property/:id/analytics" component={PropertyAnalyticsPage} />
           <Route path="/property-comparison" component={PropertyComparisonPage} />
           <Route path="/search" component={SearchResultsPage} />
+          <Route path="/neighborhoods" component={NeighborhoodInsightsPage} />
           <Route path="/notifications-demo" component={NotificationsDemo} />
           <Route path="/cookie-policy" component={CookiePolicy} />
           
