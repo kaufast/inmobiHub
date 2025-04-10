@@ -373,8 +373,8 @@ export default function HeroSection() {
           {/* Map Mockup Section */}
           <div className="w-full max-w-4xl mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
             <div className="relative h-[450px] w-full">
-              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1519236251443-a39e7ef9c26d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768')] bg-cover bg-center"></div>
-              <div className="absolute inset-0 bg-gray-900/50"></div>
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1575420682429-3bd452cb3fb4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768')] bg-cover bg-center"></div>
+              <div className="absolute inset-0 bg-gray-900/30"></div>
               
               {/* Map Pins */}
               <div className="absolute left-1/4 top-1/3 w-6 h-6">
