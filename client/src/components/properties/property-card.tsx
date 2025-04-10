@@ -96,7 +96,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
             <div className="relative sm:w-1/3 h-52 sm:h-auto overflow-hidden">
               {property.isPremium && (
                 <div className="absolute top-4 right-4 z-10">
-                  <div className="bg-[#1d2633] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
+                  <div className="bg-[#131c28] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
                     Premium
                   </div>
                 </div>
@@ -315,7 +315,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
           {/* Premium badge */}
           {property.isPremium && (
             <div className="absolute top-4 right-4 z-10">
-              <div className="bg-[#1d2633] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
+              <div className="bg-[#131c28] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
                 Premium
               </div>
             </div>

@@ -414,12 +414,12 @@ export default function HeroSection() {
                     className="w-full h-36 object-cover"
                   />
                   <div className="absolute top-2 right-2">
-                    <div className="bg-[#1d2633] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
+                    <div className="bg-[#131c28] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
                       Featured
                     </div>
                   </div>
                   <div className="absolute top-2 left-2">
-                    <button className="bg-[#1d2633] p-1.5 rounded-full shadow-md transition-transform hover:scale-110 hover:bg-[#131c28]">
+                    <button className="bg-[#131c28] p-1.5 rounded-full shadow-md transition-transform hover:scale-110 hover:bg-[#0c1319]">
                       <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                       </svg>
@@ -429,7 +429,7 @@ export default function HeroSection() {
                 
                 <div className="p-3">
                   <h3 className="font-bold text-white">Modern Mexican Villa</h3>
-                  <p className="text-[#1d2633] font-medium">€1,450,000</p>
+                  <p className="text-white font-medium">€1,450,000</p>
                   
                   <div className="flex items-center text-gray-400 text-xs mt-1">
                     <MapPin className="h-3 w-3 mr-1" />
@@ -451,7 +451,7 @@ export default function HeroSection() {
                         <span>180 m²</span>
                       </div>
                     </div>
-                    <button className="text-white bg-[#1d2633] hover:bg-[#131c28] text-xs py-1.5 px-3 rounded-md shadow-sm transition-all hover:shadow-md">
+                    <button className="text-white bg-[#131c28] hover:bg-[#0c1319] text-xs py-1.5 px-3 rounded-md shadow-sm transition-all hover:shadow-md">
                       View
                     </button>
                   </div>
