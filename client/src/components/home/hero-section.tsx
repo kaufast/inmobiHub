@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, MapPin, Image, Mic, Camera, X } from "lucide-react";
+import { Search, MapPin, Image, Mic, Camera, X, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchProperties } from "@shared/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export default function HeroSection() {
   const { t } = useTranslation();
@@ -16,9 +17,12 @@ export default function HeroSection() {
   const [searchParams, setSearchParams] = useState<SearchProperties>({
     searchType: "text",
     location: "",
+    listingType: "buy",
     propertyType: undefined,
     minPrice: undefined,
     maxPrice: undefined,
+    beds: undefined,
+    baths: undefined,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -82,9 +86,12 @@ export default function HeroSection() {
     const queryParams = new URLSearchParams();
     
     if (searchParams.location) queryParams.set("location", searchParams.location);
+    if (searchParams.listingType) queryParams.set("listingType", searchParams.listingType);
     if (searchParams.propertyType) queryParams.set("propertyType", searchParams.propertyType);
     if (searchParams.minPrice) queryParams.set("minPrice", searchParams.minPrice.toString());
     if (searchParams.maxPrice) queryParams.set("maxPrice", searchParams.maxPrice.toString());
+    if (searchParams.beds) queryParams.set("beds", searchParams.beds.toString());
+    if (searchParams.baths) queryParams.set("baths", searchParams.baths.toString());
     
     // Add search type
     queryParams.set("searchType", searchType);
@@ -240,8 +247,8 @@ export default function HeroSection() {
                         </div>
                         <div>
                           <Select 
-                            value={searchParams.bedrooms?.toString()} 
-                            onValueChange={(value) => handleInputChange('bedrooms', Number(value))}
+                            value={searchParams.beds?.toString()} 
+                            onValueChange={(value) => handleInputChange('beds', Number(value))}
                           >
                             <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
                               <SelectValue placeholder="Bedrooms" />
@@ -257,8 +264,8 @@ export default function HeroSection() {
                         </div>
                         <div>
                           <Select 
-                            value={searchParams.bathrooms?.toString()} 
-                            onValueChange={(value) => handleInputChange('bathrooms', Number(value))}
+                            value={searchParams.baths?.toString()} 
+                            onValueChange={(value) => handleInputChange('baths', Number(value))}
                           >
                             <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
                               <SelectValue placeholder="Bathrooms" />
