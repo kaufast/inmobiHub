@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema, insertPropertyTourSchema, updatePropertyTourSchema } from "@shared/schema";
+import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema, insertPropertyTourSchema, updatePropertyTourSchema, passkeyRegisterSchema, passkeyAuthenticateSchema, idVerificationRequestSchema, updateVerificationStatusSchema, userVerificationSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
@@ -1113,6 +1113,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // User Verification Routes for realtors and agents
+  
+  // Request verification as a realtor (agent)
+  app.post("/api/users/verify/id", isAuthenticated, async (req, res, next) => {
+    try {
+      const { idVerificationType, idVerificationDocument, notes } = idVerificationRequestSchema.parse({
+        ...req.body,
+        userId: req.user!.id
+      });
+      
+      // Update user with verification request
+      const user = await storage.updateUser(req.user!.id, {
+        idVerificationType,
+        idVerificationStatus: 'pending',
+        idVerificationNotes: notes || null,
+        idVerificationDate: new Date(),
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.status(200).json({ 
+        message: "ID verification request submitted successfully",
+        status: user.idVerificationStatus
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid verification data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  // Admin: Approve or reject verification request
+  app.patch("/api/admin/users/:userId/verification", isAdmin, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { idVerificationStatus, idVerificationNotes, isVerified } = updateVerificationStatusSchema.parse({
+        ...req.body,
+        userId
+      });
+      
+      // Get user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update verification status
+      const updatedUser = await storage.updateUser(userId, {
+        idVerificationStatus,
+        idVerificationNotes: idVerificationNotes || null,
+        isVerified: isVerified || false,
+        verificationDate: isVerified ? new Date() : null,
+        verifiedBy: isVerified ? req.user!.id : null,
+      });
+      
+      res.status(200).json({
+        message: `User verification ${idVerificationStatus}`,
+        user: {
+          id: updatedUser!.id,
+          username: updatedUser!.username,
+          email: updatedUser!.email,
+          role: updatedUser!.role,
+          isVerified: updatedUser!.isVerified,
+          idVerificationStatus: updatedUser!.idVerificationStatus
+        }
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid verification data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  // Admin: Mark user as verified (blue checkmark)
+  app.patch("/api/admin/users/:userId/verified", isAdmin, async (req, res, next) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { isVerified, notes } = userVerificationSchema.parse({
+        ...req.body,
+        userId
+      });
+      
+      // Get user
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update verification status
+      const updatedUser = await storage.updateUser(userId, {
+        isVerified,
+        verificationDate: isVerified ? new Date() : null,
+        verifiedBy: isVerified ? req.user!.id : null,
+      });
+      
+      res.status(200).json({
+        message: `User ${isVerified ? 'verified' : 'unverified'} successfully`,
+        user: {
+          id: updatedUser!.id,
+          username: updatedUser!.username,
+          email: updatedUser!.email,
+          role: updatedUser!.role,
+          isVerified: updatedUser!.isVerified
+        }
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid verification data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  // Passkey routes
+  
+  // Register a passkey for a user
+  app.post("/api/users/passkey", isAuthenticated, async (req, res, next) => {
+    try {
+      const { passkey } = passkeyRegisterSchema.parse({
+        ...req.body,
+        userId: req.user!.id
+      });
+      
+      // Update user with passkey
+      const user = await storage.updateUser(req.user!.id, {
+        passkey,
+        passkeyEnabled: true
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.status(200).json({ 
+        message: "Passkey registered successfully",
+        passkeyEnabled: user.passkeyEnabled
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid passkey data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  // Disable passkey for a user
+  app.delete("/api/users/passkey", isAuthenticated, async (req, res, next) => {
+    try {
+      // Update user to disable passkey
+      const user = await storage.updateUser(req.user!.id, {
+        passkey: null,
+        passkeyEnabled: false
+      });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.status(200).json({ 
+        message: "Passkey disabled successfully",
+        passkeyEnabled: false
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Get list of verified users (for displaying verification badges)
+  app.get("/api/verified-users", async (req, res, next) => {
+    try {
+      const verifiedUsers = await storage.getVerifiedUsers();
+      res.json(verifiedUsers.map(user => ({
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName,
+        isVerified: user.isVerified,
+        role: user.role
+      })));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Admin: Get list of pending verification requests
+  app.get("/api/admin/verification-requests", isAdmin, async (req, res, next) => {
+    try {
+      const pendingRequests = await storage.getVerificationRequests();
+      res.json(pendingRequests);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Set up WebSocket server on a distinct path to avoid conflict with Vite's HMR
