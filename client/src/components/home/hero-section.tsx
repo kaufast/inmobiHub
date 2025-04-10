@@ -13,6 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 export default function HeroSection() {
   const { t } = useTranslation();
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState<"text" | "image" | "audio">("text");
   const [searchType, setSearchType] = useState<"text" | "image" | "audio">("text");
   const [searchParams, setSearchParams] = useState<SearchProperties>({
     searchType: "text",
@@ -135,8 +136,9 @@ export default function HeroSection() {
           
           {/* Multimodal Search bar */}
           <div className="w-full max-w-4xl bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700">
-            <Tabs defaultValue="text" className="w-full" onValueChange={(value) => {
+            <Tabs value={activeTab} defaultValue="text" className="w-full" onValueChange={(value) => {
               const type = value as "text" | "image" | "audio";
+              setActiveTab(type);
               setSearchType(type);
               setSearchParams(prev => ({
                 ...prev,
@@ -176,19 +178,6 @@ export default function HeroSection() {
               
               <TabsContent value="text" className="mt-0 border border-gray-700 p-4 rounded-b-lg">
                 <div className="flex flex-col md:flex-row gap-4 mb-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <MapPin className="h-5 w-5 text-white/60" />
-                      </div>
-                      <Input 
-                        placeholder="Enter city, zip or address"
-                        className="pl-10 bg-gray-700/90 border-gray-600 text-white h-12"
-                        value={searchParams.location || ''}
-                        onChange={(e) => handleInputChange('location', e.target.value)}
-                      />
-                    </div>
-                  </div>
                   <div className="w-full md:w-48">
                     <Select 
                       value={searchParams.listingType || 'buy'} 
@@ -204,14 +193,35 @@ export default function HeroSection() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="w-full md:w-48">
-                    <Button 
-                      onClick={handleSearch}
-                      className="w-full h-12 bg-secondary-500 hover:bg-secondary-600 text-white"
-                    >
-                      <Search className="mr-2 h-5 w-5" />
-                      Search
-                    </Button>
+                  <div className="w-full md:flex md:items-center md:gap-2">
+                    <div className="relative w-full flex-grow">
+                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center">
+                        <Search className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        value={searchParams.location}
+                        onChange={(e) => handleInputChange('location', e.target.value)}
+                        placeholder="Enter city, zip or address"
+                        className="w-full h-12 pl-10 pr-16 bg-gray-700/90 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                      />
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                        <button onClick={() => setActiveTab("image")} className="text-gray-400 hover:text-white">
+                          <Camera className="h-5 w-5" />
+                        </button>
+                        <button onClick={() => setActiveTab("audio")} className="text-gray-400 hover:text-white">
+                          <Mic className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="mt-2 md:mt-0 md:w-[33%]">
+                      <Button 
+                        onClick={handleSearch}
+                        className="w-full h-12 bg-secondary-500 hover:bg-secondary-600 text-white"
+                      >
+                        <Search className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 
