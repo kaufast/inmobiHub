@@ -1,143 +1,101 @@
-import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
+import { signInWithGoogle, signInWithApple } from "@/lib/firebase";
 import { FaGoogle, FaApple } from "react-icons/fa";
-import { signInWithGoogle, signInWithApple, handleRedirectResult, auth } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
-interface SocialAuthButtonsProps {
-  onSuccess?: (userData: any) => void;
-  onError?: (error: Error) => void;
-}
-
-export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps) {
+export function SocialAuthButtons() {
+  const [isLoading, setIsLoading] = useState({
+    google: false,
+    apple: false
+  });
   const { toast } = useToast();
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isAppleLoading, setIsAppleLoading] = useState(false);
-
-  // Handle redirect result when component mounts
-  useEffect(() => {
-    const checkRedirectResult = async () => {
-      try {
-        const user = await handleRedirectResult();
-        if (user) {
-          const userData = {
-            email: user.email || '',
-            username: user.email || '',
-            fullName: user.displayName || '',
-            password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
-            profileImage: user.photoURL || null
-          };
-          
-          onSuccess?.(userData);
-        }
-      } catch (error) {
-        console.error('Redirect result error:', error);
-        toast({
-          title: "Authentication failed",
-          description: "Could not complete sign in. Please try again.",
-          variant: "destructive",
-        });
-        onError?.(error as Error);
-      }
-    };
-
-    checkRedirectResult();
-
-    // Also listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const userData = {
-          email: user.email || '',
-          username: user.email || '',
-          fullName: user.displayName || '',
-          password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
-          profileImage: user.photoURL || null
-        };
-        
-        onSuccess?.(userData);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [onSuccess, onError, toast]);
 
   const handleGoogleSignIn = async () => {
     try {
-      setIsGoogleLoading(true);
-      
+      setIsLoading(prev => ({ ...prev, google: true }));
       await signInWithGoogle();
-      // Note: The actual success handling is done in the useEffect through
-      // either the redirect result or the auth state change
-      
+      // The redirect will happen automatically, but we'll never reach here
     } catch (error) {
-      console.error('Google sign-in error:', error);
+      console.error("Google sign-in error:", error);
       toast({
-        title: "Authentication failed",
-        description: "Could not sign in with Google. Please try again.",
+        title: "Sign-in failed",
+        description: error instanceof Error ? error.message : "Failed to sign in with Google",
         variant: "destructive",
       });
-      onError?.(error as Error);
-      setIsGoogleLoading(false);
+      setIsLoading(prev => ({ ...prev, google: false }));
     }
   };
 
   const handleAppleSignIn = async () => {
     try {
-      setIsAppleLoading(true);
+      setIsLoading(prev => ({ ...prev, apple: true }));
+      const result = await signInWithApple();
       
-      await signInWithApple();
-      // Note: The actual success handling is done in the useEffect through
-      // either the redirect result or the auth state change
-      
+      // If we're here, we used popup flow (not redirect)
+      if (result && result.user) {
+        const user = result.user;
+        const userData = {
+          email: user.email,
+          emailVerified: user.emailVerified,
+          displayName: user.displayName,
+          uid: user.uid,
+          photoURL: user.photoURL,
+        };
+        
+        console.log("User signed in:", userData);
+        
+        toast({
+          title: "Sign-in successful",
+          description: `Welcome${userData.displayName ? `, ${userData.displayName}` : ""}!`,
+        });
+        
+        // Handle redirect or state update here
+      }
     } catch (error) {
-      console.error('Apple sign-in error:', error);
+      console.error("Apple sign-in error:", error);
       toast({
-        title: "Authentication failed", 
-        description: "Could not sign in with Apple. Please try again.",
+        title: "Sign-in failed",
+        description: error instanceof Error ? error.message : "Failed to sign in with Apple",
         variant: "destructive",
       });
-      onError?.(error as Error);
-      setIsAppleLoading(false);
+    } finally {
+      setIsLoading(prev => ({ ...prev, apple: false }));
     }
   };
 
   return (
-    <div className="flex flex-col space-y-3 w-full">
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={handleGoogleSignIn}
-        disabled={isGoogleLoading || isAppleLoading}
+    <div className="space-y-3">
+      <Button
+        type="button"
+        variant="outline"
         className="w-full flex items-center justify-center"
+        onClick={handleGoogleSignIn}
+        disabled={isLoading.google || isLoading.apple}
       >
-        {isGoogleLoading ? (
+        {isLoading.google ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           <FaGoogle className="mr-2 h-4 w-4 text-red-500" />
         )}
-        Continue with Google
+        Sign in with Google
       </Button>
       
-      <Button 
-        type="button" 
-        variant="outline" 
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full flex items-center justify-center"
         onClick={handleAppleSignIn}
-        disabled={isGoogleLoading || isAppleLoading}
-        className="w-full flex items-center justify-center bg-black text-white hover:bg-gray-800"
+        disabled={isLoading.google || isLoading.apple}
       >
-        {isAppleLoading ? (
+        {isLoading.apple ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
-          <FaApple className="mr-2 h-5 w-5" />
+          <FaApple className="mr-2 h-4 w-4" />
         )}
-        Continue with Apple
+        Sign in with Apple
       </Button>
-      
-      <p className="text-xs text-center text-gray-500 mt-2">
-        Note: Apple Sign In may require additional setup in production environments
-      </p>
     </div>
   );
 }

@@ -1,98 +1,121 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut, signInWithRedirect, getRedirectResult } from "firebase/auth";
+import { 
+  getAuth, 
+  signInWithRedirect, 
+  GoogleAuthProvider, 
+  PhoneAuthProvider, 
+  RecaptchaVerifier,
+  OAuthProvider,
+  signInWithPopup,
+  signInWithPhoneNumber,
+  ApplicationVerifier,
+  getRedirectResult,
+  UserCredential
+} from "firebase/auth";
 
-// Your web app's Firebase configuration
+// Firebase configuration from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyAHBABI9mL7s6Jr_n7FhlSCLMrMA8QBp8Q",
-  authDomain: "inmobi-a6bd4.firebaseapp.com",
-  projectId: "inmobi-a6bd4",
-  storageBucket: "inmobi-a6bd4.firebasestorage.app",
-  messagingSenderId: "937279827019",
-  appId: "1:937279827019:web:92eb1d4219413097b9f1ce",
-  measurementId: "G-D1KKXE9REV"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "placeholder-api-key",
+  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "placeholder-project-id"}.firebaseapp.com`,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "placeholder-project-id",
+  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "placeholder-project-id"}.appspot.com`,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "placeholder-app-id",
+};
+
+// Check if Firebase is properly configured
+export const isFirebaseConfigured = (): boolean => {
+  return (
+    import.meta.env.VITE_FIREBASE_API_KEY !== undefined &&
+    import.meta.env.VITE_FIREBASE_PROJECT_ID !== undefined &&
+    import.meta.env.VITE_FIREBASE_APP_ID !== undefined &&
+    import.meta.env.VITE_FIREBASE_API_KEY !== "placeholder-api-key"
+  );
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize Firebase Authentication
 const auth = getAuth(app);
 
-// Configure Google Auth Provider
+// Provider instances
 const googleProvider = new GoogleAuthProvider();
+const appleProvider = new OAuthProvider('apple.com');
+const phoneProvider = new PhoneAuthProvider(auth);
+
+// Configure providers
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
 
-// Configure Apple Auth Provider
-const appleProvider = new OAuthProvider('apple.com');
 appleProvider.addScope('email');
 appleProvider.addScope('name');
 
-// Sign in with Google
-export async function signInWithGoogle() {
+// Handle sign in with Google
+export const signInWithGoogle = () => {
+  signInWithRedirect(auth, googleProvider);
+};
+
+// Handle sign in with Apple
+export const signInWithApple = async (): Promise<UserCredential> => {
+  return signInWithPopup(auth, appleProvider);
+};
+
+// Initialize Phone Authentication
+let recaptchaVerifier: RecaptchaVerifier | null = null;
+
+// Function to initialize Recaptcha Verifier
+export const initRecaptchaVerifier = (elementId: string) => {
+  if (!recaptchaVerifier) {
+    recaptchaVerifier = new RecaptchaVerifier(auth, elementId, {
+      size: 'normal',
+      callback: () => {
+        // reCAPTCHA solved, allow signInWithPhoneNumber.
+        console.log('reCAPTCHA verified');
+      },
+      'expired-callback': () => {
+        // Response expired. Ask user to solve reCAPTCHA again.
+        console.log('reCAPTCHA expired');
+      }
+    });
+  }
+  return recaptchaVerifier;
+};
+
+// Send SMS verification code
+export const sendSmsVerificationCode = async (phoneNumber: string, verifier: ApplicationVerifier) => {
   try {
-    // Check if we're in Replit's preview environment which might block popups
-    const isReplit = window.location.hostname.includes('replit');
-    
-    if (isReplit) {
-      // Use redirect for Replit environment to avoid popup blockers
-      await signInWithRedirect(auth, googleProvider);
-      return null; // The page will redirect, so no need to return anything
-    } else {
-      // Use popup for other environments
-      const result = await signInWithPopup(auth, googleProvider);
-      return result.user;
-    }
+    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier);
+    return confirmationResult;
   } catch (error) {
-    console.error('Error signing in with Google:', error);
+    console.error("Error sending SMS code:", error);
     throw error;
   }
-}
+};
 
-// Sign in with Apple
-export async function signInWithApple() {
-  try {
-    // Apple Sign In requires a properly configured domain with Apple Developer settings
-    // It likely won't work in development environment without proper setup
-    const isReplit = window.location.hostname.includes('replit');
-    
-    if (isReplit) {
-      // Use redirect for Replit environment to avoid popup blockers
-      await signInWithRedirect(auth, appleProvider);
-      return null; // The page will redirect, so no need to return anything
-    } else {
-      // Use popup for other environments
-      const result = await signInWithPopup(auth, appleProvider);
-      return result.user;
-    }
-  } catch (error) {
-    console.error('Error signing in with Apple:', error);
-    throw error;
-  }
-}
-
-// Check for redirect result (to be called on app initialization)
-export async function handleRedirectResult() {
+// Handle redirect results after OAuth sign-in
+export const handleRedirectResult = async (): Promise<UserCredential | null> => {
   try {
     const result = await getRedirectResult(auth);
     if (result) {
-      // User successfully authenticated after redirect
-      return result.user;
+      // User is signed in
+      // You can access result.user for the user information
+      console.log("User authenticated via redirect:", result.user.displayName);
+      
+      // If we have additional data to store in our database about the user
+      // we would make an API call here to our backend
+      
+      return result;
     }
     return null;
   } catch (error) {
-    console.error('Error handling redirect result:', error);
-    return null;
-  }
-}
-
-// Sign out
-export async function firebaseSignOut() {
-  try {
-    await signOut(auth);
-  } catch (error) {
-    console.error('Error signing out:', error);
+    console.error("Error handling redirect:", error);
     throw error;
   }
-}
+};
 
+// Sign out
+export const signOut = () => auth.signOut();
+
+// Export auth instance for use in other components
 export { auth };

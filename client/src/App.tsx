@@ -31,7 +31,7 @@ import { AuthProvider } from "./hooks/use-auth";
 import { BubbleNotificationsProvider } from "./hooks/use-bubble-notifications";
 import { PropertyComparisonProvider } from "./hooks/use-property-comparison";
 import { PropertyNotificationsProvider } from "./hooks/use-property-notifications";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { handleRedirectResult } from "./lib/firebase";
 import { useToast } from "./hooks/use-toast";
 import { Loader2 } from "lucide-react";
@@ -40,6 +40,7 @@ import { Helmet } from "react-helmet";
 import { OnboardingTourProvider } from "./hooks/use-onboarding-tour";
 import { useLanguage } from "./hooks/use-language";
 import CookieConsent from "./components/cookie-consent-fixed";
+import { FirebaseAuthProvider } from "./hooks/use-firebase-auth";
 
 function AppContent() {
   return (
@@ -179,17 +180,19 @@ function SEOHelmet() {
 function App() {
   return (
     <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
-      <FirebaseAuthHandler>
-        <AuthProvider>
-          <PropertyNotificationsProvider maxNotifications={10}>
-            <OnboardingTourProvider>
-              <PropertyComparisonProvider maxProperties={4}>
-                <AppWithSEO />
-              </PropertyComparisonProvider>
-            </OnboardingTourProvider>
-          </PropertyNotificationsProvider>
-        </AuthProvider>
-      </FirebaseAuthHandler>
+      <FirebaseAuthProvider>
+        <FirebaseAuthHandler>
+          <AuthProvider>
+            <PropertyNotificationsProvider maxNotifications={10}>
+              <OnboardingTourProvider>
+                <PropertyComparisonProvider maxProperties={4}>
+                  <AppWithSEO />
+                </PropertyComparisonProvider>
+              </OnboardingTourProvider>
+            </PropertyNotificationsProvider>
+          </AuthProvider>
+        </FirebaseAuthHandler>
+      </FirebaseAuthProvider>
     </BubbleNotificationsProvider>
   );
 }
