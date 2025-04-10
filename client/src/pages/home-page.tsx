@@ -14,7 +14,7 @@ export default function HomePage() {
   
   // Set document title
   useEffect(() => {
-    document.title = "Foundation - Smart Capital For Data-Driven Investors";
+    document.title = "Inmobi - Smart Capital For Data-Driven Investors";
   }, []);
 
   return (

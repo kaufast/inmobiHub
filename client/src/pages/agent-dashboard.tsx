@@ -28,7 +28,7 @@ export default function AgentDashboardPage() {
 
   // Set document title
   useEffect(() => {
-    document.title = "Agent Dashboard - Foundation";
+    document.title = "Agent Dashboard - Inmobi";
   }, []);
 
   return (

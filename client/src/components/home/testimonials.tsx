@@ -14,7 +14,7 @@ interface Testimonial {
 export default function Testimonials() {
   const testimonials: Testimonial[] = [
     {
-      quote: "Foundation has completely transformed how I approach real estate investing. The data insights helped me find properties with 20% higher ROI than my previous investments.",
+      quote: "Inmobi has completely transformed how I approach real estate investing. The data insights helped me find properties with 20% higher ROI than my previous investments.",
       author: {
         name: "Robert Chen",
         title: "Real Estate Investor, San Francisco",
@@ -32,7 +32,7 @@ export default function Testimonials() {
       rating: 5,
     },
     {
-      quote: "As a first-time investor, Foundation gave me the confidence to make smart decisions. The ROI calculator and market trends analysis made everything clear and actionable.",
+      quote: "As a first-time investor, Inmobi gave me the confidence to make smart decisions. The ROI calculator and market trends analysis made everything clear and actionable.",
       author: {
         name: "Marcus Johnson",
         title: "New Investor, Austin",

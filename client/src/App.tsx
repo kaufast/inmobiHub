@@ -139,15 +139,15 @@ function SEOHelmet() {
         <link rel="apple-touch-icon" href="/logo192.png" />
         
         {/* Default meta tags, will be overridden by page-specific ones */}
-        <title>Foundation - Modern Real Estate Platform</title>
+        <title>Inmobi - Modern Real Estate Platform</title>
         <meta name="description" content="A modern real estate platform for finding your dream home. Browse listings, connect with agents, and discover properties that match your needs." />
         
         {/* Default Open Graph */}
-        <meta property="og:site_name" content="Foundation" />
+        <meta property="og:site_name" content="Inmobi" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content={baseUrl} />
-        <meta property="og:title" content="Foundation - Modern Real Estate Platform" />
-        <meta property="og:description" content="Find your dream home with Foundation's intelligent real estate platform. Personalized recommendations, comprehensive property details, and easy communication with agents." />
+        <meta property="og:title" content="Inmobi - Modern Real Estate Platform" />
+        <meta property="og:description" content="Find your dream home with Inmobi's intelligent real estate platform. Personalized recommendations, comprehensive property details, and easy communication with agents." />
         
         {/* Default Twitter Cards */}
         <meta name="twitter:card" content="summary_large_image" />
@@ -158,7 +158,7 @@ function SEOHelmet() {
       <OrganizationSchema 
         baseUrl={baseUrl}
         logoUrl={`${baseUrl}/logo.png`}
-        name="Foundation Real Estate"
+        name="Inmobi Real Estate"
       />
     </>
   );

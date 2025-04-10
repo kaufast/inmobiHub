@@ -126,7 +126,7 @@ export interface OrganizationSchemaProps {
   name?: string;
 }
 
-export function OrganizationSchema({ baseUrl, logoUrl, name = 'Foundation' }: OrganizationSchemaProps) {
+export function OrganizationSchema({ baseUrl, logoUrl, name = 'Inmobi' }: OrganizationSchemaProps) {
   const schemaData = {
     '@context': 'https://schema.org',
     '@type': 'RealEstateAgent',

@@ -5,7 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 // English translations
 const enGB = {
   tour: {
-    welcomeTitle: 'Welcome to Foundation',
+    welcomeTitle: 'Welcome to Inmobi',
     welcomeMessage: 'Let us show you around our platform to help you find your dream property!',
     completedTitle: 'Tour Completed',
     completedMessage: 'You can restart the tour anytime from the help menu',
@@ -276,7 +276,7 @@ const enGB = {
 // Spanish translations
 const esMX = {
   tour: {
-    welcomeTitle: 'Bienvenido a Foundation',
+    welcomeTitle: 'Bienvenido a Inmobi',
     welcomeMessage: '¡Permítanos mostrarle nuestra plataforma para ayudarlo a encontrar su propiedad ideal!',
     completedTitle: 'Recorrido Completado',
     completedMessage: 'Puede reiniciar el recorrido en cualquier momento desde el menú de ayuda',

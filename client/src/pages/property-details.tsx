@@ -30,7 +30,7 @@ export default function PropertyDetailsPage() {
 
   // Set document title
   useEffect(() => {
-    document.title = "Property Details - Foundation";
+    document.title = "Property Details - Inmobi";
   }, []);
 
   const { isLoading, error, data: property } = useQuery<Property>({

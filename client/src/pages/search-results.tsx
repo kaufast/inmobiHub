@@ -67,7 +67,7 @@ export default function SearchResultsPage() {
 
   // Set document title
   useEffect(() => {
-    document.title = "Search Properties - Foundation";
+    document.title = "Search Properties - Inmobi";
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -34,7 +34,7 @@ export default function AuthPage() {
 
   // Set document title
   useEffect(() => {
-    document.title = "Login or Register - Foundation";
+    document.title = "Login or Register - Inmobi";
   }, []);
 
   // Login form
@@ -89,7 +89,7 @@ export default function AuthPage() {
             {/* Form Section */}
             <div className="p-8 md:p-12">
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-primary-800">Welcome to Foundation</h1>
+                <h1 className="text-3xl font-bold text-primary-800">Welcome to Inmobi</h1>
                 <p className="text-primary-600 mt-2">
                   Access exclusive property insights and investment opportunities
                 </p>
@@ -344,7 +344,7 @@ export default function AuthPage() {
                     </div>
                   </div>
                   <blockquote className="text-white mb-4">
-                    "Foundation has completely transformed how I approach real estate investing. The data insights helped me find properties with 20% higher ROI than my previous investments."
+                    "Inmobi has completely transformed how I approach real estate investing. The data insights helped me find properties with 20% higher ROI than my previous investments."
                   </blockquote>
                   <div className="flex items-center">
                     <div className="w-10 h-10 rounded-full bg-primary-400 flex items-center justify-center text-white font-bold">

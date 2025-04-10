@@ -95,8 +95,8 @@ export default function PropertySearch({
         
         {/* Search by section */}
         <div className="mb-4">
-          <Label className="block text-sm font-semibold text-secondary-600 mb-2">Search by</Label>
-          <div className="flex items-center space-x-3">
+          <Label className="block text-sm font-semibold text-secondary-600 mb-3">Search by</Label>
+          <div className="flex items-center space-x-4 mt-2">
             {/* Text search button */}
             <Button
               type="button"

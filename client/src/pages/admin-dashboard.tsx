@@ -27,7 +27,7 @@ export default function AdminDashboardPage() {
 
   // Set document title
   useEffect(() => {
-    document.title = "Admin Dashboard - Foundation";
+    document.title = "Admin Dashboard - Inmobi";
   }, []);
 
   return (

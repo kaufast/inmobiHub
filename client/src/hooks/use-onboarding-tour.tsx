@@ -7,8 +7,8 @@ import { useTranslation } from "react-i18next";
 const homeTourSteps: Step[] = [
   {
     target: ".navbar-logo",
-    content: "Welcome to Foundation! This is our modern real estate platform that helps you find your dream property.",
-    title: "Welcome to Foundation",
+    content: "Welcome to Inmobi! This is our modern real estate platform that helps you find your dream property.",
+    title: "Welcome to Inmobi",
     disableBeacon: true,
   },
   {

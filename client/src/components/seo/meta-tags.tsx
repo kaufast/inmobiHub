@@ -50,7 +50,7 @@ export default function MetaTags({
       {canonical && <meta property="og:url" content={canonical} />}
       {image && <meta property="og:image" content={image} />}
       <meta property="og:locale" content={locale} />
-      <meta property="og:site_name" content="Foundation" />
+      <meta property="og:site_name" content="Inmobi" />
       
       {/* Twitter */}
       <meta name="twitter:card" content={twitterCard} />

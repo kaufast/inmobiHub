@@ -38,7 +38,7 @@ export default function DashboardPage() {
 
   // Set document title
   useEffect(() => {
-    document.title = "Dashboard - Foundation";
+    document.title = "Dashboard - Inmobi";
   }, []);
 
   return (

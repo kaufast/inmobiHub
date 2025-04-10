@@ -100,7 +100,7 @@ export default function PropertyAnalytics() {
 
   // Set document title
   useEffect(() => {
-    document.title = "Property Analytics - Foundation";
+    document.title = "Property Analytics - Inmobi";
   }, []);
 
   // Fetch property data

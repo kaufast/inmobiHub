@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       toast({
         title: "Registration successful",
-        description: `Welcome to Foundation, ${newUser.fullName}!`,
+        description: `Welcome to Inmobi, ${newUser.fullName}!`,
       });
       
       return true;
