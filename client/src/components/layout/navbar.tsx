@@ -41,11 +41,6 @@ export default function Navbar() {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <Link href="/search">
-            <a className={`text-white/80 hover:text-white transition ${location.startsWith('/search') ? 'text-white' : ''}`}>
-              {t('common.search')}
-            </a>
-          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="text-white/80 hover:text-white transition flex items-center">
@@ -135,12 +130,12 @@ export default function Navbar() {
             <>
               <Link href="/auth">
                 <Button variant="ghost" className="hidden md:inline-block text-white hover:bg-white/10">
-                  {t('common.login')}
+                  Sign In
                 </Button>
               </Link>
               <Link href="/auth">
                 <Button className="bg-secondary-500 hover:bg-secondary-600">
-                  {t('common.register')}
+                  Join
                 </Button>
               </Link>
             </>
@@ -269,7 +264,7 @@ export default function Navbar() {
                           className="w-full bg-secondary-500 hover:bg-secondary-600"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          {t('common.register')}
+                          Join
                         </Button>
                       </Link>
                       <Link href="/auth">
@@ -278,7 +273,7 @@ export default function Navbar() {
                           className="w-full text-white border-white/20 hover:bg-white/10"
                           onClick={() => setMobileMenuOpen(false)}
                         >
-                          {t('common.login')}
+                          Sign In
                         </Button>
                       </Link>
                       <Link href="/auth">
