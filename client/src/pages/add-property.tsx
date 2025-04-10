@@ -765,42 +765,31 @@ export default function AddPropertyPage() {
                             )}
                           />
                           
-                          <FormField
-                            control={form.control}
-                            name="isFeatured"
-                            render={({ field }) => (
-                              <FormItem className="flex items-start space-x-2">
-                                <FormControl>
-                                  <Checkbox 
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <div className="space-y-1">
-                                  <FormLabel className="cursor-pointer flex items-center">
-                                    Featured Property
-                                    <TooltipProvider>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <Info className="h-4 w-4 ml-1 text-muted-foreground" />
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p className="w-80">
-                                            Featured properties appear on the homepage and in special 
-                                            featured sections throughout the site. Limited availability.
-                                            Only available for Enterprise subscribers.
-                                          </p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
-                                  </FormLabel>
-                                  <FormDescription className="text-xs">
-                                    Display on homepage and featured sections
-                                  </FormDescription>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
+                          {/* Note: Featured properties are managed by admin users */}
+                          <div className="flex items-start space-x-2 opacity-50">
+                            <Checkbox disabled />
+                            <div className="space-y-1">
+                              <div className="flex items-center">
+                                <span className="cursor-not-allowed">Featured Property</span>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Info className="h-4 w-4 ml-1 text-muted-foreground" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="w-80">
+                                        Featured properties are managed by administrators.
+                                        Properties can be featured on approval by the platform team.
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Display on homepage and featured sections
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
