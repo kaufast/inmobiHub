@@ -197,7 +197,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(properties.createdAt));
   }
   
-  async getFeaturedProperties(limit = 3): Promise<Property[]> {
+  async getFeaturedProperties(limit = 5): Promise<Property[]> {
     return db.select()
       .from(properties)
       .where(eq(properties.isPremium, true))
