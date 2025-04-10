@@ -18,6 +18,7 @@ import BulkUploadPage from "@/pages/bulk-upload";
 import AddPropertyPage from "@/pages/add-property";
 import CookiePolicy from "@/pages/cookie-policy";
 import NeighborhoodInsightsPage from "@/pages/neighborhood-insights-page";
+import UserVerificationPage from "@/pages/user-verification";
 import { 
   ProtectedRoute, 
   UserProtectedRoute, 
@@ -65,6 +66,7 @@ function AppContent() {
           <AdminProtectedRoute path="/admin/dashboard" component={AdminDashboardPage} />
           <AgentProtectedRoute path="/agent/dashboard" component={AgentDashboardPage} />
           <UserProtectedRoute path="/dashboard/properties/new" component={AddPropertyPage} />
+          <UserProtectedRoute path="/verification" component={UserVerificationPage} />
           
           {/* Premium Features */}
           <PublisherProtectedRoute path="/bulk-upload" component={BulkUploadPage} />

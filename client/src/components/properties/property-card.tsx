@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import ComparePropertyButton from "@/components/properties/compare-property-button";
+import VerificationBadge from "@/components/users/verification-badge";
 
 interface PropertyCardProps {
   property: Property;
