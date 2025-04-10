@@ -29,15 +29,33 @@ export const users = pgTable("users", {
   bio: text("bio"),
   phone: text("phone"),
   preferredLanguage: text("preferred_language").default("en-GB"),
+  isVerified: boolean("is_verified").default(false).notNull(),
+  verificationDate: timestamp("verification_date"),
+  verifiedBy: integer("verified_by"),
+  // Passkey authentication
+  passkey: text("passkey"),
+  passkeyEnabled: boolean("passkey_enabled").default(false).notNull(),
+  // ID Verification
+  hasIdVerification: boolean("has_id_verification").default(false).notNull(),
+  idVerificationType: text("id_verification_type"), // e.g., "passport", "driver_license", "national_id"
+  idVerificationDate: timestamp("id_verification_date"),
+  idVerificationStatus: text("id_verification_status").default("none"), // "none", "pending", "approved", "rejected"
+  idVerificationNotes: text("id_verification_notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   properties: many(properties),
   favoriteProperties: many(favorites),
   sentMessages: many(messages, { relationName: 'sender' }),
   receivedMessages: many(messages, { relationName: 'recipient' }),
+  verifiedUsers: many(users, { relationName: 'verifier' }),
+  verifier: one(users, {
+    fields: [users.verifiedBy],
+    references: [users.id],
+    relationName: 'verifier',
+  }),
 }));
 
 // Properties
@@ -303,6 +321,39 @@ export const searchPropertiesSchema = z.object({
   searchType: data.searchType || 'text' // Default to 'text' if not provided
 }));
 
+// Passkey schemas
+export const passkeyRegisterSchema = z.object({
+  userId: z.number().int().positive(),
+  passkey: z.string().min(1, "Passkey is required"),
+});
+
+export const passkeyAuthenticateSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  passkey: z.string().min(1, "Passkey is required"),
+});
+
+// ID Verification schemas
+export const idVerificationRequestSchema = z.object({
+  userId: z.number().int().positive(),
+  idVerificationType: z.string().min(1, "Verification type is required"),
+  idVerificationDocument: z.string().min(1, "Verification document is required"), // Base64 encoded image
+  notes: z.string().optional(),
+});
+
+export const updateVerificationStatusSchema = z.object({
+  userId: z.number().int().positive(),
+  idVerificationStatus: z.enum(['none', 'pending', 'approved', 'rejected']),
+  idVerificationNotes: z.string().optional(),
+  isVerified: z.boolean().optional(),
+});
+
+// User Verification by Admin
+export const userVerificationSchema = z.object({
+  userId: z.number().int().positive(),
+  isVerified: z.boolean(),
+  notes: z.string().optional(),
+});
+
 export const insertNeighborhoodSchema = createInsertSchema(neighborhoods).omit({
   id: true,
   createdAt: true,
@@ -387,3 +438,10 @@ export type InsertChatAnalytics = z.infer<typeof insertChatAnalyticsSchema>;
 export type ChatAnalytics = typeof chatAnalytics.$inferSelect;
 
 export type SearchProperties = z.infer<typeof searchPropertiesSchema>;
+
+// Auth and verification types
+export type PasskeyRegister = z.infer<typeof passkeyRegisterSchema>;
+export type PasskeyAuthenticate = z.infer<typeof passkeyAuthenticateSchema>;
+export type IdVerificationRequest = z.infer<typeof idVerificationRequestSchema>;
+export type UpdateVerificationStatus = z.infer<typeof updateVerificationStatusSchema>;
+export type UserVerification = z.infer<typeof userVerificationSchema>;
