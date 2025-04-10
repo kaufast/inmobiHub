@@ -25,7 +25,30 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   
+  // Get property type from API if propertyId is provided
+  const [propertyType, setPropertyType] = useState<string | undefined>(undefined);
+  
+  // Fetch property data to get its type if propertyId is provided
+  useEffect(() => {
+    if (propertyId) {
+      fetch(`/api/properties/${propertyId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.propertyType) {
+            setPropertyType(data.propertyType);
+          }
+        })
+        .catch(err => console.error('Error fetching property details:', err));
+    }
+  }, [propertyId]);
+  
   const { messages, isLoading, error, sendMessage } = useChatAgent(propertyId, category);
+  const { 
+    questions: categoryQuestions,
+    popularQuestions,
+    isLoading: questionsLoading,
+    incrementQuestionClick
+  } = useSuggestedQuestions(category, propertyType);
 
   // Show chat widget after delay
   useEffect(() => {
@@ -55,6 +78,17 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
     if (inputValue.trim() && !isLoading) {
       sendMessage(inputValue);
       setInputValue('');
+    }
+  };
+  
+  // Handle when a suggested question is clicked
+  const handleSuggestedQuestionClick = (question: string, questionId: number) => {
+    if (!isLoading) {
+      // Track question click
+      incrementQuestionClick(questionId);
+      
+      // Send the question
+      sendMessage(question);
     }
   };
   
@@ -116,6 +150,18 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
               <div className="flex flex-col items-center justify-center h-full text-center text-gray-300">
                 <MessageCircle size={30} className="mb-2 opacity-50" />
                 <p className="text-sm">Hi! I'm your virtual real estate assistant. How can I help you today?</p>
+                
+                {/* Show suggested questions when no conversation has started */}
+                <div className="mt-8 w-full">
+                  <SuggestedQuestions
+                    categoryQuestions={categoryQuestions}
+                    popularQuestions={popularQuestions}
+                    isLoading={questionsLoading}
+                    onQuestionClick={handleSuggestedQuestionClick}
+                    category={category}
+                    propertyType={propertyType}
+                  />
+                </div>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
@@ -166,6 +212,21 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
                 {error && (
                   <div className="text-sm text-destructive my-2 text-center">
                     {error}
+                  </div>
+                )}
+                {/* Show suggested questions after the assistant responds */}
+                {messages.length > 0 && 
+                 messages[messages.length - 1].role === 'assistant' && 
+                 !isLoading && (
+                  <div className="mr-auto mt-2 mb-1">
+                    <SuggestedQuestions
+                      categoryQuestions={categoryQuestions}
+                      popularQuestions={popularQuestions}
+                      isLoading={questionsLoading}
+                      onQuestionClick={handleSuggestedQuestionClick}
+                      category={category}
+                      propertyType={propertyType}
+                    />
                   </div>
                 )}
                 <div ref={chatEndRef} />

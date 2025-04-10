@@ -1,5 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { SuggestedQuestion } from '@shared/schema';
+import { queryClient } from '@/lib/queryClient';
+
+interface UseSuggestedQuestionsReturn {
+  questions: SuggestedQuestion[];
+  popularQuestions: SuggestedQuestion[];
+  isLoading: boolean;
+  error: Error | null;
+  incrementQuestionClick: (questionId: number) => void;
+}
 
 /**
  * Hook to fetch suggested questions for the chat widget
@@ -7,56 +17,78 @@ import { SuggestedQuestion } from '@shared/schema';
 export function useSuggestedQuestions(
   category?: string,
   propertyType?: string,
-  limit: number = 5
-) {
-  // Get suggested questions filtered by category and/or property type
-  const { data: questions, isLoading, error } = useQuery<SuggestedQuestion[]>({
-    queryKey: ['/api/suggested-questions', category, propertyType, limit],
-    queryFn: async ({ signal }) => {
+): UseSuggestedQuestionsReturn {
+  // Fetch category-based questions
+  const {
+    data: categoryQuestions = [],
+    isLoading: isCategoryQuestionsLoading,
+    error: categoryQuestionsError,
+  } = useQuery<SuggestedQuestion[], Error>({
+    queryKey: ['/api/suggested-questions', category, propertyType],
+    queryFn: async () => {
       const params = new URLSearchParams();
       if (category) params.append('category', category);
       if (propertyType) params.append('propertyType', propertyType);
-      if (limit) params.append('limit', limit.toString());
       
-      const response = await fetch(`/api/suggested-questions?${params.toString()}`, { signal });
+      const response = await fetch(`/api/suggested-questions?${params.toString()}`);
+      
       if (!response.ok) {
         throw new Error('Failed to fetch suggested questions');
       }
+      
       return response.json();
     },
-    staleTime: 60 * 1000, // 1 minute
+    enabled: !!category, // Only fetch when category is provided
   });
 
-  // Get popular suggested questions
-  const { data: popularQuestions } = useQuery<SuggestedQuestion[]>({
-    queryKey: ['/api/suggested-questions/popular', limit],
-    queryFn: async ({ signal }) => {
-      const params = new URLSearchParams();
-      if (limit) params.append('limit', limit.toString());
+  // Fetch popular questions (separate endpoint)
+  const {
+    data: popularQuestionsData = [],
+    isLoading: isPopularQuestionsLoading,
+    error: popularQuestionsError,
+  } = useQuery<SuggestedQuestion[], Error>({
+    queryKey: ['/api/suggested-questions/popular'],
+    queryFn: async () => {
+      const response = await fetch('/api/suggested-questions/popular');
       
-      const response = await fetch(`/api/suggested-questions/popular?${params.toString()}`, { signal });
       if (!response.ok) {
         throw new Error('Failed to fetch popular questions');
       }
+      
       return response.json();
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Mark a question as clicked to increase its popularity
-  const incrementQuestionClick = async (questionId: number) => {
-    try {
-      await fetch(`/api/suggested-questions/${questionId}/click`, {
+  // Mutation to increment question click count
+  const incrementClickMutation = useMutation({
+    mutationFn: async (questionId: number) => {
+      const response = await fetch(`/api/suggested-questions/${questionId}/click`, {
         method: 'POST',
       });
-    } catch (error) {
-      console.error('Error incrementing question click count:', error);
-    }
+      
+      if (!response.ok) {
+        throw new Error('Failed to update question click count');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({queryKey: ['/api/suggested-questions/popular']});
+    },
+  });
+
+  const isLoading = isCategoryQuestionsLoading || isPopularQuestionsLoading;
+  const error = categoryQuestionsError || popularQuestionsError || null;
+
+  // Function to handle incrementing click count
+  const incrementQuestionClick = (questionId: number) => {
+    incrementClickMutation.mutate(questionId);
   };
 
   return {
-    questions: questions || [],
-    popularQuestions: popularQuestions || [],
+    questions: categoryQuestions,
+    popularQuestions: popularQuestionsData,
     isLoading,
     error,
     incrementQuestionClick,
