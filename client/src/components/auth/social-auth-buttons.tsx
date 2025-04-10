@@ -34,14 +34,14 @@ export function SocialAuthButtons() {
       const result = await signInWithApple();
       
       // If we're here, we used popup flow (not redirect)
-      if (result && result.user) {
+      if (result) {
         const user = result.user;
         const userData = {
-          email: user.email,
+          email: user.email || '',
           emailVerified: user.emailVerified,
-          displayName: user.displayName,
+          displayName: user.displayName || 'User',
           uid: user.uid,
-          photoURL: user.photoURL,
+          photoURL: user.photoURL || '',
         };
         
         console.log("User signed in:", userData);

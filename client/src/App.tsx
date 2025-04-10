@@ -32,7 +32,7 @@ import { BubbleNotificationsProvider } from "./hooks/use-bubble-notifications";
 import { PropertyComparisonProvider } from "./hooks/use-property-comparison";
 import { PropertyNotificationsProvider } from "./hooks/use-property-notifications";
 import { useState, useEffect } from "react";
-import { handleRedirectResult } from "./lib/firebase";
+import { handleRedirectResult, isFirebaseConfigured } from "./lib/firebase";
 import { useToast } from "./hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { OrganizationSchema } from "./components/seo/schema-markup";
@@ -178,21 +178,36 @@ function SEOHelmet() {
 }
 
 function App() {
+  const firebaseConfigured = isFirebaseConfigured();
+  console.log("Firebase configuration status in App.tsx:", firebaseConfigured);
+  
   return (
     <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
-      <FirebaseAuthProvider>
-        <FirebaseAuthHandler>
-          <AuthProvider>
-            <PropertyNotificationsProvider maxNotifications={10}>
-              <OnboardingTourProvider>
-                <PropertyComparisonProvider maxProperties={4}>
-                  <AppWithSEO />
-                </PropertyComparisonProvider>
-              </OnboardingTourProvider>
-            </PropertyNotificationsProvider>
-          </AuthProvider>
-        </FirebaseAuthHandler>
-      </FirebaseAuthProvider>
+      {firebaseConfigured ? (
+        <FirebaseAuthProvider>
+          <FirebaseAuthHandler>
+            <AuthProvider>
+              <PropertyNotificationsProvider maxNotifications={10}>
+                <OnboardingTourProvider>
+                  <PropertyComparisonProvider maxProperties={4}>
+                    <AppWithSEO />
+                  </PropertyComparisonProvider>
+                </OnboardingTourProvider>
+              </PropertyNotificationsProvider>
+            </AuthProvider>
+          </FirebaseAuthHandler>
+        </FirebaseAuthProvider>
+      ) : (
+        <AuthProvider>
+          <PropertyNotificationsProvider maxNotifications={10}>
+            <OnboardingTourProvider>
+              <PropertyComparisonProvider maxProperties={4}>
+                <AppWithSEO />
+              </PropertyComparisonProvider>
+            </OnboardingTourProvider>
+          </PropertyNotificationsProvider>
+        </AuthProvider>
+      )}
     </BubbleNotificationsProvider>
   );
 }

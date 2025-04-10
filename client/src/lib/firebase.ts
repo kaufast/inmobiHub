@@ -13,23 +13,21 @@ import {
   UserCredential
 } from "firebase/auth";
 
-// Firebase configuration from environment variables
+// Firebase configuration - Using the values you provided
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "placeholder-api-key",
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "placeholder-project-id"}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "placeholder-project-id",
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "placeholder-project-id"}.appspot.com`,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "placeholder-app-id",
+  apiKey: "AIzaSyA8MFoP8ZJNft4SXTZ4vR9nOEYz35hB5MY",
+  authDomain: "smskeychain.firebaseapp.com",
+  projectId: "smskeychain",
+  storageBucket: "smskeychain.firebasestorage.app",
+  messagingSenderId: "347323668810",
+  appId: "1:347323668810:web:d28cff23d9b3e1f908c9b3",
+  measurementId: "G-B7J5N9ZRT6"
 };
 
-// Check if Firebase is properly configured
+// Check if Firebase is properly configured - we're now using hardcoded config
 export const isFirebaseConfigured = (): boolean => {
-  return (
-    import.meta.env.VITE_FIREBASE_API_KEY !== undefined &&
-    import.meta.env.VITE_FIREBASE_PROJECT_ID !== undefined &&
-    import.meta.env.VITE_FIREBASE_APP_ID !== undefined &&
-    import.meta.env.VITE_FIREBASE_API_KEY !== "placeholder-api-key"
-  );
+  console.log("Firebase is configured with project:", firebaseConfig.projectId);
+  return true; // Now we have valid Firebase config
 };
 
 // Initialize Firebase
