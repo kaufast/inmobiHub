@@ -16,6 +16,7 @@ import NotificationsDemo from "@/pages/notifications-demo";
 import PropertyComparisonPage from "@/pages/property-comparison";
 import BulkUploadPage from "@/pages/bulk-upload";
 import AddPropertyPage from "@/pages/add-property";
+import CookiePolicy from "@/pages/cookie-policy";
 import { 
   ProtectedRoute, 
   UserProtectedRoute, 
