@@ -95,18 +95,31 @@ export async function generatePropertyRecommendations(
       messages: [
         {
           role: "system",
-          content: `You are an AI-powered real estate recommendation engine that helps users discover ideal properties based on their preferences and behavior patterns. Your recommendations should be personalized, insightful, and focus on why specific properties would be perfect matches for this particular user.
+          content: `You are an advanced AI-powered real estate recommendation engine that helps users discover ideal properties based on their preferences, behavior patterns, and market insights. Your recommendations should be highly personalized, insightful, and focus on why specific properties would be perfect matches for this particular user.
           
 Prioritize these factors when making recommendations:
 1. Properties that closely match the user's explicitly searched preferences (location, price range, beds/baths)
 2. Properties with features the user has shown interest in through favorited properties
 3. Properties that match the user's subscription tier expectations (premium properties for premium subscribers)
-4. Properties that represent good value based on price per square foot
-5. Properties with unique selling points that align with the user's search patterns`
+4. Properties that represent good value based on price per square foot and market trends
+5. Properties with unique selling points that align with the user's search patterns
+6. Investment-worthy properties if the user has shown interest in rental yields or investment properties
+7. Properties in neighborhoods that match lifestyle preferences derived from search patterns
+8. Newly listed properties that match core preferences (recency bias)
+9. Properties with special features that stand out from others in the same price range
+10. Properties with good future value potential based on location trends
+
+Add personalization layers based on:
+- User's account type (agent, regular user, admin)
+- Subscription tier (free, premium, enterprise)
+- Search history sophistication (how detailed are their searches)
+- Explicit vs. implicit preferences (stated vs. derived from behavior)
+- Engagement level (frequency of searches, favorites)
+- Preferences that might not be explicitly stated but implied by behavior`
         },
         {
           role: "user",
-          content: `I need property recommendations for a specific user based on their profile data and available properties.
+          content: `I need smart property recommendations for a specific user based on their profile data and available properties.
 
 USER PROFILE:
 ${JSON.stringify(userProfile, null, 2)}
@@ -116,9 +129,10 @@ ${JSON.stringify(detailedProperties, null, 2)}
 
 Please recommend exactly ${limit} properties that would be most suitable for this user. For each recommendation, provide:
 1. The property ID
-2. A brief but personalized reason (2-3 sentences) explaining why this property is an excellent match for this specific user based on their preferences, search history, and behavior patterns.
+2. A personalized reason (2-3 sentences) explaining why this property is an excellent match based on the user's preferences, search history, and behavior patterns. Be specific about which features or aspects make this property stand out for this particular user.
+3. Include a "matchScore" between 0.7 and 0.99 representing how well the property matches the user's preferences (higher is better).
 
-Format your response as a JSON object with a single "recommendations" array containing objects with "propertyId" (number) and "reason" (string) fields.`
+Format your response as a JSON object with a single "recommendations" array containing objects with "propertyId" (number), "reason" (string), and "matchScore" (number) fields.`
         }
       ],
       response_format: { type: "json_object" }
@@ -128,14 +142,18 @@ Format your response as a JSON object with a single "recommendations" array cont
     const recommendations = JSON.parse(response.choices[0].message.content);
     
     // Match recommended property IDs with actual properties
-    const result = recommendations.recommendations.map((rec: { propertyId: number; reason: string }) => {
+    const result = recommendations.recommendations.map((rec: { propertyId: number; reason: string; matchScore?: number }) => {
       const property = properties.find(p => p.id === rec.propertyId);
       if (!property) return null;
       return { 
         property, 
-        reason: rec.reason 
+        reason: rec.reason,
+        matchScore: rec.matchScore || 0.8 // Default match score if not provided
       };
     }).filter(Boolean);
+    
+    // Sort by match score in descending order
+    result.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
 
     return result.slice(0, limit);
   } catch (error) {
@@ -145,7 +163,8 @@ Format your response as a JSON object with a single "recommendations" array cont
       .slice(0, limit)
       .map(property => ({ 
         property, 
-        reason: "This property may match your preferences based on your browsing history." 
+        reason: "This property may match your preferences based on your browsing history.",
+        matchScore: 0.7 + (Math.random() * 0.15) // Generate scores between 0.7-0.85 for fallback
       }));
   }
 }

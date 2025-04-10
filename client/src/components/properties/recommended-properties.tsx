@@ -16,6 +16,7 @@ import { useState } from "react";
 type RecommendedProperty = {
   property: Property;
   reason: string;
+  matchScore?: number;
 };
 
 interface RecommendedPropertiesProps {
@@ -185,13 +186,16 @@ function AIIcon(props: LucideProps) {
 }
 
 function RecommendedPropertyCard({ recommendation }: { recommendation: RecommendedProperty }) {
-  const { property, reason } = recommendation;
+  const { property, reason, matchScore = 0.8 } = recommendation;
   const { addToCompare, isInComparison } = usePropertyComparison();
   const mainImage = property.images && property.images.length > 0 ? property.images[0] : "/placeholder-property.jpg";
   const isAlreadyInComparison = isInComparison(property.id);
 
   // Extract key highlights from the reason
   const highlights = reason.split('. ').filter(s => s.trim().length > 0).slice(0, 2);
+  
+  // Format match score as percentage
+  const matchScorePercentage = Math.round(matchScore * 100);
 
   // Calculate days since listing
   const daysSinceListing = property.createdAt 
@@ -224,9 +228,19 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
         </div>
         
         {/* AI recommendation badge */}
-        <div className="absolute bottom-2 left-2">
+        <div className="absolute bottom-2 left-2 flex gap-2">
           <Badge variant="outline" className="bg-white/80 backdrop-blur-sm border-blue-200 text-xs px-2 py-1">
             <Sparkles className="h-3 w-3 mr-1 text-blue-500" /> AI Recommended
+          </Badge>
+          <Badge 
+            variant="outline" 
+            className={`bg-white/80 backdrop-blur-sm text-xs px-2 py-1 ${
+              matchScorePercentage >= 90 ? 'border-green-300 text-green-700' : 
+              matchScorePercentage >= 80 ? 'border-blue-300 text-blue-700' : 
+              'border-amber-300 text-amber-700'
+            }`}
+          >
+            <Star className="h-3 w-3 mr-1 fill-current" /> {matchScorePercentage}% Match
           </Badge>
         </div>
       </div>
@@ -243,6 +257,22 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
               </TooltipTrigger>
               <TooltipContent className="max-w-xs p-4">
                 <h4 className="font-medium mb-2">Why we recommend this property</h4>
+                <div className="mb-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-blue-600 font-medium">Match Score</span>
+                    <span className="text-xs font-bold">{matchScorePercentage}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-200 rounded-full mt-1">
+                    <div 
+                      className={`h-full rounded-full ${
+                        matchScorePercentage >= 90 ? 'bg-green-500' : 
+                        matchScorePercentage >= 80 ? 'bg-blue-500' : 
+                        'bg-amber-500'
+                      }`} 
+                      style={{ width: `${matchScorePercentage}%` }}
+                    ></div>
+                  </div>
+                </div>
                 <p className="text-sm">{reason}</p>
               </TooltipContent>
             </Tooltip>
@@ -265,8 +295,27 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
         <div className="mb-3 p-2 bg-blue-50/50 rounded-md border border-blue-100">
           <div className="flex items-start space-x-2">
             <AIIcon className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-            <div>
-              <h4 className="text-xs font-medium text-blue-700 mb-1">Smart Match</h4>
+            <div className="w-full">
+              <div className="flex justify-between items-center mb-1">
+                <h4 className="text-xs font-medium text-blue-700">Smart Match</h4>
+                <div className="flex items-center">
+                  <div 
+                    className={`h-2 w-12 rounded-full mr-1 ${
+                      matchScorePercentage >= 90 ? 'bg-gradient-to-r from-blue-400 to-green-500' : 
+                      matchScorePercentage >= 80 ? 'bg-gradient-to-r from-blue-300 to-blue-500' : 
+                      'bg-gradient-to-r from-amber-300 to-amber-500'
+                    }`}
+                  >
+                    <div 
+                      className="h-full rounded-full bg-white" 
+                      style={{ width: `${100 - matchScorePercentage}%`, opacity: 0.7 }}
+                    ></div>
+                  </div>
+                  <span className="text-[10px] font-medium">
+                    {matchScorePercentage}%
+                  </span>
+                </div>
+              </div>
               <ul className="space-y-1">
                 {highlights.map((highlight, idx) => (
                   <li key={idx} className="text-xs text-gray-600 flex items-start">
