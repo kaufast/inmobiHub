@@ -1,11 +1,11 @@
 import React from "react";
-import { Badge } from "@/components/ui/badge";
+import { CheckCircle, Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CheckCircle2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-interface VerificationBadgeProps {
+export interface VerificationBadgeProps {
   isVerified: boolean;
-  variant?: "property-card" | "profile" | "inline";
+  variant?: "card" | "profile" | "inline";
   showTooltip?: boolean;
 }
 
@@ -14,50 +14,77 @@ const VerificationBadge: React.FC<VerificationBadgeProps> = ({
   variant = "inline",
   showTooltip = true,
 }) => {
-  if (!isVerified) return null;
+  // If not verified, show nothing (or pending badge if specified)
+  if (!isVerified) {
+    if (variant === "profile") {
+      return (
+        <Badge 
+          variant="outline" 
+          className="ml-2 bg-yellow-100 text-yellow-800 border-yellow-300 hover:bg-yellow-100"
+        >
+          Pending
+        </Badge>
+      );
+    }
+    return null;
+  }
 
-  // Different styles based on where the badge is being used
-  const badgeContent = () => {
+  const renderBadge = () => {
     switch (variant) {
-      case "property-card":
+      case "card":
+        // Small badge for property cards
         return (
-          <span className="flex items-center gap-1 text-xs">
-            <CheckCircle2 className="h-3 w-3 text-blue-500" />
-          </span>
+          <div className="inline-flex items-center justify-center bg-green-100 rounded-full p-0.5">
+            <CheckCircle className="h-3 w-3 text-green-700" />
+          </div>
         );
+      
       case "profile":
+        // Larger badge with text for profile pages
         return (
-          <Badge className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1 px-2 py-1">
-            <CheckCircle2 className="h-3 w-3" />
-            <span>Verified</span>
+          <Badge 
+            variant="outline" 
+            className="ml-2 bg-green-100 text-green-800 border-green-300 hover:bg-green-100"
+          >
+            <CheckCircle className="h-3 w-3 mr-1" /> Verified
           </Badge>
         );
+        
       case "inline":
       default:
+        // Standard badge for inline usage
         return (
-          <Badge className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-0.5 text-xs">
-            Verified
+          <Badge 
+            variant="outline" 
+            className="bg-green-100 text-green-800 border-green-300 hover:bg-green-100"
+          >
+            <CheckCircle className="h-3 w-3 mr-1" /> Verified
           </Badge>
         );
     }
   };
 
-  const tooltipContent = "This user's identity has been verified by Inmobi®";
+  if (showTooltip) {
+    return (
+      <TooltipProvider>
+        <Tooltip delayDuration={300}>
+          <TooltipTrigger asChild>
+            {renderBadge()}
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <div className="flex items-center gap-2">
+              <Info className="h-4 w-4" />
+              <p className="text-sm">
+                This user has verified their identity with official documents
+              </p>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
 
-  return showTooltip ? (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {badgeContent()}
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{tooltipContent}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  ) : (
-    badgeContent()
-  );
+  return renderBadge();
 };
 
 export default VerificationBadge;

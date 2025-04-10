@@ -40,11 +40,11 @@ export const API_ENDPOINTS = {
   CHAT_IMAGE: "/api/chat/analyze-image",
   
   // Verification
-  VERIFICATION: "/api/user/verification",
-  VERIFICATION_STATUS: (userId: number) => `/api/user/verification/${userId}`,
-  VERIFICATION_ADMIN: "/api/admin/verification",
-  VERIFICATION_APPROVE: (userId: number) => `/api/admin/verification/${userId}/approve`,
-  VERIFICATION_REJECT: (userId: number) => `/api/admin/verification/${userId}/reject`,
+  VERIFICATION: "/api/users/verify/id",
+  VERIFICATION_STATUS: (userId: number) => `/api/users/${userId}/verification-status`, 
+  VERIFIED_USERS: "/api/verified-users",
+  VERIFICATION_ADMIN: "/api/admin/verification-requests",
+  VERIFICATION_UPDATE: (userId: number) => `/api/admin/users/${userId}/verification`,
 };
 
 // Image placeholders
