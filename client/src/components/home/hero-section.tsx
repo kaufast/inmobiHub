@@ -373,14 +373,8 @@ export default function HeroSection() {
           {/* Map Mockup Section */}
           <div className="w-full max-w-4xl mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
             <div className="relative h-[450px] w-full">
-              <div className="absolute inset-0">
-                <img 
-                  src="https://images.unsplash.com/photo-1581541236137-4e0124cb5f2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768" 
-                  alt="Aerial view of colorful houses in Coyoacán, Mexico City" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="absolute inset-0 bg-black/30"></div>
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1575420682429-3bd452cb3fb4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768')] bg-cover bg-center"></div>
+              <div className="absolute inset-0 bg-gray-900/30"></div>
               
               {/* Map Pins */}
               <div className="absolute left-1/4 top-1/3 w-6 h-6">
@@ -408,8 +402,8 @@ export default function HeroSection() {
               <div className="absolute top-[15%] right-[14px] w-80 bg-gray-900/90 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700 shadow-lg">
                 <div className="relative">
                   <img 
-                    src="https://images.unsplash.com/photo-1576784341257-9756974a00f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400" 
-                    alt="Colonial house in Coyoacán, Mexico City" 
+                    src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400" 
+                    alt="Modern Mexican house" 
                     className="w-full h-36 object-cover"
                   />
                   <div className="absolute top-2 right-2">
@@ -427,12 +421,12 @@ export default function HeroSection() {
                 </div>
                 
                 <div className="p-3">
-                  <h3 className="font-bold text-white">Colonial House in Coyoacán</h3>
-                  <p className="text-blue-400 font-medium">$2,250,000</p>
+                  <h3 className="font-bold text-white">Modern Mexican Villa</h3>
+                  <p className="text-blue-400 font-medium">€1,450,000</p>
                   
                   <div className="flex items-center text-gray-400 text-xs mt-1">
                     <MapPin className="h-3 w-3 mr-1" />
-                    <span>Coyoacán, Mexico City</span>
+                    <span>Cancún, Mexico</span>
                   </div>
                   
                   <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-700">
@@ -460,7 +454,7 @@ export default function HeroSection() {
               {/* Search Filters Overlay */}
               <div className="absolute bottom-4 left-4 flex items-center space-x-2">
                 <div className="bg-gray-900/80 backdrop-blur-md rounded-lg px-3 py-2 flex items-center space-x-1 border border-gray-700">
-                  <div className="text-white text-xs font-medium">Coyoacán</div>
+                  <div className="text-white text-xs font-medium">Cancún</div>
                 </div>
                 <div className="bg-gray-900/80 backdrop-blur-md rounded-lg px-3 py-2 flex items-center space-x-1 border border-gray-700">
                   <div className="text-white text-xs font-medium">Buy</div>
