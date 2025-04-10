@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function SearchResultsPage() {
   const [location, setLocation] = useLocation();
-  const [searchParams, setSearchParams] = useState<SearchProperties>({});
+  const [searchParams, setSearchParams] = useState<SearchProperties>({ searchType: "text" });
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
   const [searchType, setSearchType] = useState<"text" | "image" | "audio">("text");
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
@@ -26,8 +26,17 @@ export default function SearchResultsPage() {
   // Parse search params from URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const newSearchParams: SearchProperties = {};
     
+    // Initialize with required searchType
+    const type = params.get("searchType") as "text" | "image" | "audio" | null;
+    const newSearchParams: SearchProperties = {
+      searchType: type && ["text", "image", "audio"].includes(type) ? type : "text"
+    };
+    
+    // Set the searchType state as well
+    setSearchType(newSearchParams.searchType);
+    
+    // Parse other search parameters
     if (params.get("location")) newSearchParams.location = params.get("location") || undefined;
     if (params.get("propertyType")) newSearchParams.propertyType = params.get("propertyType") as any || undefined;
     if (params.get("minPrice")) newSearchParams.minPrice = Number(params.get("minPrice")) || undefined;
@@ -37,10 +46,19 @@ export default function SearchResultsPage() {
     if (params.get("minSqft")) newSearchParams.minSqft = Number(params.get("minSqft")) || undefined;
     if (params.get("maxSqft")) newSearchParams.maxSqft = Number(params.get("maxSqft")) || undefined;
     
-    // Check for search type parameter
-    const type = params.get("searchType");
-    if (type && ["text", "image", "audio"].includes(type)) {
-      setSearchType(type as "text" | "image" | "audio");
+    // For multimodal search, handle image/audio data
+    if (params.get("imageData") && type === "image") {
+      setImageDataUrl(params.get("imageData") || null);
+      newSearchParams.imageData = params.get("imageData") || undefined;
+    }
+    
+    if (params.get("audioData") && type === "audio") {
+      newSearchParams.audioData = params.get("audioData") || undefined;
+    }
+    
+    // Get any processed multimodal query
+    if (params.get("multimodalQuery")) {
+      newSearchParams.multimodalQuery = params.get("multimodalQuery") || undefined;
     }
     
     setSearchParams(newSearchParams);
@@ -331,7 +349,7 @@ export default function SearchResultsPage() {
                 <p className="text-primary-600 mb-6">
                   There was an error processing your search. Please try again.
                 </p>
-                <Button onClick={() => handleSearch({})}>
+                <Button onClick={() => handleSearch({ searchType: "text" })}>
                   Reset Search
                 </Button>
               </div>

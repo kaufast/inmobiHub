@@ -14,6 +14,7 @@ export default function HeroSection() {
   const [, setLocation] = useLocation();
   const [searchType, setSearchType] = useState<"text" | "image" | "audio">("text");
   const [searchParams, setSearchParams] = useState<SearchProperties>({
+    searchType: "text",
     location: "",
     propertyType: undefined,
     minPrice: undefined,
@@ -88,6 +89,25 @@ export default function HeroSection() {
     // Add search type
     queryParams.set("searchType", searchType);
     
+    // Add multimodal data if present
+    if (searchType === "image" && imagePreview) {
+      queryParams.set("imageData", imagePreview);
+      
+      // If we have a multimodalQuery from the backend processing, add it
+      if (searchParams.multimodalQuery) {
+        queryParams.set("multimodalQuery", searchParams.multimodalQuery);
+      }
+    }
+    
+    if (searchType === "audio" && searchParams.audioData) {
+      queryParams.set("audioData", searchParams.audioData);
+      
+      // If we have a multimodalQuery from the backend processing, add it
+      if (searchParams.multimodalQuery) {
+        queryParams.set("multimodalQuery", searchParams.multimodalQuery);
+      }
+    }
+    
     // Navigate to search results page with parameters
     setLocation(`/search?${queryParams.toString()}`);
   };
@@ -108,7 +128,14 @@ export default function HeroSection() {
           
           {/* Multimodal Search bar */}
           <div className="w-full max-w-4xl bg-white/10 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-white/20">
-            <Tabs defaultValue="text" className="w-full" onValueChange={(value) => setSearchType(value as "text" | "image" | "audio")}>
+            <Tabs defaultValue="text" className="w-full" onValueChange={(value) => {
+              const type = value as "text" | "image" | "audio";
+              setSearchType(type);
+              setSearchParams(prev => ({
+                ...prev,
+                searchType: type
+              }));
+            }}>
               <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="text" className="text-white data-[state=active]:bg-secondary-500">
                   <Search className="w-4 h-4 mr-2" />
