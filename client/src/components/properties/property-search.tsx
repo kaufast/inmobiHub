@@ -94,41 +94,43 @@ export default function PropertySearch({
         </div>
         
         {/* Search by section */}
-        <div className="mb-6">
-          <Label className="block text-base font-bold text-secondary-600 mb-5">Search by</Label>
-          <div className="flex items-center space-x-6 mt-4 pt-2">
-            {/* Text search button */}
-            <Button
-              type="button"
-              size="icon"
-              variant={searchParams.searchType === 'text' ? 'default' : 'outline'}
-              className="h-14 w-14 rounded-full bg-primary-800" 
-              onClick={() => handleInputChange('searchType', 'text')}
-            >
-              <Search className="h-6 w-6" />
-            </Button>
-            
-            {/* Image search icon */}
-            <Button
-              type="button"
-              size="icon"
-              variant={searchParams.searchType === 'image' ? 'default' : 'outline'}
-              className="h-14 w-14 rounded-full"
-              onClick={() => handleInputChange('searchType', 'image')}
-            >
-              <Image className="h-6 w-6" />
-            </Button>
-            
-            {/* Voice search icon */}
-            <Button
-              type="button"
-              size="icon"
-              variant={searchParams.searchType === 'audio' ? 'default' : 'outline'}
-              className="h-14 w-14 rounded-full"
-              onClick={() => handleInputChange('searchType', 'audio')}
-            >
-              <Mic className="h-6 w-6" />
-            </Button>
+        <div className="mb-8">
+          <div className="flex items-center space-x-8 p-4 rounded-lg bg-primary-800/40">
+            <Label className="block text-lg font-bold text-white whitespace-nowrap">Search by:</Label>
+            <div className="flex items-center space-x-8">
+              {/* Text search button */}
+              <Button
+                type="button"
+                size="icon"
+                variant={searchParams.searchType === 'text' ? 'default' : 'outline'}
+                className="h-12 w-12 rounded-full bg-primary-800 shadow-md border-0" 
+                onClick={() => handleInputChange('searchType', 'text')}
+              >
+                <Search className="h-6 w-6" />
+              </Button>
+              
+              {/* Image search icon */}
+              <Button
+                type="button"
+                size="icon"
+                variant={searchParams.searchType === 'image' ? 'default' : 'outline'}
+                className="h-12 w-12 rounded-full shadow-md border-0"
+                onClick={() => handleInputChange('searchType', 'image')}
+              >
+                <Image className="h-6 w-6" />
+              </Button>
+              
+              {/* Voice search icon */}
+              <Button
+                type="button"
+                size="icon"
+                variant={searchParams.searchType === 'audio' ? 'default' : 'outline'}
+                className="h-12 w-12 rounded-full shadow-md border-0"
+                onClick={() => handleInputChange('searchType', 'audio')}
+              >
+                <Mic className="h-6 w-6" />
+              </Button>
+            </div>
           </div>
         </div>
         
