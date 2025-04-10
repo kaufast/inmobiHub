@@ -635,8 +635,8 @@ export default function AddPropertyPage() {
                             <FormItem>
                               <FormLabel>Neighborhood</FormLabel>
                               <Select 
-                                onValueChange={field.onChange} 
-                                defaultValue={field.value}
+                                onValueChange={(value) => field.onChange(value ? Number(value) : undefined)} 
+                                defaultValue={field.value ? String(field.value) : undefined}
                               >
                                 <FormControl>
                                   <SelectTrigger>
