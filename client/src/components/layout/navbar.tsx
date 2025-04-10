@@ -41,14 +41,9 @@ export default function Navbar() {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <Link href="/">
-            <a className={`text-white/80 hover:text-white transition ${location === '/' ? 'text-white' : ''}`}>
-              {t('common.home')}
-            </a>
-          </Link>
           <Link href="/search">
             <a className={`text-white/80 hover:text-white transition ${location.startsWith('/search') ? 'text-white' : ''}`}>
-              {t('common.properties')}
+              {t('common.search')}
             </a>
           </Link>
           <DropdownMenu>
@@ -90,6 +85,14 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <LanguageSelector />
           <HelpMenu />
+          
+          {/* Add Property CTA Button */}
+          <Link href={user ? "/dashboard/properties/new" : "/auth"}>
+            <Button className="hidden md:flex bg-primary-500 hover:bg-primary-600 text-white">
+              {t('common.addProperty')}
+            </Button>
+          </Link>
+          
           {user ? (
             <>
               <PropertyNotificationCenter />
@@ -164,22 +167,13 @@ export default function Navbar() {
                 </div>
                 <nav className="flex-1 overflow-auto py-4">
                   <div className="space-y-2 px-4">
-                    <Link href="/">
-                      <a 
-                        className="flex items-center py-2 text-white/80 hover:text-white transition"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Home className="mr-3 h-5 w-5" />
-                        {t('common.home')}
-                      </a>
-                    </Link>
                     <Link href="/search">
                       <a 
                         className="flex items-center py-2 text-white/80 hover:text-white transition"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <Search className="mr-3 h-5 w-5" />
-                        {t('common.properties')}
+                        {t('common.search')}
                       </a>
                     </Link>
                     <Link href="/services">
@@ -248,16 +242,26 @@ export default function Navbar() {
                 </nav>
                 <div className="p-4 border-t border-white/10">
                   {user ? (
-                    <Button 
-                      className="w-full bg-secondary-500 hover:bg-secondary-600"
-                      onClick={() => {
-                        handleLogout();
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      {t('common.logout')}
-                    </Button>
+                    <div className="flex flex-col space-y-2">
+                      <Link href="/dashboard/properties/new">
+                        <Button 
+                          className="w-full bg-primary-500 hover:bg-primary-600"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {t('common.addProperty')}
+                        </Button>
+                      </Link>
+                      <Button 
+                        className="w-full bg-secondary-500 hover:bg-secondary-600"
+                        onClick={() => {
+                          handleLogout();
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        {t('common.logout')}
+                      </Button>
+                    </div>
                   ) : (
                     <div className="flex flex-col space-y-2">
                       <Link href="/auth">
@@ -275,6 +279,14 @@ export default function Navbar() {
                           onClick={() => setMobileMenuOpen(false)}
                         >
                           {t('common.login')}
+                        </Button>
+                      </Link>
+                      <Link href="/auth">
+                        <Button 
+                          className="w-full bg-primary-500 hover:bg-primary-600"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {t('common.addProperty')}
                         </Button>
                       </Link>
                     </div>
