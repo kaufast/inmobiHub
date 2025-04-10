@@ -2,7 +2,19 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
-import { searchPropertiesSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema, insertPropertyTourSchema, updatePropertyTourSchema } from "@shared/schema";
+import { 
+  searchPropertiesSchema, 
+  insertPropertySchema, 
+  insertMessageSchema, 
+  insertFavoriteSchema, 
+  insertPropertyTourSchema, 
+  updatePropertyTourSchema,
+  passkeyRegisterSchema,
+  passkeyAuthenticateSchema,
+  idVerificationRequestSchema,
+  updateVerificationStatusSchema,
+  userVerificationSchema
+} from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
