@@ -136,29 +136,39 @@ export default function HeroSection() {
                 searchType: type
               }));
             }}>
-              <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-700">
-                <TabsTrigger value="text" className="text-white data-[state=active]:bg-secondary-500 relative group">
-                  <Search className="w-5 h-5" />
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    Text Search
+              <div className="w-full mb-6">
+                <div className="flex rounded-t-lg overflow-hidden border-b-0">
+                  <div className="px-4 py-2 bg-gray-800 text-gray-300 text-sm font-medium border border-gray-700 border-r-0 border-b-0 rounded-tl-lg">
+                    Type of search:
                   </div>
-                </TabsTrigger>
-                <TabsTrigger value="image" className="text-white data-[state=active]:bg-secondary-500 relative group">
-                  <Image className="w-5 h-5" />
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    Image Search
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger value="audio" className="text-white data-[state=active]:bg-secondary-500 relative group">
-                  <Mic className="w-5 h-5" />
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    Voice Search
-                  </div>
-                </TabsTrigger>
-              </TabsList>
+                  <TabsList className="flex-1 rounded-none bg-transparent border-0 border-gray-700 space-x-1 p-0">
+                    <TabsTrigger 
+                      value="text" 
+                      className="flex items-center gap-2 text-gray-300 data-[state=active]:text-white bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg flex-1 border border-gray-700 data-[state=active]:border-b-0 py-2"
+                    >
+                      <Search className="w-4 h-4" />
+                      <span className="text-sm">Search</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="image" 
+                      className="flex items-center gap-2 text-gray-300 data-[state=active]:text-white bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg flex-1 border border-gray-700 data-[state=active]:border-b-0 py-2"
+                    >
+                      <Image className="w-4 h-4" />
+                      <span className="text-sm">Image</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="audio" 
+                      className="flex items-center gap-2 text-gray-300 data-[state=active]:text-white bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg flex-1 border border-gray-700 data-[state=active]:border-b-0 py-2"
+                    >
+                      <Mic className="w-4 h-4" />
+                      <span className="text-sm">Voice</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
               
-              <TabsContent value="text" className="mt-0">
-                <div className="flex flex-col md:flex-row gap-4">
+              <TabsContent value="text" className="mt-0 border border-gray-700 p-4 rounded-b-lg">
+                <div className="flex flex-col md:flex-row gap-4 mb-4">
                   <div className="flex-1">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -174,18 +184,16 @@ export default function HeroSection() {
                   </div>
                   <div className="w-full md:w-48">
                     <Select 
-                      value={searchParams.propertyType} 
-                      onValueChange={(value) => handleInputChange('propertyType', value)}
+                      value={searchParams.listingType || 'buy'} 
+                      onValueChange={(value) => handleInputChange('listingType', value)}
                     >
                       <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white h-12">
-                        <SelectValue placeholder="Property Type" />
+                        <SelectValue placeholder="Listing Type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="house">House</SelectItem>
-                        <SelectItem value="condo">Condo</SelectItem>
-                        <SelectItem value="apartment">Apartment</SelectItem>
-                        <SelectItem value="townhouse">Townhouse</SelectItem>
-                        <SelectItem value="land">Land</SelectItem>
+                        <SelectItem value="buy">Buy</SelectItem>
+                        <SelectItem value="rent">Rent</SelectItem>
+                        <SelectItem value="sell">Sell</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -200,7 +208,75 @@ export default function HeroSection() {
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap gap-4 mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Collapsible className="w-full">
+                    <div className="flex items-center">
+                      <CollapsibleTrigger asChild>
+                        <Button variant="link" className="text-white/80 hover:text-white font-medium text-base flex items-center">
+                          {t('common.showMore')}
+                          <ChevronDown className="h-4 w-4 ml-1" />
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
+                    
+                    <CollapsibleContent className="mt-3 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                          <Select 
+                            value={searchParams.propertyType} 
+                            onValueChange={(value) => handleInputChange('propertyType', value)}
+                          >
+                            <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
+                              <SelectValue placeholder="Property Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="house">House</SelectItem>
+                              <SelectItem value="condo">Condo</SelectItem>
+                              <SelectItem value="apartment">Apartment</SelectItem>
+                              <SelectItem value="townhouse">Townhouse</SelectItem>
+                              <SelectItem value="land">Land</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Select 
+                            value={searchParams.bedrooms?.toString()} 
+                            onValueChange={(value) => handleInputChange('bedrooms', Number(value))}
+                          >
+                            <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
+                              <SelectValue placeholder="Bedrooms" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1+ Bedroom</SelectItem>
+                              <SelectItem value="2">2+ Bedrooms</SelectItem>
+                              <SelectItem value="3">3+ Bedrooms</SelectItem>
+                              <SelectItem value="4">4+ Bedrooms</SelectItem>
+                              <SelectItem value="5">5+ Bedrooms</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Select 
+                            value={searchParams.bathrooms?.toString()} 
+                            onValueChange={(value) => handleInputChange('bathrooms', Number(value))}
+                          >
+                            <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
+                              <SelectValue placeholder="Bathrooms" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1+ Bathroom</SelectItem>
+                              <SelectItem value="2">2+ Bathrooms</SelectItem>
+                              <SelectItem value="3">3+ Bathrooms</SelectItem>
+                              <SelectItem value="4">4+ Bathrooms</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+                
+                <div className="flex flex-wrap gap-4">
                   <Link href="/auth">
                     <Button variant="link" className="text-white font-medium text-base flex items-center">
                       {t('common.applyNow')}
@@ -209,15 +285,10 @@ export default function HeroSection() {
                       </svg>
                     </Button>
                   </Link>
-                  <Link href="#membership">
-                    <Button variant="link" className="text-white/80 hover:text-white font-medium text-base">
-                      {t('common.showMore')}
-                    </Button>
-                  </Link>
                 </div>
               </TabsContent>
               
-              <TabsContent value="image" className="mt-0">
+              <TabsContent value="image" className="mt-0 border border-gray-700 p-4 rounded-b-lg">
                 <div className="flex flex-col items-center">
                   {imagePreview ? (
                     <div className="relative mb-4">
@@ -263,7 +334,7 @@ export default function HeroSection() {
                 </div>
               </TabsContent>
               
-              <TabsContent value="audio" className="mt-0">
+              <TabsContent value="audio" className="mt-0 border border-gray-700 p-4 rounded-b-lg">
                 <div className="flex flex-col items-center">
                   <div className="h-48 w-full max-w-lg border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center mb-4 bg-gray-700/70">
                     <button
