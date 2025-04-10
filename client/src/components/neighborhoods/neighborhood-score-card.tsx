@@ -104,7 +104,7 @@ export default function NeighborhoodScoreCard({
   const affordabilityScore = neighborhood.affordabilityScore ?? 0;
   const schoolScore = neighborhood.schoolScore ?? 0;
   const safetyScore = neighborhood.safetyScore ?? 0;
-  const transportScore = neighborhood.transportScore ?? 0;
+  const transportScore = neighborhood.transitScore ?? 0; // Updated to use transitScore
   
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-primary-100 ${className} ${compact ? 'p-3' : 'p-5'}`}>

@@ -165,7 +165,7 @@ export const neighborhoods = pgTable("neighborhoods", {
   // Specific insight metrics (0-100 scores)
   safetyScore: integer("safety_score"),
   schoolScore: integer("school_score"),
-  transportScore: integer("transport_score"),
+  transitScore: integer("transit_score"), // Renamed from transportScore to match DB column
   walkabilityScore: integer("walkability_score"),
   restaurantScore: integer("restaurant_score"),
   shoppingScore: integer("shopping_score"),
@@ -292,7 +292,16 @@ export const searchPropertiesSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   radius: z.number().optional(), // in kilometers
-});
+  
+  // Multimodal search parameters
+  searchType: z.enum(['text', 'image', 'audio']).optional(),
+  imageData: z.string().optional(), // Base64 encoded image data
+  audioData: z.string().optional(), // Base64 encoded audio data
+  multimodalQuery: z.string().optional(), // Natural language description from image/audio
+}).transform(data => ({
+  ...data,
+  searchType: data.searchType || 'text' // Default to 'text' if not provided
+}));
 
 export const insertNeighborhoodSchema = createInsertSchema(neighborhoods).omit({
   id: true,

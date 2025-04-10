@@ -164,7 +164,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
       
+      // Handle multimodal search types
+      if (searchParams.searchType && searchParams.searchType !== 'text') {
+        // Process multimedia content to generate a natural language query
+        try {
+          if (searchParams.searchType === 'image' && searchParams.imageData) {
+            // Process image using AI
+            const { analyzeImage } = await import('./anthropic');
+            searchParams.multimodalQuery = await analyzeImage(searchParams.imageData);
+          } else if (searchParams.searchType === 'audio' && searchParams.audioData) {
+            // Process audio using AI
+            const { transcribeAudio } = await import('./openai');
+            searchParams.multimodalQuery = await transcribeAudio(searchParams.audioData);
+          }
+          
+          // If we have a multimodal query, log it
+          if (searchParams.multimodalQuery) {
+            console.log(`Processed ${searchParams.searchType} search: ${searchParams.multimodalQuery}`);
+            
+            // Extract location info from natural language query
+            if (!searchParams.location) {
+              // This would extract location information from the query
+              // For simplicity and accuracy, we'll just set the location directly
+              searchParams.location = searchParams.multimodalQuery;
+            }
+          }
+        } catch (err) {
+          console.error(`Error processing ${searchParams.searchType} search:`, err);
+          return res.status(400).json({
+            message: `Failed to process ${searchParams.searchType} data`,
+            error: err.message
+          });
+        }
+      }
+      
+      // Proceed with search using the processed parameters
       const properties = await storage.searchProperties(searchParams, limit, offset);
+      
+      // Save search history if user is authenticated
+      if (req.isAuthenticated()) {
+        try {
+          await storage.saveSearchHistory(req.user.id, searchParams);
+        } catch (err) {
+          console.error('Error saving search history:', err);
+        }
+      }
+      
       res.json(properties);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -520,7 +565,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             safety: neighborhood.safetyScore || null,
             schools: neighborhood.schoolScore || null,
             amenities: neighborhood.amenitiesScore || neighborhood.overallScore || null,
-            transport: neighborhood.transportScore || null
+            transport: neighborhood.transitScore || null
           };
         }
       }
