@@ -20,6 +20,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger 
+} from "@/components/ui/accordion";
+import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from '@tanstack/react-query';
 
 interface NeighborhoodInsightsProps {
@@ -51,6 +58,10 @@ interface SchoolData {
 
 export default function NeighborhoodInsights({ neighborhoodId, city, state }: NeighborhoodInsightsProps) {
   const [activeTab, setActiveTab] = useState('market');
+  const { user } = useAuth();
+  
+  // Check if user has premium access
+  const hasPremiumAccess = user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'enterprise' || user?.role === 'agent' || user?.role === 'admin';
 
   // In a production app, this would fetch from the API using the neighborhoodId
   const { isLoading, error, data: neighborhoodData } = useQuery({
@@ -551,6 +562,219 @@ export default function NeighborhoodInsights({ neighborhoodId, city, state }: Ne
           </div>
         </TabsContent>
       </Tabs>
+      
+      {/* Premium Features Section with Accordion */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold text-primary-800 flex items-center gap-2">
+            Premium Data Insights
+            <Badge className="bg-secondary-500 hover:bg-secondary-600 text-white">
+              Premium
+            </Badge>
+          </h3>
+        </div>
+        
+        <Accordion type="single" collapsible className="w-full space-y-4">
+          {/* Investment Insights */}
+          <AccordionItem value="investment" className="border rounded-lg overflow-hidden">
+            <AccordionTrigger className="px-4 py-3 bg-primary-50 hover:bg-primary-100 data-[state=open]:bg-primary-100">
+              <div className="flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2 text-primary-500" />
+                <span className="font-semibold">Investment Insights</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 py-3">
+              {hasPremiumAccess ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-primary-700 mb-4">
+                    Advanced metrics for real estate investors with historical performance and future projections.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">Investment Metrics</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <StatItem
+                          label="Cap Rate"
+                          value={0.052}
+                          formatter="percentage"
+                          info="Average capitalization rate for rental properties"
+                        />
+                        <StatItem
+                          label="Price-to-Rent Ratio"
+                          value={18.3}
+                          formatter="number"
+                          info="Ratio of home prices to annual rental income"
+                        />
+                        <StatItem
+                          label="Cash-on-Cash Return"
+                          value={0.073}
+                          formatter="percentage"
+                          info="Average annual cash return on investment"
+                        />
+                        <StatItem
+                          label="Avg. Rental Yield"
+                          value={0.048}
+                          formatter="percentage"
+                          info="Average rental income as percentage of property value"
+                        />
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">Market Stability</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <StatItem
+                          label="Rental Vacancy Rate"
+                          value={0.032}
+                          formatter="percentage"
+                          info="Percentage of rental units currently vacant"
+                        />
+                        <StatItem
+                          label="Market Volatility"
+                          value={3.2}
+                          formatter="score"
+                          info="Rating of price stability (1=volatile, 10=stable)"
+                          unit="/10"
+                        />
+                        <StatItem
+                          label="Price Recovery"
+                          value={12}
+                          formatter="number"
+                          info="Months to recover after market corrections"
+                          unit=" months"
+                        />
+                        <StatItem
+                          label="Rental Demand"
+                          value={8.4}
+                          formatter="score"
+                          info="Rating of rental demand (1=low, 10=high)"
+                          unit="/10"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 text-center">
+                  <Shield className="h-12 w-12 mx-auto mb-4 text-primary-300" />
+                  <h3 className="text-lg font-medium text-primary-800 mb-2">Premium Feature</h3>
+                  <p className="text-sm text-primary-600 max-w-md mx-auto mb-4">
+                    Unlock detailed investment insights including cap rates, rental yields, price-to-rent ratios, and market stability metrics.
+                  </p>
+                  <a href="/auth" className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+                    Upgrade to Premium
+                  </a>
+                </div>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+          
+          {/* Broker & Agent Insights */}
+          <AccordionItem value="broker" className="border rounded-lg overflow-hidden">
+            <AccordionTrigger className="px-4 py-3 bg-primary-50 hover:bg-primary-100 data-[state=open]:bg-primary-100">
+              <div className="flex items-center">
+                <Users className="h-5 w-5 mr-2 text-primary-500" />
+                <span className="font-semibold">Broker & Agent Insights</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 py-3">
+              {hasPremiumAccess ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-primary-700 mb-4">
+                    Valuable insights for real estate professionals to better serve clients and identify opportunities.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">Client Targeting</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <StatItem
+                          label="Buyer Demographics"
+                          value={0}
+                          formatter="custom"
+                          customDisplay={
+                            <div className="grid grid-cols-2 gap-2 mt-1">
+                              {['Young Professionals', 'Families', 'Retirees', 'Investors'].map((type) => (
+                                <div key={type} className="flex items-center text-xs rounded-full px-2 py-1 bg-primary-50">
+                                  <span>{type}</span>
+                                  <span className="ml-auto font-medium">{Math.floor(Math.random() * 30 + 10)}%</span>
+                                </div>
+                              ))}
+                            </div>
+                          }
+                          info="Breakdown of typical buyers in this neighborhood"
+                        />
+                        <StatItem
+                          label="Avg. Sales Cycle"
+                          value={45}
+                          formatter="number"
+                          info="Average days from listing to close"
+                          unit=" days"
+                        />
+                        <StatItem
+                          label="Commission Potential"
+                          value={8.7}
+                          formatter="score"
+                          info="Rating based on property values and turnover (1=low, 10=high)"
+                          unit="/10"
+                        />
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-lg">Opportunity Metrics</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <StatItem
+                          label="Turnover Rate"
+                          value={0.068}
+                          formatter="percentage"
+                          info="Annual percentage of properties sold"
+                        />
+                        <StatItem
+                          label="Developer Activity"
+                          value={7.2}
+                          formatter="score"
+                          info="Rating of new development and renovation activity (1=low, 10=high)"
+                          unit="/10"
+                        />
+                        <StatItem
+                          label="Exclusive Listings"
+                          value={18}
+                          formatter="number"
+                          info="Current number of exclusive listings in this area"
+                        />
+                        <StatItem
+                          label="Agent Saturation"
+                          value={4.3}
+                          formatter="score"
+                          info="Rating of competition among agents (1=low, 10=high)"
+                          unit="/10"
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 text-center">
+                  <Shield className="h-12 w-12 mx-auto mb-4 text-primary-300" />
+                  <h3 className="text-lg font-medium text-primary-800 mb-2">Premium Feature</h3>
+                  <p className="text-sm text-primary-600 max-w-md mx-auto mb-4">
+                    Unlock professional insights for real estate agents including client demographics, commission potential, turnover rates, and competitive analysis.
+                  </p>
+                  <a href="/auth" className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700">
+                    Upgrade to Premium
+                  </a>
+                </div>
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
     </div>
   );
 }
