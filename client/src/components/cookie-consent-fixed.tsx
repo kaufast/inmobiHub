@@ -54,6 +54,7 @@ export default function CookieConsent() {
   const [open, setOpen] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
   const [activeTab, setActiveTab] = useState('simple');
+  const [timeLeft, setTimeLeft] = useState(15);
   const [consents, setConsents] = useState<Record<string, boolean>>({
     necessary: true,
     preference: false,
@@ -61,13 +62,41 @@ export default function CookieConsent() {
     marketing: false,
   });
 
-  // Check if consent has already been given
+  // Check if consent has already been given and set auto-hide timer
   useEffect(() => {
     const consentGiven = localStorage.getItem('cookieConsent');
     if (!consentGiven) {
       // Only show the banner after a short delay to let the page load first
-      const timer = setTimeout(() => setShowBanner(true), 1000);
-      return () => clearTimeout(timer);
+      const showTimer = setTimeout(() => setShowBanner(true), 1000);
+      
+      // Start the countdown timer
+      let countdownInterval: NodeJS.Timeout;
+      const hideTimer = setTimeout(() => {
+        // Only hide if it's still showing and no interaction has happened
+        // We check localStorage again to make sure user hasn't interacted with it
+        if (!localStorage.getItem('cookieConsent')) {
+          acceptNecessary(); // Default to necessary cookies only when auto-hiding
+        }
+      }, 16000); // 16 seconds (1s delay + 15s display)
+      
+      setTimeout(() => {
+        // Start countdown after the banner is shown
+        countdownInterval = setInterval(() => {
+          setTimeLeft(prev => {
+            if (prev <= 1) {
+              clearInterval(countdownInterval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }, 1000);
+      
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(hideTimer);
+        clearInterval(countdownInterval);
+      };
     } else {
       try {
         const savedConsents = JSON.parse(consentGiven);
@@ -158,7 +187,18 @@ export default function CookieConsent() {
           <div className="container mx-auto max-w-7xl">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex-1">
-                <h2 className="text-lg font-semibold mb-2">We Value Your Privacy</h2>
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-lg font-semibold">We Value Your Privacy</h2>
+                  <div className="text-xs text-gray-500 flex items-center">
+                    <span className="mr-2">Auto-accept in {timeLeft}s</span>
+                    <div className="w-20 h-1 bg-gray-200 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary transition-all duration-1000 ease-linear" 
+                        style={{ width: `${(timeLeft / 15) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 md:mb-0">
                   Inmobi uses cookies to enhance your browsing experience, serve personalized ads or content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies as described in our <a href="/cookie-policy" className="underline hover:text-primary">Cookie Policy</a>.
                 </p>
