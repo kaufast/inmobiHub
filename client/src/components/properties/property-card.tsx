@@ -249,7 +249,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                       className="text-gray-600 hover:text-secondary-500 hover:bg-gray-50 transition"
                     />
                   </div>
-                  <div className="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
+                  <div className="text-white bg-[#1d2633] hover:bg-[#131c28] px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
                     View Details
                   </div>
                 </div>
@@ -309,17 +309,17 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
   return (
     <Link href={`/property/${property.id}`}>
       <a className="group glassmorphism-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 relative">
-        {/* Premium badge */}
-        {property.isPremium && (
-          <div className="absolute top-4 right-4 z-10">
-            <div className="bg-[#1d2633] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
-              Premium
-            </div>
-          </div>
-        )}
         
         {/* Property image */}
         <div className="relative h-52 overflow-hidden">
+          {/* Premium badge */}
+          {property.isPremium && (
+            <div className="absolute top-4 right-4 z-10">
+              <div className="bg-[#1d2633] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
+                Premium
+              </div>
+            </div>
+          )}
           {property.images && property.images.length > 0 ? (
             <img 
               src={property.images[0]} 
@@ -419,7 +419,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
               </Avatar>
               <span className="text-xs text-primary-500">Listed by <span className="font-medium text-primary-700">Agent</span></span>
             </div>
-            <div className="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
+            <div className="text-white bg-[#1d2633] hover:bg-[#131c28] px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
               Details
             </div>
           </div>
