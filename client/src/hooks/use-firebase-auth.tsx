@@ -30,31 +30,55 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
 
-  // Monitor authentication state
+  // Monitor authentication state with error handling
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => {
-        setCurrentUser(user);
-        setIsLoading(false);
-        if (user) {
-          console.log('Firebase user authenticated:', user.displayName || user.email || 'Anonymous user');
+    try {
+      console.log("Setting up Firebase auth state listener");
+      
+      // Use a timeout to prevent getting stuck in loading state
+      const loadingTimeout = setTimeout(() => {
+        if (isLoading) {
+          console.warn("Firebase auth initialization timed out");
+          setIsLoading(false);
         }
-      },
-      (error) => {
-        console.error('Firebase auth state error:', error);
-        setError(error);
-        setIsLoading(false);
-        toast({
-          title: 'Authentication Error',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
-    );
-
-    // Cleanup subscription
-    return () => unsubscribe();
+      }, 3000);
+      
+      // Set up the auth state listener
+      const unsubscribe = onAuthStateChanged(
+        auth,
+        (user) => {
+          setCurrentUser(user);
+          setIsLoading(false);
+          clearTimeout(loadingTimeout);
+          if (user) {
+            console.log('Firebase user authenticated:', user.displayName || user.email || 'Anonymous user');
+          }
+        },
+        (error) => {
+          console.error('Firebase auth state error:', error);
+          setError(error);
+          setIsLoading(false);
+          clearTimeout(loadingTimeout);
+          toast({
+            title: 'Authentication Error',
+            description: error.message,
+            variant: 'destructive',
+          });
+        }
+      );
+      
+      // Return cleanup functions for both the auth listener and the timeout
+      return () => {
+        unsubscribe();
+        clearTimeout(loadingTimeout);
+      };
+    } catch (error) {
+      // Handle any initialization errors
+      console.error("Firebase auth initialization error:", error);
+      setError(error instanceof Error ? error : new Error("Failed to initialize Firebase auth"));
+      setIsLoading(false);
+      return () => {}; // Empty cleanup function
+    }
   }, [toast]);
 
   // Sign out function

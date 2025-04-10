@@ -178,35 +178,55 @@ function SEOHelmet() {
 }
 
 function App() {
-  const firebaseConfigured = isFirebaseConfigured();
-  console.log("Firebase configuration status in App.tsx:", firebaseConfigured);
+  const [isFirebaseReady, setIsFirebaseReady] = useState<boolean>(false);
+  
+  // Check Firebase configuration on mount
+  useEffect(() => {
+    try {
+      const configured = isFirebaseConfigured();
+      console.log("Firebase configuration status in App.tsx:", configured);
+      setIsFirebaseReady(configured);
+    } catch (error) {
+      console.error("Error checking Firebase configuration:", error);
+      setIsFirebaseReady(false);
+    }
+  }, []);
+
+  // Fallback approach to ensure the app doesn't wait for Firebase if there's an issue
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!isFirebaseReady) {
+        console.log("Firebase initialization timed out, continuing without Firebase");
+        setIsFirebaseReady(false);
+      }
+    }, 2000);
+    
+    return () => clearTimeout(timeout);
+  }, [isFirebaseReady]);
+  
+  // Simple main app content for either auth case
+  const AppContent = () => (
+    <AuthProvider>
+      <PropertyNotificationsProvider maxNotifications={10}>
+        <OnboardingTourProvider>
+          <PropertyComparisonProvider maxProperties={4}>
+            <AppWithSEO />
+          </PropertyComparisonProvider>
+        </OnboardingTourProvider>
+      </PropertyNotificationsProvider>
+    </AuthProvider>
+  );
   
   return (
     <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
-      {firebaseConfigured ? (
+      {isFirebaseReady ? (
         <FirebaseAuthProvider>
           <FirebaseAuthHandler>
-            <AuthProvider>
-              <PropertyNotificationsProvider maxNotifications={10}>
-                <OnboardingTourProvider>
-                  <PropertyComparisonProvider maxProperties={4}>
-                    <AppWithSEO />
-                  </PropertyComparisonProvider>
-                </OnboardingTourProvider>
-              </PropertyNotificationsProvider>
-            </AuthProvider>
+            <AppContent />
           </FirebaseAuthHandler>
         </FirebaseAuthProvider>
       ) : (
-        <AuthProvider>
-          <PropertyNotificationsProvider maxNotifications={10}>
-            <OnboardingTourProvider>
-              <PropertyComparisonProvider maxProperties={4}>
-                <AppWithSEO />
-              </PropertyComparisonProvider>
-            </OnboardingTourProvider>
-          </PropertyNotificationsProvider>
-        </AuthProvider>
+        <AppContent />
       )}
     </BubbleNotificationsProvider>
   );
