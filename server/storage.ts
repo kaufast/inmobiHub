@@ -72,6 +72,10 @@ export interface IStorage {
   getChatCategories(): Promise<{category: string, count: number}[]>;
   getChatSentimentBreakdown(): Promise<{sentiment: string, count: number}[]>;
   
+  // User Verification
+  getVerifiedUsers(): Promise<User[]>;
+  getVerificationRequests(): Promise<User[]>;
+  
   // Session store
   sessionStore: session.Store;
 }
@@ -802,6 +806,37 @@ export class DatabaseStorage implements IStorage {
       return [];
     } catch (error) {
       console.error('Error getting chat sentiment breakdown:', error);
+      return [];
+    }
+  }
+
+  // User Verification methods
+  async getVerifiedUsers(): Promise<User[]> {
+    try {
+      // Get all users with isVerified = true
+      const verifiedUsers = await db.select()
+        .from(users)
+        .where(eq(users.isVerified, true))
+        .orderBy(desc(users.verificationDate));
+        
+      return verifiedUsers;
+    } catch (error) {
+      console.error('Error getting verified users:', error);
+      return [];
+    }
+  }
+
+  async getVerificationRequests(): Promise<User[]> {
+    try {
+      // Get all users with pending verification status
+      const pendingRequests = await db.select()
+        .from(users)
+        .where(eq(users.idVerificationStatus, 'pending'))
+        .orderBy(desc(users.idVerificationDate));
+        
+      return pendingRequests;
+    } catch (error) {
+      console.error('Error getting verification requests:', error);
       return [];
     }
   }
