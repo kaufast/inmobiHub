@@ -601,3 +601,50 @@ Format your response as a JSON object with the following structure:
     };
   }
 }
+
+/**
+ * Transcribes audio data to text for voice search
+ * @param audioData Base64 encoded audio data
+ * @returns The transcribed text
+ */
+export async function transcribeAudio(audioData: string): Promise<string> {
+  try {
+    // Process base64 data
+    const base64Data = audioData.includes('base64,') 
+      ? audioData.split('base64,')[1] 
+      : audioData;
+      
+    // Convert base64 to Buffer
+    const buffer = Buffer.from(base64Data, 'base64');
+    
+    // Create a temporary file for OpenAI API
+    const fs = require('fs');
+    const tempFilePath = `/tmp/audio-${Date.now()}.webm`;
+    fs.writeFileSync(tempFilePath, buffer);
+    
+    // Create a file object from the temp file
+    const file = fs.createReadStream(tempFilePath);
+    
+    // Transcribe the audio using OpenAI's Whisper
+    const transcription = await openai.audio.transcriptions.create({
+      file,
+      model: 'whisper-1',
+      language: 'en',
+    });
+    
+    // Clean up temp file
+    fs.unlinkSync(tempFilePath);
+    
+    // Process transcription text for search context
+    const searchQuery = transcription.text
+      .trim()
+      .replace(/^(search for|find|show me|looking for|find me|i want to see|please find)\s+/i, '')
+      .replace(/^(a|an|the)\s+/i, '')
+      .replace(/\.$/, '');
+      
+    return searchQuery || 'Could not understand audio. Please try again or use text search.';
+  } catch (error) {
+    console.error('Error transcribing audio:', error);
+    throw new Error('Failed to process audio. Please try again or use text search.');
+  }
+}

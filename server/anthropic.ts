@@ -95,21 +95,6 @@ export async function analyzeImage(imageData: string): Promise<string> {
       ? imageData.split('base64,')[1] 
       : imageData;
     
-    // Prepare image content for Claude
-    const imageContent = {
-      type: 'image' as const,
-      source: {
-        type: 'base64' as const,
-        media_type: 'image/jpeg', // Assuming JPEG, but could be other formats
-        data: base64Data
-      }
-    };
-    
-    const textContent = {
-      type: 'text' as const,
-      text: 'Please analyze this real estate property image and describe what you see. Focus on property type, architectural style, notable features, condition, and any distinctive elements that would be relevant for a property search. Provide your analysis in a concise paragraph.'
-    };
-    
     // Make API request
     const response = await anthropic.messages.create({
       model: MODEL,
@@ -122,7 +107,20 @@ export async function analyzeImage(imageData: string): Promise<string> {
       messages: [
         {
           role: 'user',
-          content: [imageContent, textContent]
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: 'image/jpeg',
+                data: base64Data
+              }
+            },
+            {
+              type: 'text',
+              text: 'Please analyze this real estate property image and describe what you see. Focus on property type, architectural style, notable features, condition, and any distinctive elements that would be relevant for a property search. Provide your analysis in a concise paragraph.'
+            }
+          ]
         }
       ]
     });
