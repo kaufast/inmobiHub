@@ -94,18 +94,18 @@ export default function PropertySearch({
         </div>
         
         {/* Search by section */}
-        <div className="mb-4">
-          <Label className="block text-sm font-semibold text-secondary-600 mb-3">Search by</Label>
-          <div className="flex items-center space-x-4 mt-2">
+        <div className="mb-6">
+          <Label className="block text-base font-bold text-secondary-600 mb-5">Search by</Label>
+          <div className="flex items-center space-x-6 mt-4 pt-2">
             {/* Text search button */}
             <Button
               type="button"
               size="icon"
               variant={searchParams.searchType === 'text' ? 'default' : 'outline'}
-              className="h-11.5 w-11.5 rounded-full bg-primary-800" 
+              className="h-14 w-14 rounded-full bg-primary-800" 
               onClick={() => handleInputChange('searchType', 'text')}
             >
-              <Search className="h-5 w-5" />
+              <Search className="h-6 w-6" />
             </Button>
             
             {/* Image search icon */}
@@ -113,10 +113,10 @@ export default function PropertySearch({
               type="button"
               size="icon"
               variant={searchParams.searchType === 'image' ? 'default' : 'outline'}
-              className="h-11.5 w-11.5 rounded-full"
+              className="h-14 w-14 rounded-full"
               onClick={() => handleInputChange('searchType', 'image')}
             >
-              <Image className="h-5 w-5" />
+              <Image className="h-6 w-6" />
             </Button>
             
             {/* Voice search icon */}
@@ -124,10 +124,10 @@ export default function PropertySearch({
               type="button"
               size="icon"
               variant={searchParams.searchType === 'audio' ? 'default' : 'outline'}
-              className="h-11.5 w-11.5 rounded-full"
+              className="h-14 w-14 rounded-full"
               onClick={() => handleInputChange('searchType', 'audio')}
             >
-              <Mic className="h-5 w-5" />
+              <Mic className="h-6 w-6" />
             </Button>
           </div>
         </div>
