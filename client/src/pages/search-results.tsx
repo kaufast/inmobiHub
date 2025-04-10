@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Property, SearchProperties } from "@shared/schema";
@@ -7,15 +7,21 @@ import PropertyCard from "@/components/properties/property-card";
 import PropertyMap from "@/components/properties/property-map";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, List, Grid, MapPin } from "lucide-react";
+import { Loader2, List, Grid, MapPin, Image, Mic, ArrowLeft, X } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { PropertyListSchema } from "@/components/seo/schema-markup";
 import { SearchMetaTags } from "@/components/seo/meta-tags";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 export default function SearchResultsPage() {
   const [location, setLocation] = useLocation();
   const [searchParams, setSearchParams] = useState<SearchProperties>({});
   const [view, setView] = useState<"grid" | "list" | "map">("grid");
+  const [searchType, setSearchType] = useState<"text" | "image" | "audio">("text");
+  const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Parse search params from URL
   useEffect(() => {
@@ -31,6 +37,12 @@ export default function SearchResultsPage() {
     if (params.get("minSqft")) newSearchParams.minSqft = Number(params.get("minSqft")) || undefined;
     if (params.get("maxSqft")) newSearchParams.maxSqft = Number(params.get("maxSqft")) || undefined;
     
+    // Check for search type parameter
+    const type = params.get("searchType");
+    if (type && ["text", "image", "audio"].includes(type)) {
+      setSearchType(type as "text" | "image" | "audio");
+    }
+    
     setSearchParams(newSearchParams);
   }, [location]);
 
@@ -38,12 +50,61 @@ export default function SearchResultsPage() {
   useEffect(() => {
     document.title = "Search Properties - Foundation";
   }, []);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImageDataUrl(event.target?.result as string);
+        setIsUploading(false);
+        
+        // Automatically trigger search with the image
+        performMultimodalSearch("image", event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImagePreview = () => {
+    setImageDataUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+  
+  // Handle multimodal search
+  const performMultimodalSearch = async (type: "image" | "audio" | "text", data?: string) => {
+    if (type === "image" && !data) return;
+    
+    try {
+      // Build search request params for API
+      const searchRequest = {
+        ...searchParams,
+        searchType: type,
+        mediaData: data, // Base64 image data or audio transcription
+      };
+      
+      // This would be called from the useQuery hook
+      setSearchType(type);
+    } catch (error) {
+      console.error("Error performing multimodal search:", error);
+    }
+  };
   
   // Search properties
   const { isLoading, error, data: properties } = useQuery<Property[]>({
-    queryKey: ["/api/properties/search", searchParams],
+    queryKey: ["/api/properties/search", searchParams, searchType, imageDataUrl],
     queryFn: async () => {
-      const res = await apiRequest("POST", "/api/properties/search", searchParams);
+      // Prepare request data based on search type
+      const requestData = {
+        ...searchParams,
+        searchType,
+        mediaData: searchType === "image" ? imageDataUrl : undefined,
+      };
+      
+      const res = await apiRequest("POST", "/api/properties/search", requestData);
       return res.json();
     },
   });
@@ -60,6 +121,9 @@ export default function SearchResultsPage() {
     if (newParams.baths) params.set("baths", String(newParams.baths));
     if (newParams.minSqft) params.set("minSqft", String(newParams.minSqft));
     if (newParams.maxSqft) params.set("maxSqft", String(newParams.maxSqft));
+    
+    // Add search type
+    params.set("searchType", searchType);
     
     // Update URL and trigger new search
     setLocation(`/search?${params.toString()}`);
@@ -109,10 +173,99 @@ export default function SearchResultsPage() {
       )}
       
       <div className="container mx-auto px-4">
+        {/* Multimodal Search Badge and UI */}
+        {searchType !== "text" && (
+          <div className="mb-6">
+            <Alert className="bg-white shadow-md border-secondary-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  {searchType === "image" && <Image className="h-5 w-5 text-secondary-500" />}
+                  {searchType === "audio" && <Mic className="h-5 w-5 text-secondary-500" />}
+                  <div className="flex flex-col">
+                    <AlertTitle className="font-medium">
+                      {searchType === "image" ? "Image-based search active" : "Voice-based search active"}
+                    </AlertTitle>
+                    <AlertDescription className="text-sm text-muted-foreground">
+                      {searchType === "image" 
+                        ? "We're finding properties similar to your uploaded image" 
+                        : "We're finding properties based on your voice description"}
+                    </AlertDescription>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  {searchType === "image" && imageDataUrl && (
+                    <div className="relative h-12 w-12 border rounded-md overflow-hidden">
+                      <img src={imageDataUrl} alt="Search reference" className="h-full w-full object-cover" />
+                      <button 
+                        onClick={clearImagePreview}
+                        className="absolute top-0 right-0 bg-primary-800/70 p-0.5 rounded-bl-sm"
+                      >
+                        <X className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
+                  )}
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      // Switch back to text search
+                      setSearchType("text");
+                      setImageDataUrl(null);
+                      const params = new URLSearchParams(window.location.search);
+                      params.set("searchType", "text");
+                      setLocation(`/search?${params.toString()}`);
+                    }}
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1" />
+                    Back to Text Search
+                  </Button>
+                </div>
+              </div>
+            </Alert>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Search Panel */}
           <div className="lg:w-1/3 xl:w-1/4">
             <div className="bg-white rounded-xl shadow-md overflow-hidden sticky top-20">
+              {/* Upload image button for visual search */}
+              {searchType === "text" && (
+                <div className="px-4 py-3 border-b border-primary-100 bg-primary-50/50">
+                  <h3 className="font-medium text-primary-800 mb-2">Try Multimodal Search</h3>
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center border-secondary-200 hover:border-secondary-300"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <Image className="h-4 w-4 mr-1 text-secondary-500" />
+                      Upload Image
+                    </Button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center border-secondary-200 hover:border-secondary-300"
+                      onClick={() => performMultimodalSearch("audio")}
+                    >
+                      <Mic className="h-4 w-4 mr-1 text-secondary-500" />
+                      Voice Search
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
               <PropertySearch
                 initialValues={searchParams}
                 onSearch={handleSearch}
