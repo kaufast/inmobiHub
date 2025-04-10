@@ -70,6 +70,9 @@ export default function Footer() {
                 <Link href="/privacy" className="hover:text-secondary-500 transition-colors">Privacy Policy</Link>
               </li>
               <li>
+                <Link href="/cookie-policy" className="hover:text-secondary-500 transition-colors">Cookie Policy</Link>
+              </li>
+              <li>
                 <Link href="/terms" className="hover:text-secondary-500 transition-colors">Terms of Service</Link>
               </li>
             </ul>
