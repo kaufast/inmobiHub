@@ -35,10 +35,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
-            <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 21H21M5 21V7L13 3V21M19 21V10L13 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span className="text-xl font-bold">Foundation<sup>®</sup></span>
+            <span className="text-xl font-bold">Inmobi<sup>®</sup></span>
           </Link>
         </div>
         
@@ -158,10 +155,7 @@ export default function Navbar() {
                 <div className="flex items-center justify-between p-4 border-b border-white/10">
                   <Link href="/">
                     <a className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                      <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 21H21M5 21V7L13 3V21M19 21V10L13 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                      <span className="text-xl font-bold">Foundation<sup>®</sup></span>
+                      <span className="text-xl font-bold">Inmobi<sup>®</sup></span>
                     </a>
                   </Link>
                   <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
