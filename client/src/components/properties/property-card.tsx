@@ -90,7 +90,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
   if (layout === "horizontal") {
     return (
       <Link href={`/property/${property.id}`}>
-        <a className="block group glassmorphism-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+        <a className="block group glassmorphism-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm bg-white/5 border border-white/10">
           <div className="flex flex-col sm:flex-row">
             {/* Property image */}
             <div className="relative sm:w-1/3 h-52 sm:h-auto overflow-hidden">
@@ -308,7 +308,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
   
   return (
     <Link href={`/property/${property.id}`}>
-      <a className="group glassmorphism-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 relative">
+      <a className="group glassmorphism-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 relative backdrop-blur-sm bg-white/5 border border-white/10">
         
         {/* Property image */}
         <div className="relative h-52 overflow-hidden">

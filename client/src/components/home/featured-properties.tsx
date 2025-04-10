@@ -18,13 +18,12 @@ export default function FeaturedProperties() {
   return (
     <section 
       id="featured-properties" 
-      className="py-16"
-      style={darkBlueBackgroundStyle}>
+      className="py-16 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-baseline justify-between mb-10">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white">Featured Properties</h2>
-            <p className="text-white/80 mt-2">Exclusive listings with premium potential</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1d2633]">Featured Properties</h2>
+            <p className="text-gray-600 mt-2">Exclusive listings with premium potential</p>
           </div>
           <Link href="/search">
             <a className="text-white hover:text-white/80 font-medium mt-4 md:mt-0 inline-flex items-center bg-[#1d2633] hover:bg-[#131c28] px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all">
@@ -36,7 +35,7 @@ export default function FeaturedProperties() {
           </Link>
         </div>
         
-        <div className="bg-[#1d2633] shadow-xl rounded-xl p-8 text-white">
+        <div className="bg-[#1d2633] shadow-xl rounded-xl p-8 text-white backdrop-blur-lg bg-opacity-95 border border-white/10">
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-white" />
