@@ -80,8 +80,8 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
           <MessageCircle size={24} />
         </Button>
       ) : (
-        <Card className="w-80 md:w-96 shadow-lg border-primary/20">
-          <CardHeader className="py-3 px-4 flex flex-row items-center justify-between bg-primary/5">
+        <Card className="w-80 md:w-96 shadow-lg border-gray-600 bg-gray-800">
+          <CardHeader className="py-3 px-4 flex flex-row items-center justify-between bg-gray-700">
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="/logo.png" alt="PropertiMate" />
@@ -109,9 +109,9 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
             </div>
           </CardHeader>
           
-          <CardContent className="p-4 h-80 overflow-y-auto">
+          <CardContent className="p-4 h-80 overflow-y-auto bg-gray-800 text-white">
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <div className="flex flex-col items-center justify-center h-full text-center text-gray-300">
                 <MessageCircle size={30} className="mb-2 opacity-50" />
                 <p className="text-sm">Hi! I'm your virtual real estate assistant. How can I help you today?</p>
               </div>
@@ -135,8 +135,8 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
                       className={cn(
                         "py-2 px-3 rounded-lg text-sm",
                         message.role === 'user' 
-                          ? "bg-primary text-primary-foreground" 
-                          : "bg-muted"
+                          ? "bg-gray-600 text-white" 
+                          : "bg-gray-700 text-white"
                       )}
                     >
                       {message.content}
@@ -155,7 +155,7 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
                       <AvatarImage src="/logo.png" alt="Assistant" />
                       <AvatarFallback>A</AvatarFallback>
                     </Avatar>
-                    <div className="py-2 px-3 rounded-lg bg-muted flex items-center">
+                    <div className="py-2 px-3 rounded-lg bg-gray-700 text-white flex items-center">
                       <Loader2 size={16} className="mr-2 animate-spin" />
                       <span className="text-sm">Thinking...</span>
                     </div>
@@ -171,7 +171,7 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
             )}
           </CardContent>
           
-          <CardFooter className="p-3 pt-2 border-t flex-col">
+          <CardFooter className="p-3 pt-2 border-t flex-col bg-gray-700 border-gray-600">
             <div className="flex w-full items-center gap-2 mb-2">
               <Popover open={isCategoryOpen} onOpenChange={setIsCategoryOpen}>
                 <PopoverTrigger asChild>
@@ -203,7 +203,7 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
                   </div>
                 </PopoverContent>
               </Popover>
-              <span className="text-xs text-muted-foreground flex-1">
+              <span className="text-xs text-gray-300 flex-1">
                 {category 
                   ? "Category selected for analytics" 
                   : "Select a question category to help us improve"}
@@ -215,7 +215,7 @@ export function ChatWidget({ propertyId, delayAppearance = 10000 }: ChatWidgetPr
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1"
+                className="flex-1 bg-gray-600 text-white border-gray-500 placeholder:text-gray-300"
                 disabled={isLoading}
               />
               <Button type="submit" size="icon" disabled={isLoading || !inputValue.trim()}>
