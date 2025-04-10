@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, MapPin, Image, Mic, Camera, X, ChevronDown, Bed, Bath, Maximize } from "lucide-react";
+import { Search, MapPin, Image, Mic, Camera, X, ChevronDown, Bed, Bath, Maximize, SlidersHorizontal } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchProperties } from "@shared/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -149,8 +149,8 @@ export default function HeroSection() {
             }}>
               <div className="w-full mb-2">
                 <div className="flex rounded-t-lg overflow-hidden border-b-0 justify-start">
-                  <div className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 border-r-0 border-b-0 rounded-tl-lg">
-                    Search by:
+                  <div className="px-3 py-1.5 bg-gray-700 text-white text-xs font-medium border border-gray-700 border-r-0 border-b-0 rounded-tl-lg flex items-center">
+                    <span className="text-xs">Search by:</span>
                   </div>
                   <TabsList className="rounded-none bg-transparent border-0 border-gray-700 space-x-1 p-0">
                     <TabsTrigger 
@@ -217,8 +217,9 @@ export default function HeroSection() {
                     <Collapsible className="mt-2 md:mt-0 md:w-auto flex-shrink-0">
                       <div className="flex items-center">
                         <CollapsibleTrigger asChild>
-                          <Button variant="outline" size="sm" className="text-white font-medium flex items-center px-3 py-1.5 h-auto bg-gray-700/90 border-gray-600 hover:bg-gray-600">
-                            {t('common.showMore')}
+                          <Button variant="outline" size="sm" className="text-white font-medium flex items-center px-4 h-14 bg-gray-700/90 border-gray-600 hover:bg-gray-600 rounded-md">
+                            <SlidersHorizontal className="h-4 w-4 mr-2" />
+                            Advanced Search
                             <ChevronDown className="h-4 w-4 ml-1" />
                           </Button>
                         </CollapsibleTrigger>
