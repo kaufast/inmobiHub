@@ -121,9 +121,10 @@ export default function HeroSection() {
   };
   
   return (
-    <section className="relative bg-primary-900 overflow-hidden min-h-[800px] h-auto">
+    <section className="relative bg-gradient-to-b from-gray-900 to-gray-800 overflow-hidden min-h-[800px] h-auto">
       {/* Map Background with Overlay */}
-      <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/2.170,41.387,11,0/1200x800?access_token=pk.eyJ1IjoiZGVtb21hcCIsImEiOiJja3E2bGN1ZmMwMnhvMnZtZm40OHlhdGFrIn0.MvJ9qQU75O8bpYm-l0z8vA')] bg-cover bg-center opacity-60 before:content-[''] before:absolute before:inset-0 before:bg-black/50"></div>
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768&q=80')] bg-cover bg-center opacity-30"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-primary-900/80 to-gray-900/90"></div>
       
       <div className="container mx-auto px-4 py-16 md:py-24 lg:py-28 relative z-10">
         <div className="flex flex-col items-center text-center">
@@ -370,7 +371,30 @@ export default function HeroSection() {
           {/* Map Mockup Section */}
           <div className="w-full max-w-4xl mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
             <div className="relative h-[450px] w-full">
-              <div className="absolute inset-0 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/pin-l+f05541(2.159,41.39),pin-l+f05541(2.197,41.405),pin-l+f05541(2.175,41.377),pin-l+f05541(2.148,41.403)/2.170,41.387,12.5,0/1200x800@2x?access_token=pk.eyJ1IjoiZGVtb21hcCIsImEiOiJja3E2bGN1ZmMwMnhvMnZtZm40OHlhdGFrIn0.MvJ9qQU75O8bpYm-l0z8vA')] bg-cover bg-center"></div>
+              <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1570698473651-b2de99bae12f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1366&h=768')] bg-cover bg-center"></div>
+              <div className="absolute inset-0 bg-gray-900/50"></div>
+              
+              {/* Map Pins */}
+              <div className="absolute left-1/4 top-1/3 w-6 h-6">
+                <div className="animate-pulse absolute w-6 h-6 bg-secondary-500/30 rounded-full"></div>
+                <div className="absolute top-1 left-1 w-4 h-4 bg-secondary-500 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+              </div>
+              
+              <div className="absolute left-[60%] top-[45%] w-6 h-6">
+                <div className="animate-pulse absolute w-6 h-6 bg-secondary-500/30 rounded-full"></div>
+                <div className="absolute top-1 left-1 w-4 h-4 bg-secondary-500 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+              </div>
+              
+              <div className="absolute left-[40%] top-[60%] w-6 h-6">
+                <div className="animate-pulse absolute w-6 h-6 bg-secondary-500/30 rounded-full"></div>
+                <div className="absolute top-1 left-1 w-4 h-4 bg-secondary-500 rounded-full flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+              </div>
               
               {/* Property Card Overlay */}
               <div className="absolute top-4 right-4 w-80 bg-gray-900/90 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700 shadow-lg">
