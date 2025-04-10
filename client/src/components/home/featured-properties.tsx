@@ -18,7 +18,7 @@ export default function FeaturedProperties() {
   return (
     <section 
       id="featured-properties" 
-      className="py-16 text-white"
+      className="py-16"
       style={blueBackgroundStyle}>
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-baseline justify-between mb-10">
@@ -36,27 +36,29 @@ export default function FeaturedProperties() {
           </Link>
         </div>
         
-        {isLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-white" />
-          </div>
-        ) : error ? (
-          <div className="text-center py-8">
-            <p className="text-white bg-red-500/20 px-4 py-2 rounded-lg inline-block">Failed to load featured properties</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {properties && properties.length > 0 ? (
-              properties.map((property) => (
-                <PropertyCard key={property.id} property={property} />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <p className="text-white bg-blue-600/50 px-4 py-3 rounded-lg inline-block shadow-sm">No featured properties available at the moment</p>
-              </div>
-            )}
-          </div>
-        )}
+        <div className="bg-white shadow-xl rounded-xl p-8 text-gray-800">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-white bg-red-500 px-4 py-2 rounded-lg inline-block">Failed to load featured properties</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {properties && properties.length > 0 ? (
+                properties.map((property) => (
+                  <PropertyCard key={property.id} property={property} />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-white bg-blue-600 px-4 py-3 rounded-lg inline-block shadow-sm">No featured properties available at the moment</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
