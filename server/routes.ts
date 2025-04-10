@@ -13,14 +13,11 @@ import {
   passkeyAuthenticateSchema,
   idVerificationRequestSchema,
   updateVerificationStatusSchema,
-  userVerificationSchema,
-  smsVerificationSchema,
-  smsVerifyCodeSchema
+  userVerificationSchema
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
-import WebSocket, { WebSocketServer } from 'ws';
-import { sendSmsVerificationApi, verifySmsCodeApi } from './firebase';
+import { WebSocketServer, WebSocket } from 'ws';
 import { handleChatMessage } from "./anthropic";
 import { generatePropertyRecommendations } from "./openai";
 
@@ -63,10 +60,6 @@ const isAdmin = (req: Request, res: Response, next: NextFunction) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
-  
-  // SMS Verification routes
-  app.post("/api/auth/sms/send", sendSmsVerificationApi);
-  app.post("/api/auth/sms/verify", verifySmsCodeApi);
   
   // ChatAI Agent endpoint
   app.post("/api/chat", async (req, res, next) => {
@@ -1135,13 +1128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
   // Set up WebSocket server on a distinct path to avoid conflict with Vite's HMR
-  const wss = new WebSocketServer({ 
-    server: httpServer, 
-    path: '/ws',
-    clientTracking: true
-  });
-  
-  console.log('WebSocket server initialized on path: /ws');
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
   // Types for WebSocket messages
   type WebSocketMessage = {
@@ -1163,8 +1150,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }>();
   
-  wss.on('connection', (ws, request) => {
-    console.log(`WebSocket client connected from ${request.socket.remoteAddress}`);
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
     
     // Initialize client record
     clients.set(ws, {
@@ -1172,50 +1159,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       subscriptions: {}
     });
     
-    // Send welcome message immediately
-    try {
-      ws.send(JSON.stringify({
-        type: 'connected',
-        payload: {
-          message: 'Connected to Inmobi real estate notification system',
-          timestamp: new Date().toISOString()
-        }
-      }));
-      console.log('Sent welcome message to client');
-    } catch (err) {
-      console.error('Error sending welcome message:', err);
-    }
-    
     // Handle messages from clients
     ws.on('message', async (message) => {
-      console.log('Received message from client:', message.toString());
-      
       try {
         const data: WebSocketMessage = JSON.parse(message.toString());
         
         switch (data.type) {
           case 'subscribe':
             // Store user's subscription preferences
-            if (clients.has(ws)) {
-              const clientData = clients.get(ws)!;
-              
-              // Check if payload has userId and filters
-              if (data.payload) {
+            if (data.payload && clients.has(ws)) {
+              const clientData = clients.get(ws);
+              if (clientData) {
                 if (data.payload.userId) {
                   clientData.userId = data.payload.userId;
                   clientData.isAuthenticated = true;
-                  console.log(`Client authenticated with userId: ${data.payload.userId}`);
                 }
-                
-                // Handle both new and old payload formats
-                const filters = data.payload.filters || data.payload;
-                if (filters) {
-                  clientData.subscriptions = {
-                    ...clientData.subscriptions,
-                    ...filters
-                  };
-                }
-                
+                clientData.subscriptions = {
+                  ...clientData.subscriptions,
+                  ...data.payload.filters
+                };
                 clients.set(ws, clientData);
               }
               
@@ -1227,7 +1189,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   filters: clients.get(ws)?.subscriptions
                 }
               }));
-              console.log('Client subscribed with filters:', clientData.subscriptions);
             }
             break;
             
@@ -1268,6 +1229,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('WebSocket client disconnected');
       clients.delete(ws);
     });
+    
+    // Send initial welcome message
+    ws.send(JSON.stringify({
+      type: 'connected',
+      payload: {
+        message: 'Connected to real estate notification system',
+        timestamp: new Date().toISOString()
+      }
+    }));
   });
   
   // Helper function to send property notifications to subscribed clients

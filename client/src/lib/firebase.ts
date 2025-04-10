@@ -1,251 +1,96 @@
 import { initializeApp } from "firebase/app";
-import { 
-  getAuth, 
-  RecaptchaVerifier, 
-  signInWithRedirect, 
-  GoogleAuthProvider,
-  getRedirectResult,
-  signOut
-} from "firebase/auth";
+import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut, signInWithRedirect, getRedirectResult } from "firebase/auth";
 
-// Firebase configuration
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyAHBABI9mL7s6Jr_n7FhlSCLMrMA8QBp8Q",
+  authDomain: "inmobi-a6bd4.firebaseapp.com",
+  projectId: "inmobi-a6bd4",
+  storageBucket: "inmobi-a6bd4.firebasestorage.app",
+  messagingSenderId: "937279827019",
+  appId: "1:937279827019:web:92eb1d4219413097b9f1ce",
+  measurementId: "G-D1KKXE9REV"
 };
 
-// Initialize Firebase app
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Store recaptcha verifier instance globally
-let recaptchaVerifier: RecaptchaVerifier | null = null;
+// Configure Google Auth Provider
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
-/**
- * Initialize reCAPTCHA verifier
- * @param containerId HTML element ID where reCAPTCHA widget will be rendered
- */
-export function initRecaptchaVerifier(containerId: string) {
+// Configure Apple Auth Provider
+const appleProvider = new OAuthProvider('apple.com');
+appleProvider.addScope('email');
+appleProvider.addScope('name');
+
+// Sign in with Google
+export async function signInWithGoogle() {
   try {
-    // Avoid re-initializing
-    if (!recaptchaVerifier) {
-      recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-        size: 'normal',
-        callback: () => {
-          console.log('reCAPTCHA verified');
-        },
-        'expired-callback': () => {
-          console.log('reCAPTCHA expired');
-          recaptchaVerifier = null; // Reset on expiry
-        }
-      });
-    }
+    // Check if we're in Replit's preview environment which might block popups
+    const isReplit = window.location.hostname.includes('replit');
     
-    return recaptchaVerifier;
+    if (isReplit) {
+      // Use redirect for Replit environment to avoid popup blockers
+      await signInWithRedirect(auth, googleProvider);
+      return null; // The page will redirect, so no need to return anything
+    } else {
+      // Use popup for other environments
+      const result = await signInWithPopup(auth, googleProvider);
+      return result.user;
+    }
   } catch (error) {
-    console.error('Error initializing reCAPTCHA:', error);
-    return null;
-  }
-}
-
-/**
- * Send SMS verification code
- * @param phoneNumber User's phone number
- */
-export async function sendSmsVerification(phoneNumber: string) {
-  try {
-    // Get recaptcha token from client
-    const recaptchaToken = await recaptchaVerifier?.verify();
-    
-    if (!recaptchaToken) {
-      throw new Error('reCAPTCHA verification failed');
-    }
-    
-    // Send request to server endpoint
-    const response = await fetch('/api/auth/sms/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        phoneNumber,
-        recaptchaToken
-      }),
-    });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to send verification code');
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('Error sending SMS verification:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to send verification code'
-    };
-  }
-}
-
-/**
- * Verify SMS code
- * @param verificationId ID received from sendSmsVerification
- * @param code Verification code entered by user
- */
-export async function verifySmsCode(verificationId: string, code: string) {
-  try {
-    const response = await fetch('/api/auth/sms/verify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        verificationId,
-        code
-      }),
-    });
-    
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to verify code');
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('Error verifying SMS code:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to verify code'
-    };
-  }
-}
-
-/**
- * Check if the device supports Apple Keychain or other credential manager
- */
-export function supportsAppleKeychain(): boolean {
-  return window && 
-    'PasswordCredential' in window && 
-    'navigator' in window && 
-    'credentials' in navigator;
-}
-
-/**
- * Store credentials in the device's secure keychain (Apple Keychain on iOS/macOS)
- * @param username User's username
- * @param password User's password
- */
-export async function storeCredentialsInKeychain(
-  username: string, 
-  password: string
-): Promise<boolean> {
-  if (!supportsAppleKeychain()) {
-    return false;
-  }
-  
-  try {
-    // Define an interface for the credential for TypeScript
-    interface IPasswordCredential extends Credential {
-      id: string;
-      password?: string;
-      name?: string;
-      iconURL?: string;
-    }
-
-    // Create a new credential 
-    // Note: Using any here because the PasswordCredential is not fully typed in some TS environments
-    const credential = new (window as any).PasswordCredential({
-      id: username,
-      password: password,
-      name: username, // Optional display name
-      iconURL: window.location.origin + '/logo.png' // Optional icon
-    }) as IPasswordCredential;
-    
-    // Store the credential in the browser's password manager
-    await navigator.credentials.store(credential);
-    
-    return true;
-  } catch (error) {
-    console.error('Error storing credentials:', error);
-    return false;
-  }
-}
-
-/**
- * Retrieve credentials from the device's secure keychain
- */
-export async function retrieveCredentialsFromKeychain() {
-  if (!supportsAppleKeychain()) {
-    return null;
-  }
-  
-  try {
-    // Define credential type
-    interface IPasswordCredential extends Credential {
-      id: string;
-      password?: string;
-      type: string;
-    }
-
-    // Request a credential from the browser's password manager
-    // Note: Using any type here since the CredentialRequestOptions interface 
-    // doesn't have the password property in all TS environments
-    const options = {
-      password: true,
-      mediation: 'optional' // Show UI only if user has multiple credentials
-    } as any;
-    
-    const credential = await navigator.credentials.get(options) as IPasswordCredential;
-    
-    if (credential && credential.type === 'password') {
-      return {
-        username: credential.id,
-        password: credential.password || ''
-      };
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('Error retrieving credentials:', error);
-    return null;
-  }
-}
-
-/**
- * Handle the redirect result from Firebase Authentication
- */
-export async function handleRedirectResult() {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result) {
-      // User is signed in
-      const user = result.user;
-      // You can get the Google Access Token with:
-      // const credential = GoogleAuthProvider.credentialFromResult(result);
-      // const token = credential?.accessToken;
-      return user;
-    }
-    return null;
-  } catch (error) {
-    console.error("Error handling redirect result:", error);
+    console.error('Error signing in with Google:', error);
     throw error;
   }
 }
 
-/**
- * Sign out from Firebase Authentication
- */
-export async function firebaseSignOut(): Promise<void> {
+// Sign in with Apple
+export async function signInWithApple() {
+  try {
+    // Apple Sign In requires a properly configured domain with Apple Developer settings
+    // It likely won't work in development environment without proper setup
+    const isReplit = window.location.hostname.includes('replit');
+    
+    if (isReplit) {
+      // Use redirect for Replit environment to avoid popup blockers
+      await signInWithRedirect(auth, appleProvider);
+      return null; // The page will redirect, so no need to return anything
+    } else {
+      // Use popup for other environments
+      const result = await signInWithPopup(auth, appleProvider);
+      return result.user;
+    }
+  } catch (error) {
+    console.error('Error signing in with Apple:', error);
+    throw error;
+  }
+}
+
+// Check for redirect result (to be called on app initialization)
+export async function handleRedirectResult() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      // User successfully authenticated after redirect
+      return result.user;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error handling redirect result:', error);
+    return null;
+  }
+}
+
+// Sign out
+export async function firebaseSignOut() {
   try {
     await signOut(auth);
   } catch (error) {
-    console.error("Error signing out:", error);
+    console.error('Error signing out:', error);
     throw error;
   }
 }
