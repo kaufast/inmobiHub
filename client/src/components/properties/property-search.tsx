@@ -279,6 +279,18 @@ export default function PropertySearch({
                   </div>
                 </div>
               </div>
+              
+              {/* Apply button for more filters */}
+              <div className="mt-4">
+                <Button 
+                  type="button"
+                  onClick={handleSearchSubmit}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  Apply Filters
+                </Button>
+              </div>
             </CollapsibleContent>
           </Collapsible>
         </div>
