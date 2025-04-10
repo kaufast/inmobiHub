@@ -178,22 +178,7 @@ export default function HeroSection() {
               
               <TabsContent value="text" className="mt-0 border border-gray-700 p-4 rounded-b-lg">
                 <div className="flex flex-col md:flex-row gap-4 mb-4">
-                  <div className="w-full md:w-48">
-                    <Select 
-                      value={searchParams.listingType || 'buy'} 
-                      onValueChange={(value) => handleInputChange('listingType', value)}
-                    >
-                      <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white h-12">
-                        <SelectValue placeholder="Listing Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="buy">Buy</SelectItem>
-                        <SelectItem value="rent">Rent</SelectItem>
-                        <SelectItem value="sell">Sell</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="w-full md:flex md:items-center md:gap-2">
+                  <div className="w-full md:flex md:items-center md:gap-2 relative">
                     <div className="relative w-full flex-grow">
                       <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center">
                         <Search className="h-5 w-5 text-gray-400" />
@@ -202,10 +187,22 @@ export default function HeroSection() {
                         type="text"
                         value={searchParams.location}
                         onChange={(e) => handleInputChange('location', e.target.value)}
-                        placeholder="Enter city, zip or address"
-                        className="w-full h-12 pl-10 pr-16 bg-gray-700/90 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                        placeholder="Enter city, zip or address, buy or sell"
+                        className="w-full h-14 pl-10 pr-28 bg-gray-700/90 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-500 text-lg"
+                        list="search-suggestions"
                       />
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                      <datalist id="search-suggestions">
+                        <option value="New York, buy" />
+                        <option value="Miami, rent" />
+                        <option value="Los Angeles, sell" />
+                        <option value="Chicago, buy" />
+                        <option value="Austin, rent" />
+                        <option value="Seattle, buy" />
+                      </datalist>
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-3">
+                        <button onClick={handleSearch} className="bg-secondary-500 hover:bg-secondary-600 rounded-md p-2">
+                          <Search className="h-5 w-5 text-white" />
+                        </button>
                         <button onClick={() => setActiveTab("image")} className="text-gray-400 hover:text-white">
                           <Camera className="h-5 w-5" />
                         </button>
@@ -213,14 +210,6 @@ export default function HeroSection() {
                           <Mic className="h-5 w-5" />
                         </button>
                       </div>
-                    </div>
-                    <div className="mt-2 md:mt-0 md:w-[33%]">
-                      <Button 
-                        onClick={handleSearch}
-                        className="w-full h-12 bg-secondary-500 hover:bg-secondary-600 text-white"
-                      >
-                        <Search className="h-5 w-5" />
-                      </Button>
                     </div>
                   </div>
                 </div>
