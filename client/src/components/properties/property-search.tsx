@@ -15,7 +15,7 @@ interface PropertySearchProps {
 }
 
 export default function PropertySearch({ 
-  initialValues = {}, 
+  initialValues = { searchType: "text" }, 
   onSearch,
   compact = false
 }: PropertySearchProps) {
