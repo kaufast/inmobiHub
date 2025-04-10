@@ -145,32 +145,32 @@ export default function HeroSection() {
                 searchType: type
               }));
             }}>
-              <div className="w-full mb-6">
-                <div className="flex rounded-t-lg overflow-hidden border-b-0">
-                  <div className="px-4 py-2 bg-gray-800 text-gray-300 text-sm font-medium border border-gray-700 border-r-0 border-b-0 rounded-tl-lg">
-                    Type of search:
+              <div className="w-full mb-2">
+                <div className="flex rounded-t-lg overflow-hidden border-b-0 justify-start">
+                  <div className="px-3 py-1.5 bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 border-r-0 border-b-0 rounded-tl-lg">
+                    Search by:
                   </div>
-                  <TabsList className="flex-1 rounded-none bg-transparent border-0 border-gray-700 space-x-1 p-0">
+                  <TabsList className="rounded-none bg-transparent border-0 border-gray-700 space-x-1 p-0">
                     <TabsTrigger 
                       value="text" 
-                      className="flex items-center gap-2 text-gray-300 data-[state=active]:text-white bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg flex-1 border border-gray-700 data-[state=active]:border-b-0 py-2"
+                      className="flex items-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg border border-gray-700 data-[state=active]:border-b-0 py-1.5 px-3"
                     >
-                      <Search className="w-4 h-4" />
-                      <span className="text-sm">Search</span>
+                      <Search className="w-3.5 h-3.5" />
+                      <span className="text-xs">Text</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="image" 
-                      className="flex items-center gap-2 text-gray-300 data-[state=active]:text-white bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg flex-1 border border-gray-700 data-[state=active]:border-b-0 py-2"
+                      className="flex items-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg border border-gray-700 data-[state=active]:border-b-0 py-1.5 px-3"
                     >
-                      <Image className="w-4 h-4" />
-                      <span className="text-sm">Image</span>
+                      <Image className="w-3.5 h-3.5" />
+                      <span className="text-xs">Image</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="audio" 
-                      className="flex items-center gap-2 text-gray-300 data-[state=active]:text-white bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg flex-1 border border-gray-700 data-[state=active]:border-b-0 py-2"
+                      className="flex items-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg border border-gray-700 data-[state=active]:border-b-0 py-1.5 px-3"
                     >
-                      <Mic className="w-4 h-4" />
-                      <span className="text-sm">Voice</span>
+                      <Mic className="w-3.5 h-3.5" />
+                      <span className="text-xs">Voice</span>
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -178,17 +178,17 @@ export default function HeroSection() {
               
               <TabsContent value="text" className="mt-0 border border-gray-700 p-4 rounded-b-lg">
                 <div className="flex flex-col md:flex-row gap-4 mb-4">
-                  <div className="w-full md:flex md:items-center md:gap-2 relative">
+                  <div className="w-full md:flex md:items-start md:gap-3 relative">
                     <div className="relative w-full flex-grow">
                       <div className="absolute left-3 top-1/2 transform -translate-y-1/2 flex items-center">
-                        <Search className="h-5 w-5 text-gray-400" />
+                        <Search className="h-5 w-5 text-white" />
                       </div>
                       <input
                         type="text"
                         value={searchParams.location}
                         onChange={(e) => handleInputChange('location', e.target.value)}
                         placeholder="Enter city, zip or address, buy or sell"
-                        className="w-full h-14 pl-10 pr-28 bg-gray-700/90 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-500 text-lg"
+                        className="w-full h-14 pl-10 pr-28 bg-gray-700/90 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-500 text-lg placeholder:text-gray-300 placeholder:font-medium"
                         list="search-suggestions"
                       />
                       <datalist id="search-suggestions">
@@ -211,75 +211,73 @@ export default function HeroSection() {
                         </button>
                       </div>
                     </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2 mb-3">
-                  <Collapsible className="w-full">
-                    <div className="flex items-center">
-                      <CollapsibleTrigger asChild>
-                        <Button variant="link" className="text-white/80 hover:text-white font-medium text-base flex items-center">
-                          {t('common.showMore')}
-                          <ChevronDown className="h-4 w-4 ml-1" />
-                        </Button>
-                      </CollapsibleTrigger>
-                    </div>
                     
-                    <CollapsibleContent className="mt-3 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                          <Select 
-                            value={searchParams.propertyType} 
-                            onValueChange={(value) => handleInputChange('propertyType', value)}
-                          >
-                            <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
-                              <SelectValue placeholder="Property Type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="house">House</SelectItem>
-                              <SelectItem value="condo">Condo</SelectItem>
-                              <SelectItem value="apartment">Apartment</SelectItem>
-                              <SelectItem value="townhouse">Townhouse</SelectItem>
-                              <SelectItem value="land">Land</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Select 
-                            value={searchParams.beds?.toString()} 
-                            onValueChange={(value) => handleInputChange('beds', Number(value))}
-                          >
-                            <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
-                              <SelectValue placeholder="Bedrooms" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">1+ Bedroom</SelectItem>
-                              <SelectItem value="2">2+ Bedrooms</SelectItem>
-                              <SelectItem value="3">3+ Bedrooms</SelectItem>
-                              <SelectItem value="4">4+ Bedrooms</SelectItem>
-                              <SelectItem value="5">5+ Bedrooms</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Select 
-                            value={searchParams.baths?.toString()} 
-                            onValueChange={(value) => handleInputChange('baths', Number(value))}
-                          >
-                            <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
-                              <SelectValue placeholder="Bathrooms" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">1+ Bathroom</SelectItem>
-                              <SelectItem value="2">2+ Bathrooms</SelectItem>
-                              <SelectItem value="3">3+ Bathrooms</SelectItem>
-                              <SelectItem value="4">4+ Bathrooms</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                    <Collapsible className="mt-2 md:mt-0 md:w-auto flex-shrink-0">
+                      <div className="flex items-center">
+                        <CollapsibleTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-white font-medium flex items-center px-3 py-1.5 h-auto bg-gray-700/90 border-gray-600 hover:bg-gray-600">
+                            {t('common.showMore')}
+                            <ChevronDown className="h-4 w-4 ml-1" />
+                          </Button>
+                        </CollapsibleTrigger>
                       </div>
-                    </CollapsibleContent>
-                  </Collapsible>
+                      
+                      <CollapsibleContent className="md:absolute md:top-16 md:left-0 md:right-0 md:bg-gray-800/95 md:backdrop-blur-sm md:p-4 md:rounded-lg md:border md:border-gray-700 md:shadow-lg md:z-20 mt-3 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <Select 
+                              value={searchParams.propertyType} 
+                              onValueChange={(value) => handleInputChange('propertyType', value)}
+                            >
+                              <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
+                                <SelectValue placeholder="Property Type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="house">House</SelectItem>
+                                <SelectItem value="condo">Condo</SelectItem>
+                                <SelectItem value="apartment">Apartment</SelectItem>
+                                <SelectItem value="townhouse">Townhouse</SelectItem>
+                                <SelectItem value="land">Land</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Select 
+                              value={searchParams.beds?.toString()} 
+                              onValueChange={(value) => handleInputChange('beds', Number(value))}
+                            >
+                              <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
+                                <SelectValue placeholder="Bedrooms" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">1+ Bedroom</SelectItem>
+                                <SelectItem value="2">2+ Bedrooms</SelectItem>
+                                <SelectItem value="3">3+ Bedrooms</SelectItem>
+                                <SelectItem value="4">4+ Bedrooms</SelectItem>
+                                <SelectItem value="5">5+ Bedrooms</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Select 
+                              value={searchParams.baths?.toString()} 
+                              onValueChange={(value) => handleInputChange('baths', Number(value))}
+                            >
+                              <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
+                                <SelectValue placeholder="Bathrooms" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">1+ Bathroom</SelectItem>
+                                <SelectItem value="2">2+ Bathrooms</SelectItem>
+                                <SelectItem value="3">3+ Bathrooms</SelectItem>
+                                <SelectItem value="4">4+ Bathrooms</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
                 </div>
                 
                 {/* Apply button removed as requested */}
