@@ -104,22 +104,8 @@ export function ImageUploader({
           }
           
           console.log('Uploading files:', files.length);
-          console.log('FormData entries:');
-          for (const pair of formData.entries()) {
-            console.log(pair[0], pair[1]);
-          }
           
-          const response = await apiRequest('POST', '/api/images/upload-multiple', formData, {
-            headers: {
-              // Don't set Content-Type here, it will be set automatically with the boundary
-            },
-            onUploadProgress: (progressEvent) => {
-              const percentCompleted = Math.round(
-                (progressEvent.loaded * 100) / (progressEvent.total || 100)
-              );
-              setUploadProgress(percentCompleted);
-            }
-          });
+          const response = await apiRequest('POST', '/api/images/upload-multiple', formData);
           
           const data = await response.json();
           if (!data.success) {
@@ -259,7 +245,7 @@ export function ImageUploader({
         <FileUploader
           onFilesSelected={handleFileSelect}
           disabled={disabled || isUploading}
-          accept="image/*"
+          accept={{ 'image/*': [] }}
           multiple={allowMultiple}
           maxFiles={maxImages}
           ref={fileInputRef}
