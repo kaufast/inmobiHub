@@ -19,6 +19,8 @@ import AddPropertyPage from "@/pages/add-property";
 import CookiePolicy from "@/pages/cookie-policy";
 import NeighborhoodInsightsPage from "@/pages/neighborhood-insights-page";
 import UserVerificationPage from "@/pages/user-verification";
+import SubscriptionPage from "@/pages/subscription-page";
+import PaymentPage from "@/pages/payment-page";
 import { 
   ProtectedRoute, 
   UserProtectedRoute, 
@@ -60,6 +62,9 @@ function AppContent() {
           <Route path="/neighborhoods" component={NeighborhoodInsightsPage} />
           <Route path="/notifications-demo" component={NotificationsDemo} />
           <Route path="/cookie-policy" component={CookiePolicy} />
+          <Route path="/payment" component={PaymentPage} />
+          <Route path="/payment/success" component={PaymentPage} />
+          <UserProtectedRoute path="/subscription" component={SubscriptionPage} />
           
           {/* Role-Specific Dashboard Routes */}
           <UserProtectedRoute path="/dashboard" component={DashboardPage} />
