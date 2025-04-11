@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
@@ -8,6 +8,17 @@ import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
 import { handleChatMessage } from "./anthropic";
 import { generatePropertyRecommendations } from "./openai";
+import Stripe from 'stripe';
+import {
+  createStripeCustomer,
+  createPaymentIntent,
+  createSubscription,
+  getSubscription,
+  cancelSubscription,
+  updateSubscription,
+  handleStripeWebhook,
+  SUBSCRIPTION_FEATURES
+} from './stripe';
 import { 
   generatePasskeyRegistrationOptions, 
   verifyPasskeyRegistration,
@@ -1525,6 +1536,202 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (err) {
       res.status(500).json({ error: 'Failed to increment question click count' });
+    }
+  });
+  
+  // Stripe payment routes
+  
+  // Get subscription details for the current user
+  app.get("/api/subscription", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as Express.User;
+      
+      // Return subscription info from user object
+      res.json({
+        tier: user.subscriptionTier,
+        status: user.subscriptionStatus || "none",
+        expiresAt: user.subscriptionExpiresAt,
+        features: SUBSCRIPTION_FEATURES[user.subscriptionTier]
+      });
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      res.status(500).json({ 
+        message: "Error fetching subscription details",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get subscription plan information
+  app.get("/api/subscription/plans", async (req, res) => {
+    try {
+      res.json(SUBSCRIPTION_FEATURES);
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error);
+      res.status(500).json({ 
+        message: "Error fetching subscription plans",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Create a payment intent for one-time purchases
+  app.post("/api/payment-intent", isAuthenticated, async (req, res) => {
+    try {
+      const { amount, metadata = {} } = req.body;
+      
+      if (!amount || typeof amount !== 'number' || amount <= 0) {
+        return res.status(400).json({ message: "Valid amount is required" });
+      }
+      
+      const user = req.user as Express.User;
+      
+      // Create or get Stripe customer
+      const customer = await createStripeCustomer(user);
+      
+      // Create payment intent
+      const paymentIntent = await createPaymentIntent(
+        Math.round(amount * 100), // Convert to cents
+        customer.id,
+        { ...metadata, userId: user.id }
+      );
+      
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      res.status(500).json({ 
+        message: "Error creating payment",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Create a subscription
+  app.post("/api/subscription", isAuthenticated, async (req, res) => {
+    try {
+      const { priceId } = req.body;
+      
+      if (!priceId) {
+        return res.status(400).json({ message: "Price ID is required" });
+      }
+      
+      const user = req.user as Express.User;
+      
+      // If user already has a subscription, return error
+      if (user.stripeSubscriptionId) {
+        return res.status(400).json({ 
+          message: "User already has a subscription. Use the update endpoint to change subscription.", 
+          subscriptionId: user.stripeSubscriptionId 
+        });
+      }
+      
+      // Create or get Stripe customer
+      const customer = await createStripeCustomer(user);
+      
+      // Create subscription
+      const subscription = await createSubscription(customer.id, priceId, user.id);
+      
+      res.json(subscription);
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      res.status(500).json({ 
+        message: "Error creating subscription",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Update a subscription
+  app.put("/api/subscription", isAuthenticated, async (req, res) => {
+    try {
+      const { priceId } = req.body;
+      
+      if (!priceId) {
+        return res.status(400).json({ message: "Price ID is required" });
+      }
+      
+      const user = req.user as Express.User;
+      
+      // Check if user has a subscription
+      if (!user.stripeSubscriptionId) {
+        return res.status(400).json({ message: "No active subscription found" });
+      }
+      
+      // Update subscription with new price
+      const updatedSubscription = await updateSubscription(user.stripeSubscriptionId, priceId);
+      
+      res.json(updatedSubscription);
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      res.status(500).json({ 
+        message: "Error updating subscription",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Cancel a subscription
+  app.delete("/api/subscription", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as Express.User;
+      
+      // Check if user has a subscription
+      if (!user.stripeSubscriptionId) {
+        return res.status(400).json({ message: "No active subscription found" });
+      }
+      
+      // Cancel subscription
+      const canceledSubscription = await cancelSubscription(user.stripeSubscriptionId);
+      
+      // Update user record
+      await storage.updateUser(user.id, {
+        subscriptionTier: 'free',
+        subscriptionStatus: 'canceled'
+      });
+      
+      res.json({ success: true, message: "Subscription canceled successfully" });
+    } catch (error) {
+      console.error('Error canceling subscription:', error);
+      res.status(500).json({ 
+        message: "Error canceling subscription",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Stripe webhook handler
+  app.post("/api/webhook/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
+    let event: Stripe.Event;
+    
+    try {
+      // Get Stripe signature from headers
+      const signature = req.headers['stripe-signature'] as string;
+      
+      // Verify webhook signature
+      if (!process.env.STRIPE_WEBHOOK_SECRET) {
+        throw new Error('Missing Stripe webhook secret');
+      }
+      
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+      
+      // Process event
+      const result = await handleStripeWebhook(event);
+      
+      res.json({ received: true, result });
+    } catch (error) {
+      console.error('Error processing webhook:', error);
+      res.status(400).json({ 
+        message: "Webhook error",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
   
