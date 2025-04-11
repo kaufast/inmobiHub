@@ -59,19 +59,46 @@ export default function AuthPage() {
     },
   });
 
+  // Add submission tracking to prevent multiple rapid submissions
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const onLoginSubmit = async (data: LoginUser) => {
+    // Prevent multiple submissions
+    if (isSubmitting || isAuthenticating) {
+      console.log("Login already in progress, ignoring additional submission");
+      return;
+    }
+    
     try {
+      setIsSubmitting(true);
       await login(data);
     } catch (error) {
       console.error("Login error:", error);
+    } finally {
+      // Reset submission state after a delay to prevent rapid re-submissions
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 1000);
     }
   };
 
   const onRegisterSubmit = async (data: RegisterUser) => {
+    // Prevent multiple submissions
+    if (isSubmitting || isAuthenticating) {
+      console.log("Registration already in progress, ignoring additional submission");
+      return;
+    }
+    
     try {
+      setIsSubmitting(true);
       await register(data);
     } catch (error) {
       console.error("Registration error:", error);
+    } finally {
+      // Reset submission state after a delay to prevent rapid re-submissions
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 1000);
     }
   };
 
