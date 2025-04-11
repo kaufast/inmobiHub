@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { FaGoogle, FaApple } from "react-icons/fa";
-import { signInWithGoogle, signInWithApple, handleRedirectResult, auth } from '@/lib/firebase';
+import { FaGoogle } from "react-icons/fa";
+import { signInWithGoogle, handleRedirectResult, auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -14,7 +14,6 @@ interface SocialAuthButtonsProps {
 export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps) {
   const { toast } = useToast();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isAppleLoading, setIsAppleLoading] = useState(false);
 
   // Handle redirect result when component mounts
   useEffect(() => {
@@ -83,33 +82,13 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
     }
   };
 
-  const handleAppleSignIn = async () => {
-    try {
-      setIsAppleLoading(true);
-      
-      await signInWithApple();
-      // Note: The actual success handling is done in the useEffect through
-      // either the redirect result or the auth state change
-      
-    } catch (error) {
-      console.error('Apple sign-in error:', error);
-      toast({
-        title: "Authentication failed", 
-        description: "Could not sign in with Apple. Please try again.",
-        variant: "destructive",
-      });
-      onError?.(error as Error);
-      setIsAppleLoading(false);
-    }
-  };
-
   return (
     <div className="flex flex-col space-y-3 w-full">
       <Button 
         type="button" 
         variant="outline" 
         onClick={handleGoogleSignIn}
-        disabled={isGoogleLoading || isAppleLoading}
+        disabled={isGoogleLoading}
         className="w-full flex items-center justify-center"
       >
         {isGoogleLoading ? (
@@ -119,25 +98,6 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
         )}
         Continue with Google
       </Button>
-      
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={handleAppleSignIn}
-        disabled={isGoogleLoading || isAppleLoading}
-        className="w-full flex items-center justify-center bg-black text-white hover:bg-gray-800"
-      >
-        {isAppleLoading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <FaApple className="mr-2 h-5 w-5" />
-        )}
-        Continue with Apple
-      </Button>
-      
-      <p className="text-xs text-center text-gray-500 mt-2">
-        Note: Apple Sign In may require additional setup in production environments
-      </p>
     </div>
   );
 }

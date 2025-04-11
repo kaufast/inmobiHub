@@ -1,7 +1,8 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, OAuthProvider, signInWithPopup, signOut, signInWithRedirect, getRedirectResult } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, signInWithRedirect, getRedirectResult } from "firebase/auth";
 
 // Your web app's Firebase configuration
+// Using the hardcoded values here since the environment variables may not be properly accessible via import.meta.env
 const firebaseConfig = {
   apiKey: "AIzaSyAHBABI9mL7s6Jr_n7FhlSCLMrMA8QBp8Q",
   authDomain: "inmobi-a6bd4.firebaseapp.com",
@@ -21,12 +22,6 @@ const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
-
-// Configure Apple Auth Provider
-const appleProvider = new OAuthProvider('apple.com');
-appleProvider.addScope('email');
-appleProvider.addScope('name');
-
 // Sign in with Google
 export async function signInWithGoogle() {
   try {
@@ -48,27 +43,7 @@ export async function signInWithGoogle() {
   }
 }
 
-// Sign in with Apple
-export async function signInWithApple() {
-  try {
-    // Apple Sign In requires a properly configured domain with Apple Developer settings
-    // It likely won't work in development environment without proper setup
-    const isReplit = window.location.hostname.includes('replit');
-    
-    if (isReplit) {
-      // Use redirect for Replit environment to avoid popup blockers
-      await signInWithRedirect(auth, appleProvider);
-      return null; // The page will redirect, so no need to return anything
-    } else {
-      // Use popup for other environments
-      const result = await signInWithPopup(auth, appleProvider);
-      return result.user;
-    }
-  } catch (error) {
-    console.error('Error signing in with Apple:', error);
-    throw error;
-  }
-}
+
 
 // Check for redirect result (to be called on app initialization)
 export async function handleRedirectResult() {
