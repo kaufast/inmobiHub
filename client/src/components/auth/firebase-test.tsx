@@ -211,19 +211,50 @@ export function FirebaseTest() {
         prompt: 'select_account'
       });
       
-      console.log("Initiating Google sign-in redirect...");
-      await signInWithRedirect(auth, provider);
-      // The page will redirect, so no need to set loading state
-    } catch (error: any) {
-      console.error("Google sign-in error:", error);
+      console.log("Initiating Google sign-in with popup...");
       
-      // Check if it's an unauthorized domain error
-      if (error.code === 'auth/unauthorized-domain') {
-        setError(`Google sign-in error: This domain (${window.location.hostname}) is not authorized in the Firebase console. Please add it to the Authorized Domains list in the Firebase Authentication settings.`);
-      } else {
-        setError(`Google sign-in error: ${error.message} (Error code: ${error.code})`);
+      // Import the necessary function
+      const { signInWithPopup } = await import('firebase/auth');
+      
+      try {
+        // Try using popup authentication instead of redirect
+        const result = await signInWithPopup(auth, provider);
+        
+        // Get the Google Access Token
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential?.accessToken;
+        const user = result.user;
+        
+        setError(null);
+        setResults(prev => ({
+          ...prev,
+          authStateCheck: { 
+            success: true, 
+            message: `Successfully signed in as: ${user.email}` 
+          }
+        }));
+        
+        console.log("Authentication succeeded!", { user, token });
+      } catch (popupError: any) {
+        console.error("Popup sign-in error:", popupError);
+        
+        // If popup fails, show detailed error
+        if (popupError.code === 'auth/popup-blocked') {
+          setError(`Google sign-in error: Popup was blocked by your browser. Please allow popups for this site.`);
+        } else if (popupError.code === 'auth/popup-closed-by-user') {
+          setError(`Google sign-in error: Authentication popup was closed before completing the sign-in process.`);
+        } else if (popupError.code === 'auth/unauthorized-domain') {
+          setError(`Google sign-in error: This domain (${window.location.hostname}) is not authorized in the Firebase console. 
+          Please add "${window.location.hostname}" to the Authorized Domains list in Firebase Authentication settings.`);
+        } else {
+          setError(`Google sign-in error: ${popupError.message} (Error code: ${popupError.code})`);
+        }
       }
       
+      setIsLoading(false);
+    } catch (error: any) {
+      console.error("Google sign-in setup error:", error);
+      setError(`Google sign-in setup error: ${error.message}`);
       setIsLoading(false);
     }
   };

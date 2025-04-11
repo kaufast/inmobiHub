@@ -37,7 +37,6 @@ import { BubbleNotificationsProvider } from "./hooks/use-bubble-notifications";
 import { PropertyComparisonProvider } from "./hooks/use-property-comparison";
 import { PropertyNotificationsProvider } from "./hooks/use-property-notifications";
 import { useEffect, useState } from "react";
-import { handleRedirectResult } from "./lib/firebase";
 import { useToast } from "./hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { OrganizationSchema } from "./components/seo/schema-markup";
@@ -93,51 +92,23 @@ function AppContent() {
 }
 
 function FirebaseAuthHandler({ children }: { children: React.ReactNode }) {
-  const [isCheckingRedirect, setIsCheckingRedirect] = useState(true);
-  const { toast } = useToast();
+  // We're no longer using redirect-based authentication, so this component is simpler now
+  const [isInitializing, setIsInitializing] = useState(true);
   
   useEffect(() => {
-    const checkRedirectResult = async () => {
-      try {
-        const user = await handleRedirectResult();
-        if (user) {
-          toast({
-            title: "Firebase authentication successful",
-            description: "Please wait while we sign you in...",
-          });
-        }
-      } catch (error) {
-        console.error("Firebase redirect error:", error);
-        toast({
-          title: "Authentication failed",
-          description: "Could not complete authentication with social provider.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsCheckingRedirect(false);
-      }
-    };
+    // Just a quick initialization check to ensure Firebase is ready
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 500);
     
-    // Add a timeout to prevent getting stuck on authentication check
-    const authTimeout = setTimeout(() => {
-      if (isCheckingRedirect) {
-        console.log("Authentication check timed out, continuing to app");
-        setIsCheckingRedirect(false);
-      }
-    }, 3000); // 3 second timeout
-    
-    checkRedirectResult();
-    
-    return () => {
-      clearTimeout(authTimeout);
-    };
-  }, [toast, isCheckingRedirect]);
+    return () => clearTimeout(timer);
+  }, []);
   
-  if (isCheckingRedirect) {
+  if (isInitializing) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-lg">Checking authentication status...</span>
+        <span className="ml-2 text-lg">Initializing application...</span>
       </div>
     );
   }

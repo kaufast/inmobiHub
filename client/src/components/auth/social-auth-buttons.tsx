@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { FaGoogle } from "react-icons/fa";
-import { signInWithGoogle, handleRedirectResult, auth } from '@/lib/firebase';
+import { signInWithGoogle, auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -18,57 +18,8 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Handle redirect result when component mounts
+  // Only listen for auth state changes, as we're using popup auth
   useEffect(() => {
-    const checkRedirectResult = async () => {
-      try {
-        console.log("Checking redirect result in SocialAuthButtons...");
-        setAuthError(null);
-        const user = await handleRedirectResult();
-        
-        if (user) {
-          console.log("Firebase redirect successful, user:", user.email);
-          const userData = {
-            email: user.email || '',
-            username: user.email || '',
-            fullName: user.displayName || '',
-            password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
-            profileImage: user.photoURL || null
-          };
-          
-          toast({
-            title: "Successfully authenticated with Google",
-            description: "Completing sign in process...",
-          });
-          
-          onSuccess?.(userData);
-        } else {
-          console.log("No redirect result found");
-        }
-      } catch (error: any) {
-        console.error('Redirect result error:', error);
-        
-        // Extract detailed error information
-        const errorCode = error.code || 'unknown';
-        const errorMessage = error.message || 'Authentication failed';
-        console.error(`Firebase error details - Code: ${errorCode}, Message: ${errorMessage}`);
-        
-        // Set error message for display
-        setAuthError(`Authentication failed: ${errorMessage}`);
-        
-        toast({
-          title: "Authentication failed",
-          description: `Firebase error: ${errorCode}. Please try again.`,
-          variant: "destructive",
-        });
-        
-        onError?.(error as Error);
-      } finally {
-        setIsGoogleLoading(false);
-      }
-    };
-
-    checkRedirectResult();
 
     // Also listen for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -105,14 +56,16 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
       setIsGoogleLoading(true);
       setAuthError(null);
       
-      console.log("Initiating Google sign-in process...");
-      await signInWithGoogle();
-      console.log("Sign-in function completed (should redirect)");
+      console.log("Initiating Google sign-in process with popup...");
+      const user = await signInWithGoogle();
       
-      // Note: For redirect flow, we don't expect to reach this point
-      // as the page will reload. The actual success handling is done 
-      // in the useEffect through either the redirect result or auth state change
-      
+      if (user) {
+        console.log("Popup sign-in successful:", user.email);
+        // We don't need to handle success explicitly here since the 
+        // onAuthStateChanged listener will take care of it
+      } else {
+        console.log("Popup completed but no user returned");
+      }
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       
@@ -121,16 +74,29 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
       const errorMessage = error.message || 'Authentication failed';
       console.error(`Firebase error details - Code: ${errorCode}, Message: ${errorMessage}`);
       
+      // Provide more user-friendly error messages for common issues
+      let displayMessage = errorMessage;
+      
+      if (errorCode === 'auth/popup-blocked') {
+        displayMessage = "The sign-in popup was blocked by your browser. Please allow popups for this site and try again.";
+      } else if (errorCode === 'auth/popup-closed-by-user') {
+        displayMessage = "You closed the sign-in window before completing authentication. Please try again.";
+      } else if (errorCode === 'auth/unauthorized-domain') {
+        displayMessage = `This website (${window.location.hostname}) is not authorized in Firebase. Please visit our main site at inmobi.mobi.`;
+      }
+      
       // Set error message for display
-      setAuthError(`Sign-in failed: ${errorMessage}`);
+      setAuthError(`Sign-in failed: ${displayMessage}`);
       
       toast({
         title: "Authentication failed",
-        description: `Could not sign in with Google: ${errorCode}. Please try again.`,
+        description: displayMessage,
         variant: "destructive",
       });
       
       onError?.(error as Error);
+      setIsGoogleLoading(false);
+    } finally {
       setIsGoogleLoading(false);
     }
   };
