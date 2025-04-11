@@ -14,7 +14,8 @@ import {
   LogOut,
   Building,
   Upload,
-  Crown
+  Crown,
+  FileText
 } from "lucide-react";
 
 interface DashboardSidebarProps {
@@ -50,6 +51,11 @@ export default function DashboardSidebar({ activeTab, setActiveTab }: DashboardS
       name: "My Properties",
       value: "properties",
       icon: <Building className="h-5 w-5 mr-2" />,
+    },
+    {
+      name: "Property Drafts",
+      value: "drafts",
+      icon: <FileText className="h-5 w-5 mr-2" />,
     },
     {
       name: "Favorites",
