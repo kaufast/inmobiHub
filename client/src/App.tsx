@@ -34,10 +34,38 @@ import { AuthProvider } from "./hooks/use-auth";
 import { BubbleNotificationsProvider } from "./hooks/use-bubble-notifications";
 import { PropertyComparisonProvider } from "./hooks/use-property-comparison";
 import { PropertyNotificationsProvider } from "./hooks/use-property-notifications";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Component, ReactNode } from "react";
 import { handleRedirectResult } from "./lib/firebase";
 import { useToast } from "./hooks/use-toast";
 import { Loader2 } from "lucide-react";
+
+// Error Boundary Component
+class ErrorBoundary extends Component<{ 
+  children: ReactNode; 
+  fallback: ReactNode 
+}, { 
+  hasError: boolean 
+}> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
 import { OrganizationSchema } from "./components/seo/schema-markup";
 import { Helmet } from "react-helmet";
 import { OnboardingTourProvider } from "./hooks/use-onboarding-tour";
@@ -225,17 +253,18 @@ function App() {
   
   return (
     <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
-      {/* Temporarily removing FirebaseAuthHandler to prevent app loading issues */}
-      <AuthProvider>
-        {/* Always render without PropertyNotificationsProvider due to WebSocket issues */}
-        <OnboardingTourProvider>
-          <PropertyComparisonProvider maxProperties={4}>
-            <CacheProvider>
-              <AppWithSEO />
-            </CacheProvider>
-          </PropertyComparisonProvider>
-        </OnboardingTourProvider>
-      </AuthProvider>
+      {/* Simplified provider structure to restore application functionality */}
+      <FirebaseAuthHandler>
+        <AuthProvider>
+          <OnboardingTourProvider>
+            <PropertyComparisonProvider maxProperties={4}>
+              <CacheProvider>
+                <AppWithSEO />
+              </CacheProvider>
+            </PropertyComparisonProvider>
+          </OnboardingTourProvider>
+        </AuthProvider>
+      </FirebaseAuthHandler>
     </BubbleNotificationsProvider>
   );
 }

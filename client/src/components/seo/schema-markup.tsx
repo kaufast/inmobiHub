@@ -34,15 +34,29 @@ export function OrganizationSchema({
     'https://linkedin.com/company/inmobirealestate'
   ]
 }: OrganizationSchemaProps) {
+  // Parse the address string into components
+  const addressParts = address.split(',');
+  const streetAddress = addressParts[0]?.trim() || '';
+  const cityPostalParts = addressParts[1]?.trim().split(' ') || [];
+  const postalCode = cityPostalParts.pop() || '';
+  const addressLocality = cityPostalParts.join(' ');
+  
   const schemaData = {
     name,
     url: baseUrl,
     logo: logoUrl,
-    description,
-    email,
-    telephone,
-    address,
-    sameAs: socialProfiles
+    sameAs: socialProfiles,
+    contactPoint: {
+      telephone,
+      email,
+      contactType: 'Customer Support'
+    },
+    address: {
+      streetAddress,
+      addressLocality,
+      postalCode,
+      addressCountry: 'Spain'
+    }
   };
   
   const schemaJson = generateOrganizationSchema(schemaData);

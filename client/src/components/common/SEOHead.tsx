@@ -4,8 +4,8 @@ import { PropertySchema } from '@/components/seo/property-schema';
 import { Property } from '@shared/schema';
 import { 
   generateWebPageStructuredData, 
-  generateOrganizationStructuredData,
-  generateBreadcrumbStructuredData
+  generateOrganizationSchema,
+  generateBreadcrumbSchema
 } from '@/utils/structuredData';
 
 interface SEOHeadProps {
@@ -115,7 +115,7 @@ export function SEOHead({
         
         {/* Organization structured data */}
         <script type="application/ld+json">
-          {generateOrganizationStructuredData(companyData)}
+          {generateOrganizationSchema(companyData)}
         </script>
         
         {/* Property schema if a property is provided */}
@@ -124,7 +124,7 @@ export function SEOHead({
         {/* Breadcrumbs structured data */}
         {breadcrumbItems && breadcrumbItems.length > 0 && (
           <script type="application/ld+json">
-            {generateBreadcrumbStructuredData(breadcrumbItems)}
+            {generateBreadcrumbSchema(breadcrumbItems)}
           </script>
         )}
         
