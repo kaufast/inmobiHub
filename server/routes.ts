@@ -874,6 +874,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // One-time payment intent
+  app.post("/api/payment-intent", async (req, res) => {
+    try {
+      const { amount, metadata = {} } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Valid amount is required" });
+      }
+      
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
+      
+      // Create a payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+        metadata: {
+          ...metadata,
+          userId: req.user?.id.toString() || 'guest'
+        },
+        payment_method_types: ['card'],
+        receipt_email: req.user?.email,
+      });
+      
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      res.status(500).json({ 
+        message: "Error creating payment intent",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+  
+  // User subscription status
+  app.get("/api/user/subscription", isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user as Express.User;
+      
+      // If no subscription, return free tier info
+      if (!user.stripeSubscriptionId || user.subscriptionTier === 'free') {
+        return res.json({
+          tier: 'free',
+          status: 'none',
+          expiresAt: null,
+          features: {
+            name: 'Free',
+            price: 0,
+            features: [
+              'Basic property search',
+              'View property details',
+              'Contact listing agents',
+              'Save favorites (up to 5)',
+              'Limited AI search capabilities'
+            ]
+          }
+        });
+      }
+      
+      // User has a subscription, fetch details from Stripe
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      
+      // Map Stripe status to our internal status
+      let status = 'none';
+      switch (subscription.status) {
+        case 'active':
+          status = 'active';
+          break;
+        case 'past_due':
+          status = 'past_due';
+          break;
+        case 'canceled':
+          status = 'canceled';
+          break;
+        case 'incomplete':
+          status = 'incomplete';
+          break;
+        case 'incomplete_expired':
+          status = 'incomplete_expired';
+          break;
+        default:
+          status = 'none';
+      }
+      
+      // Get subscription features based on tier
+      const features = {
+        name: user.subscriptionTier === 'premium' ? 'Premium' : 'Enterprise',
+        price: user.subscriptionTier === 'premium' ? 9.99 : 49.99,
+        features: user.subscriptionTier === 'premium' ? 
+          [
+            'All Free features',
+            'Advanced search filters',
+            'Unlimited favorites',
+            'Full AI assistant capabilities',
+            'Neighborhood insights',
+            'Property comparison',
+            'Personalized recommendations',
+            'Premium listing placement',
+            'Property price history'
+          ] :
+          [
+            'All Premium features',
+            'Market analytics dashboard',
+            'Investment ROI calculator',
+            'Property management tools',
+            'Premium support',
+            'API access',
+            'Custom reports',
+            'Bulk listing import',
+            'Remove Inmobi branding',
+            'Team collaboration tools'
+          ]
+      };
+      
+      // Return subscription info
+      res.json({
+        tier: user.subscriptionTier,
+        status,
+        expiresAt: subscription.current_period_end 
+          ? new Date(subscription.current_period_end * 1000).toISOString() 
+          : null,
+        features
+      });
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      res.status(500).json({ 
+        message: "Error fetching subscription",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+  
   // Subscription routes
   app.get("/api/subscription", isAuthenticated, async (req, res) => {
     const user = req.user!;
