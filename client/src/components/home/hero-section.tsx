@@ -141,7 +141,7 @@ export default function HeroSection() {
             {/* Modern house image background */}
             <div className="absolute inset-0 rounded-2xl overflow-hidden opacity-10 z-0">
               <img 
-                src="@assets/fc22b533-29c2-4e45-a37a-627a17bdb980.png" 
+                src="/attached_assets/fc22b533-29c2-4e45-a37a-627a17bdb980.png" 
                 alt="Modern luxury house" 
                 className="object-cover w-full h-full"
               />
