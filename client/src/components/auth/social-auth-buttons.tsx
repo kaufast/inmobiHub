@@ -20,11 +20,34 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
 
   // Only listen for auth state changes, as we're using popup auth
   useEffect(() => {
-
-    // Also listen for auth state changes
+    // Remove the automatic trigger of onSuccess to prevent authentication banner issues
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         console.log("Firebase auth state changed, user signed in:", user.email);
+        // We'll handle the user data in the handleGoogleSignIn function instead
+      } else {
+        console.log("Firebase auth state changed, user signed out or not signed in");
+      }
+    }, (error) => {
+      console.error("Firebase auth state error:", error);
+      setAuthError(`Authentication monitoring error: ${error.message}`);
+    });
+
+    return () => unsubscribe();
+  }, [toast]);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsGoogleLoading(true);
+      setAuthError(null);
+      
+      console.log("Initiating Google sign-in process with popup...");
+      const user = await signInWithGoogle();
+      
+      if (user) {
+        console.log("Popup sign-in successful:", user.email);
+        
+        // Manually create user data since we disabled automatic handling
         const userData = {
           email: user.email || '',
           username: user.email || '',
@@ -40,29 +63,6 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
         
         setAuthError(null);
         onSuccess?.(userData);
-      } else {
-        console.log("Firebase auth state changed, user signed out or not signed in");
-      }
-    }, (error) => {
-      console.error("Firebase auth state error:", error);
-      setAuthError(`Authentication monitoring error: ${error.message}`);
-    });
-
-    return () => unsubscribe();
-  }, [onSuccess, onError, toast]);
-
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsGoogleLoading(true);
-      setAuthError(null);
-      
-      console.log("Initiating Google sign-in process with popup...");
-      const user = await signInWithGoogle();
-      
-      if (user) {
-        console.log("Popup sign-in successful:", user.email);
-        // We don't need to handle success explicitly here since the 
-        // onAuthStateChanged listener will take care of it
       } else {
         console.log("Popup completed but no user returned");
       }
