@@ -69,8 +69,18 @@ export function setupAuth(app: Express) {
         if (!user || !(await comparePasswords(password, user.password))) {
           return done(null, false, { message: "Invalid username or password" });
         }
-        return done(null, user);
+        
+        // Create a safe user object in case of database schema mismatches
+        const safeUser = {
+          ...user,
+          subscriptionStatus: user.subscriptionStatus || 'none',
+          stripeCustomerId: user.stripeCustomerId || null,
+          stripeSubscriptionId: user.stripeSubscriptionId || null
+        };
+        
+        return done(null, safeUser);
       } catch (error) {
+        console.error("Auth error:", error);
         return done(error);
       }
     }),
@@ -80,8 +90,21 @@ export function setupAuth(app: Express) {
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await storage.getUser(id);
-      done(null, user);
+      if (!user) {
+        return done(null, false);
+      }
+      
+      // Create a safe user object in case of database schema mismatches
+      const safeUser = {
+        ...user,
+        subscriptionStatus: user.subscriptionStatus || 'none',
+        stripeCustomerId: user.stripeCustomerId || null,
+        stripeSubscriptionId: user.stripeSubscriptionId || null
+      };
+      
+      done(null, safeUser);
     } catch (error) {
+      console.error("Deserialize error:", error);
       done(error);
     }
   });
