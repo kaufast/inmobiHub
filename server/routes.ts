@@ -7,7 +7,6 @@ import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
 import { handleChatMessage } from "./anthropic";
-import { handleChatWithPerplexity } from "./perplexity";
 import { generatePropertyRecommendations } from "./openai";
 import Stripe from 'stripe';
 import multer from 'multer';
@@ -29,7 +28,6 @@ import {
   generatePasskeyAuthenticationOptions,
   verifyPasskeyAuthentication
 } from './webauthn';
-import { generateSitemaps } from './sitemap-generator';
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
@@ -74,18 +72,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
   
-  // Serve static files from the public directory
-  app.use('/public', express.static(path.join(process.cwd(), 'public')));
-  
-  // Serve the test page directly
-  app.get('/test-perplexity', (req, res) => {
-    res.sendFile(path.join(process.cwd(), 'public', 'test-perplexity.html'));
-  });
-  
   // Configure multer for file uploads
-  const multerStorage = multer.memoryStorage();
+  const storage = multer.memoryStorage();
   const upload = multer({
-    storage: multerStorage,
+    storage,
     limits: {
       fileSize: 10 * 1024 * 1024, // 10MB max file size
     },
@@ -96,35 +86,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         cb(new Error('Only image files are allowed'));
       }
-    }
-  });
-  
-  // SEO Routes - Sitemap generation
-  app.get("/api/sitemap/generate", isAdmin, async (req, res) => {
-    try {
-      const outputDir = path.join(process.cwd(), 'public');
-      const result = await generateSitemaps(outputDir);
-      
-      if (result.success) {
-        res.json({
-          success: true,
-          message: "Sitemaps generated successfully",
-          sitemapIndexPath: result.sitemapIndexPath
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: "Failed to generate sitemaps",
-          error: result.error
-        });
-      }
-    } catch (error) {
-      console.error("Error generating sitemaps:", error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to generate sitemaps",
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
     }
   });
   
@@ -263,42 +224,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         propertyContext = await storage.getProperty(parseInt(propertyId));
       }
       
-      let response: string;
-      let apiSource: 'perplexity' | 'anthropic' = 'anthropic';
-      
-      // Use Perplexity if API key exists, otherwise fallback to Anthropic
-      if (process.env.PERPLEXITY_API_KEY) {
-        try {
-          console.log("Using Perplexity API for chat response");
-          // Import Perplexity handler dynamically to avoid issues if not configured
-          const { handleChatWithPerplexity } = await import('./perplexity');
-          response = await handleChatWithPerplexity(
-            message, 
-            chatHistory || [], 
-            propertyContext
-          );
-          apiSource = 'perplexity';
-        } catch (perplexityError) {
-          console.error("Error with Perplexity API, falling back to Anthropic:", perplexityError);
-          response = await handleChatMessage(
-            message, 
-            chatHistory || [], 
-            propertyContext
-          );
-          apiSource = 'anthropic';
-        }
-      } else {
-        // Use Anthropic as fallback
-        console.log("Perplexity API key not found, using Anthropic fallback");
-        response = await handleChatMessage(
-          message, 
-          chatHistory || [], 
-          propertyContext
-        );
-      }
-      
-      // Add header to indicate which API was used
-      res.setHeader('X-Api-Source', apiSource);
+      // Get response from Anthropic
+      const response = await handleChatMessage(
+        message, 
+        chatHistory || [], 
+        propertyContext
+      );
       
       // Save the chat interaction for analytics
       try {
@@ -316,43 +247,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error saving chat analytics:", analyticsError);
       }
       
-      res.json({ response, apiSource });
+      res.json({ response });
     } catch (error) {
       console.error("Error in chat endpoint:", error);
       res.status(500).json({ 
         message: "Failed to process chat message",
-        error: error instanceof Error ? error.message : "Unknown error" 
-      });
-    }
-  });
-  
-  // Simple test endpoint for verifying Perplexity API works
-  app.get("/api/test-perplexity", async (req, res) => {
-    try {
-      if (!process.env.PERPLEXITY_API_KEY) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Perplexity API key not found in environment variables" 
-        });
-      }
-      
-      const { handleChatWithPerplexity } = await import('./perplexity');
-      const testQuestion = "What are the current real estate trends in Mexico?";
-      
-      console.log("Testing Perplexity API with question:", testQuestion);
-      const response = await handleChatWithPerplexity(testQuestion, []);
-      
-      return res.status(200).json({ 
-        success: true, 
-        message: "Perplexity API is working!", 
-        testQuestion,
-        response 
-      });
-    } catch (error) {
-      console.error("Error testing Perplexity API:", error);
-      return res.status(500).json({ 
-        success: false, 
-        message: "Error testing Perplexity API", 
         error: error instanceof Error ? error.message : "Unknown error" 
       });
     }
@@ -1796,123 +1695,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
-  
-  // Admin: Seed database with initial data
-  app.post("/api/admin/seed", isAdmin, async (req, res) => {
+
+  // Suggested Questions API
+  app.get("/api/suggested-questions", async (req, res, next) => {
     try {
-      const { runAllSeeds } = await import('./seeds');
-      const result = await runAllSeeds();
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      const category = req.query.category as string | undefined;
+      const propertyType = req.query.propertyType as string | undefined;
       
-      res.json({
-        success: true,
-        message: "Database seeding completed successfully",
-        details: result
-      });
+      const questions = await storage.getSuggestedQuestions(category, propertyType, limit);
+      res.json(questions);
     } catch (error) {
-      console.error("Error during database seeding:", error);
-      res.status(500).json({
-        success: false,
-        message: "Error during database seeding",
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
+      next(error);
     }
   });
   
-  // Development endpoints (only for development, no auth required)
-  if (process.env.NODE_ENV !== 'production') {
-    // Seed endpoint
-    app.post("/api/dev/seed", async (req, res) => {
-      try {
-        const { seedSuggestedQuestions } = await import('./seeds/suggested-questions');
-        const result = await seedSuggestedQuestions();
-        
-        res.json({
-          success: true,
-          message: "Suggested questions seeding completed successfully",
-          details: result
-        });
-      } catch (error) {
-        console.error("Error during suggested questions seeding:", error);
-        res.status(500).json({
-          success: false,
-          message: "Error during suggested questions seeding",
-          error: error instanceof Error ? error.message : "Unknown error"
-        });
-      }
-    });
-    
-    // Get suggested questions
-    app.get("/api/dev/suggested-questions", async (req, res) => {
-      try {
-        const category = req.query.category as string | undefined;
-        const propertyType = req.query.propertyType as string | undefined;
-        const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
-        
-        const questions = await storage.getSuggestedQuestions(category, propertyType, limit);
-        res.json({
-          success: true,
-          count: questions.length,
-          questions: questions
-        });
-      } catch (error) {
-        console.error("Error fetching suggested questions:", error);
-        res.status(500).json({ 
-          success: false,
-          error: 'Failed to fetch suggested questions',
-          message: error instanceof Error ? error.message : "Unknown error"
-        });
-      }
-    });
-    
-    // Get popular suggested questions
-    app.get("/api/dev/suggested-questions/popular", async (req, res) => {
-      try {
-        const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
-        const questions = await storage.getPopularSuggestedQuestions(limit);
-        res.json({
-          success: true,
-          count: questions.length,
-          questions: questions
-        });
-      } catch (error) {
-        console.error("Error fetching popular suggested questions:", error);
-        res.status(500).json({ 
-          success: false,
-          error: 'Failed to fetch popular suggested questions',
-          message: error instanceof Error ? error.message : "Unknown error"
-        });
-      }
-    });
-    
-    // Track question clicks
-    app.post("/api/dev/suggested-questions/:id/click", async (req, res) => {
-      try {
-        const questionId = parseInt(req.params.id);
-        const success = await storage.incrementQuestionClickCount(questionId);
-        
-        if (success) {
-          res.json({ 
-            success: true,
-            message: `Incremented click count for question ${questionId}`
-          });
-        } else {
-          res.status(404).json({ 
-            success: false,
-            error: 'Question not found' 
-          });
-        }
-      } catch (error) {
-        console.error('Error incrementing question click count:', error);
-        res.status(500).json({ 
-          success: false,
-          error: 'Failed to increment question click count',
-          message: error instanceof Error ? error.message : "Unknown error"
-        });
-      }
-    });
-  }
-
-  // Suggested Questions API - Regular authenticated endpoints
+  app.get("/api/suggested-questions/popular", async (req, res, next) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      const questions = await storage.getPopularSuggestedQuestions(limit);
+      res.json(questions);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/suggested-questions/:id/click", async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.incrementQuestionClickCount(id);
+      res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
   
   // Admin routes for managing suggested questions
   app.post("/api/admin/suggested-questions", isAdmin, async (req, res, next) => {
@@ -1962,63 +1778,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Suggested Questions API endpoints
-  app.get('/api/suggested-questions', async (req, res, next) => {
+  app.get('/api/suggested-questions', async (req, res) => {
     try {
       const category = req.query.category as string | undefined;
       const propertyType = req.query.propertyType as string | undefined;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
       
       const questions = await storage.getSuggestedQuestions(category, propertyType, limit);
-      res.json({
-        success: true,
-        count: questions.length,
-        questions: questions,
-        filters: {
-          category,
-          propertyType,
-          limit
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching suggested questions:', error);
-      next(error);
+      res.json(questions);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch suggested questions' });
     }
   });
   
-  app.get('/api/suggested-questions/popular', async (req, res, next) => {
+  app.get('/api/suggested-questions/popular', async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
       const questions = await storage.getPopularSuggestedQuestions(limit);
-      res.json({
-        success: true,
-        count: questions.length,
-        questions: questions
-      });
-    } catch (error) {
-      console.error('Error fetching popular questions:', error);
-      next(error);
+      res.json(questions);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch popular questions' });
     }
   });
   
-  app.post('/api/suggested-questions/:id/click', async (req, res, next) => {
+  app.post('/api/suggested-questions/:id/click', async (req, res) => {
     try {
       const questionId = parseInt(req.params.id);
       const success = await storage.incrementQuestionClickCount(questionId);
       
       if (success) {
-        res.json({ 
-          success: true,
-          message: `Incremented click count for question ${questionId}`
-        });
+        res.json({ success: true });
       } else {
-        res.status(404).json({ 
-          success: false, 
-          message: 'Question not found'
-        });
+        res.status(404).json({ error: 'Question not found' });
       }
-    } catch (error) {
-      console.error('Error incrementing question click count:', error);
-      next(error);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to increment question click count' });
     }
   });
   
@@ -2218,43 +2012,210 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Create HTTP server without WebSocket functionality
   const httpServer = createServer(app);
   
-  // WebSocket functionality has been disabled to resolve application loading issues
-  console.log('WebSocket server is disabled for stability');
+  // Set up WebSocket server on a distinct path to avoid conflict with Vite's HMR
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
-  // Define WebSocket types to satisfy TypeScript
+  // Types for WebSocket messages
   type WebSocketMessage = {
     type: 'subscribe' | 'unsubscribe' | 'newProperty' | 'propertyUpdated' | 'ping';
     payload?: any;
   };
   
-  // Dummy classes/variables to satisfy TypeScript
-  const WebSocket = { OPEN: 1 };
-  const clients = new Map();
+  // Keep track of clients and their subscriptions
+  const clients = new Map<WebSocket, {
+    userId?: number;
+    isAuthenticated: boolean;
+    subscriptions: {
+      location?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      propertyType?: string;
+      bedrooms?: number;
+      bathrooms?: number;
+    }
+  }>();
   
-  // Placeholder for stubs to replace WebSocket functionality
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
+    
+    // Initialize client record
+    clients.set(ws, {
+      isAuthenticated: false,
+      subscriptions: {}
+    });
+    
+    // Handle messages from clients
+    ws.on('message', async (message) => {
+      try {
+        const data: WebSocketMessage = JSON.parse(message.toString());
+        
+        switch (data.type) {
+          case 'subscribe':
+            // Store user's subscription preferences
+            if (data.payload && clients.has(ws)) {
+              const clientData = clients.get(ws);
+              if (clientData) {
+                if (data.payload.userId) {
+                  clientData.userId = data.payload.userId;
+                  clientData.isAuthenticated = true;
+                }
+                clientData.subscriptions = {
+                  ...clientData.subscriptions,
+                  ...data.payload.filters
+                };
+                clients.set(ws, clientData);
+              }
+              
+              // Send confirmation
+              ws.send(JSON.stringify({
+                type: 'subscribed',
+                payload: {
+                  message: 'Successfully subscribed to property notifications',
+                  filters: clients.get(ws)?.subscriptions
+                }
+              }));
+            }
+            break;
+            
+          case 'unsubscribe':
+            // Clear subscription preferences
+            if (clients.has(ws)) {
+              const clientData = clients.get(ws);
+              if (clientData) {
+                clientData.subscriptions = {};
+                clients.set(ws, clientData);
+              }
+              
+              // Send confirmation
+              ws.send(JSON.stringify({
+                type: 'unsubscribed',
+                payload: {
+                  message: 'Successfully unsubscribed from property notifications'
+                }
+              }));
+            }
+            break;
+            
+          case 'ping':
+            // Keep connection alive
+            ws.send(JSON.stringify({ type: 'pong' }));
+            break;
+            
+          default:
+            console.warn('Unknown WebSocket message type:', data.type);
+        }
+      } catch (error) {
+        console.error('Error handling WebSocket message:', error);
+      }
+    });
+    
+    // Handle disconnect
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+      clients.delete(ws);
+    });
+    
+    // Send initial welcome message
+    ws.send(JSON.stringify({
+      type: 'connected',
+      payload: {
+        message: 'Connected to real estate notification system',
+        timestamp: new Date().toISOString()
+      }
+    }));
+  });
   
-  // Create a stub for the notification function
+  // Helper function to send property notifications to subscribed clients
   const notifyClientsAboutProperty = (property: any, notificationType: 'newProperty' | 'propertyUpdated') => {
-    console.log(`Notification (disabled): ${notificationType} for property ID ${property.id}`);
-    // No WebSocket notifications are sent
+    clients.forEach((clientData, ws) => {
+      try {
+        // Skip if client is not ready
+        if (ws.readyState !== WebSocket.OPEN) return;
+        
+        // Check if client is subscribed to this type of property
+        const subs = clientData.subscriptions;
+        
+        // Simple filter matching
+        let matches = true;
+        
+        if (subs.location && !property.address.toLowerCase().includes(subs.location.toLowerCase()) && 
+            !property.city.toLowerCase().includes(subs.location.toLowerCase()) && 
+            !property.state.toLowerCase().includes(subs.location.toLowerCase())) {
+          matches = false;
+        }
+        
+        if (matches && subs.propertyType && property.propertyType !== subs.propertyType) {
+          matches = false;
+        }
+        
+        if (matches && subs.minPrice && property.price < subs.minPrice) {
+          matches = false;
+        }
+        
+        if (matches && subs.maxPrice && property.price > subs.maxPrice) {
+          matches = false;
+        }
+        
+        if (matches && subs.bedrooms && property.bedrooms < subs.bedrooms) {
+          matches = false;
+        }
+        
+        if (matches && subs.bathrooms && property.bathrooms < subs.bathrooms) {
+          matches = false;
+        }
+        
+        // If all conditions match, send notification
+        if (matches) {
+          ws.send(JSON.stringify({
+            type: notificationType,
+            payload: {
+              property: {
+                id: property.id,
+                title: property.title,
+                price: property.price,
+                address: property.address,
+                city: property.city,
+                state: property.state,
+                bedrooms: property.bedrooms,
+                bathrooms: property.bathrooms,
+                squareFeet: property.squareFeet,
+                propertyType: property.propertyType,
+                isPremium: property.isPremium,
+                images: property.images && property.images.length > 0 ? property.images : []
+              },
+              timestamp: new Date().toISOString()
+            }
+          }));
+        }
+      } catch (error) {
+        console.error('Error sending notification to client:', error);
+      }
+    });
   };
   
-  // Keep property creation method without WebSocket notifications
+  // Override the createProperty method to send notifications
   const originalCreateProperty = storage.createProperty;
   storage.createProperty = async (propertyData) => {
     const newProperty = await originalCreateProperty(propertyData);
-    console.log('Created new property (notifications disabled)');
+    
+    // Notify clients about the new property
+    notifyClientsAboutProperty(newProperty, 'newProperty');
+    
     return newProperty;
   };
   
-  // Keep property update method without WebSocket notifications
+  // Override the updateProperty method to send notifications for significant updates
   const originalUpdateProperty = storage.updateProperty;
   storage.updateProperty = async (id, propertyData) => {
     const updatedProperty = await originalUpdateProperty(id, propertyData);
-    console.log('Updated property (notifications disabled)');
+    
+    // Only notify for significant updates (price change, etc.)
+    if (propertyData.price || propertyData.isPremium === true) {
+      notifyClientsAboutProperty(updatedProperty, 'propertyUpdated');
+    }
+    
     return updatedProperty;
   };
   

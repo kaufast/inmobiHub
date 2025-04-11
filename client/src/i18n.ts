@@ -759,27 +759,17 @@ i18n
   .use(initReactI18next)
   .init({
     resources: {
-      // English variants
       'en-GB': {
         translation: enGB
       },
-      'en-US': {
-        translation: enGB // Using UK English as base for now
-      },
-      // Spanish variants
       'es-MX': {
         translation: esMX
       },
-      // German variants
-      'de-DE': {
-        translation: deDE
-      },
-      'de-AT': {
-        translation: deDE // Using German (Germany) as base for Austria
-      },
-      // Other languages
       'fr-FR': {
         translation: frFR
+      },
+      'de-DE': {
+        translation: deDE
       },
       'zh-CN': {
         translation: zhCN
@@ -791,7 +781,7 @@ i18n
         translation: arSA
       }
     },
-    fallbackLng: 'en-US', // Changed default to US English
+    fallbackLng: 'en-GB',
     debug: import.meta.env.DEV, // Enable debug in development mode
     interpolation: {
       escapeValue: false, // React escapes by default

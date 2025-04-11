@@ -2,25 +2,23 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 
-// Define supported languages with specific country variants
+// Define supported languages
 export const supportedLanguages = [
-  { code: 'en-GB', name: 'en - United Kingdom', flag: '🇬🇧' },
-  { code: 'en-US', name: 'en - US', flag: '🇺🇸' },
-  { code: 'es-MX', name: 'es - Mexico', flag: '🇲🇽' },
-  { code: 'de-DE', name: 'de - Deutschland', flag: '🇩🇪' },
-  { code: 'de-AT', name: 'de - Österreich', flag: '🇦🇹' },
+  { code: 'en-GB', name: 'English', flag: '🇬🇧' },
+  { code: 'es-MX', name: 'Español', flag: '🇲🇽' },
   { code: 'fr-FR', name: 'Français', flag: '🇫🇷' },
+  { code: 'de-DE', name: 'Deutsch', flag: '🇩🇪' },
   { code: 'zh-CN', name: '中文', flag: '🇨🇳' },
   { code: 'ja-JP', name: '日本語', flag: '🇯🇵' },
   { code: 'ar-SA', name: 'العربية', flag: '🇸🇦' }
 ];
 
-// Language code map for partial matching (e.g., 'en' matches 'en-US')
+// Language code map for partial matching (e.g., 'en' matches 'en-GB')
 const languageCodeMap: Record<string, string> = {
-  'en': 'en-US', // Default English to US
+  'en': 'en-GB',
   'es': 'es-MX',
   'fr': 'fr-FR',
-  'de': 'de-DE', // Default German to Germany
+  'de': 'de-DE',
   'zh': 'zh-CN',
   'ja': 'ja-JP',
   'ar': 'ar-SA'

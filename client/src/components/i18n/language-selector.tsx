@@ -7,7 +7,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { useLanguage, supportedLanguages } from '@/hooks/use-language';
@@ -25,19 +24,12 @@ export default function LanguageSelector() {
   
   // Check if language is active
   const isLanguageActive = (langCode: string) => {
-    // Direct match for full locale code
-    return currentLanguage === langCode;
+    // Direct match
+    if (currentLanguage === langCode) return true;
+    // Partial match (like 'en' in 'en-GB')
+    if (currentLanguage.startsWith(langCode.split('-')[0])) return true;
+    return false;
   };
-  
-  // Group languages by base language code (e.g., 'en', 'de')
-  const groupedLanguages = supportedLanguages.reduce((acc, lang) => {
-    const baseCode = lang.code.split('-')[0];
-    if (!acc[baseCode]) {
-      acc[baseCode] = [];
-    }
-    acc[baseCode].push(lang);
-    return acc;
-  }, {} as Record<string, typeof supportedLanguages>);
   
   return (
     <DropdownMenu>
@@ -56,35 +48,23 @@ export default function LanguageSelector() {
       >
         <DropdownMenuLabel>{t('common.selectLanguage', 'Select Language')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
-        {/* Group by language */}
-        {Object.entries(groupedLanguages).map(([baseCode, langs]) => (
-          <DropdownMenuGroup key={baseCode}>
-            {/* Display each language variant */}
-            {langs.map((language) => {
-              const isActive = isLanguageActive(language.code);
-              
-              return (
-                <DropdownMenuItem
-                  key={language.code}
-                  className={`flex items-center justify-between ${isActive ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
-                  onClick={() => changeLanguage(language.code)}
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="text-base" role="img" aria-label={language.name}>{language.flag}</span>
-                    <span>{language.name}</span>
-                  </span>
-                  {isActive && <Check className="h-4 w-4 text-primary-600" />}
-                </DropdownMenuItem>
-              );
-            })}
-            
-            {/* Add separator between language groups, but not after the last one */}
-            {baseCode !== Object.keys(groupedLanguages).slice(-1)[0] && (
-              <DropdownMenuSeparator className="my-1" />
-            )}
-          </DropdownMenuGroup>
-        ))}
+        {supportedLanguages.map((language) => {
+          const isActive = isLanguageActive(language.code);
+          
+          return (
+            <DropdownMenuItem
+              key={language.code}
+              className={`flex items-center justify-between ${isActive ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}
+              onClick={() => changeLanguage(language.code)}
+            >
+              <span className="flex items-center gap-2">
+                <span className="text-base" role="img" aria-label={language.name}>{language.flag}</span>
+                <span>{language.name}</span>
+              </span>
+              {isActive && <Check className="h-4 w-4 text-primary-600" />}
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );
