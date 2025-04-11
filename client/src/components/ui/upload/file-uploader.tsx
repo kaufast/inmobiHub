@@ -1,11 +1,11 @@
 import React, { useCallback, useState, forwardRef } from 'react';
-import { useDropzone, FileRejection } from 'react-dropzone';
+import { useDropzone, FileRejection, type Accept } from 'react-dropzone';
 import { cn } from '@/lib/utils';
 
 export interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   onFilesSelected: (files: File[]) => void;
   onFilesRejected?: (fileRejections: FileRejection[]) => void;
-  accept?: string | Record<string, string[]>;
+  accept?: Accept;
   maxFiles?: number;
   maxSize?: number;
   minSize?: number;
@@ -48,7 +48,7 @@ export const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
       onDrop,
-      accept,
+      accept: accept || { 'image/*': [] },
       maxFiles,
       maxSize,
       minSize,
@@ -59,6 +59,16 @@ export const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
       onDropAccepted: () => setIsDragging(false),
       onDropRejected: () => setIsDragging(false),
     });
+
+    // Convert the external ref to a React ref for internal use
+    const inputRef = React.useRef<HTMLInputElement>(null);
+    
+    // Use effect to sync external ref with internal ref
+    React.useEffect(() => {
+      if (ref && 'current' in ref) {
+        ref.current = inputRef.current;
+      }
+    }, [ref]);
 
     return (
       <div
@@ -71,7 +81,7 @@ export const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
         )}
         {...props}
       >
-        <input {...getInputProps({ ref })} />
+        <input {...getInputProps()} ref={inputRef} />
         {children}
       </div>
     );

@@ -79,17 +79,7 @@ export function ImageUploader({
         if (files.length === 1 && !allowMultiple) {
           formData.append('image', files[0]);
           
-          const response = await apiRequest('POST', '/api/images/upload', formData, {
-            headers: {
-              // Don't set Content-Type here, it will be set automatically with the boundary
-            },
-            onUploadProgress: (progressEvent) => {
-              const percentCompleted = Math.round(
-                (progressEvent.loaded * 100) / (progressEvent.total || 100)
-              );
-              setUploadProgress(percentCompleted);
-            }
-          });
+          const response = await apiRequest('POST', '/api/images/upload', formData);
           
           const data = await response.json();
           if (!data.success) {
@@ -108,9 +98,16 @@ export function ImageUploader({
         } 
         // Multiple files upload
         else {
-          files.forEach(file => {
-            formData.append('images', file);
-          });
+          // Important: use the same field name that the server expects
+          for (let i = 0; i < files.length; i++) {
+            formData.append('images', files[i]);
+          }
+          
+          console.log('Uploading files:', files.length);
+          console.log('FormData entries:');
+          for (const pair of formData.entries()) {
+            console.log(pair[0], pair[1]);
+          }
           
           const response = await apiRequest('POST', '/api/images/upload-multiple', formData, {
             headers: {
@@ -296,6 +293,12 @@ export function ImageUploader({
                 <Button
                   variant="outline"
                   disabled={disabled}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  type="button"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   Select {allowMultiple ? 'Images' : 'Image'}
@@ -306,22 +309,20 @@ export function ImageUploader({
         </FileUploader>
       )}
       
-      {/* Hidden file input for "Add more" button */}
-      {allowMultiple && (
-        <input
-          type="file"
-          ref={fileInputRef}
-          className="hidden"
-          accept="image/*"
-          multiple={allowMultiple}
-          onChange={(e) => {
-            if (e.target.files && e.target.files.length > 0) {
-              handleFileSelect(Array.from(e.target.files));
-            }
-          }}
-          disabled={disabled || isUploading}
-        />
-      )}
+      {/* Hidden file input for image selection */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/*"
+        multiple={allowMultiple}
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            handleFileSelect(Array.from(e.target.files));
+          }
+        }}
+        disabled={disabled || isUploading}
+      />
     </div>
   );
 }
