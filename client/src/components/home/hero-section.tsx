@@ -142,15 +142,13 @@ export default function HeroSection() {
             </p>
           </div>
           
-          {/* Modern house showcase with property data */}
+          {/* 3D house with mobile phone property overlay */}
           <div className="hidden md:flex items-center justify-center">
-            <div className="relative w-[380px]">
-              <img 
-                src="/attached_assets/Screenshot 2025-04-11 at 12.59.15.png" 
-                alt="Property data visualization" 
-                className="w-full h-auto relative z-10 drop-shadow-2xl"
-              />
-            </div>
+            <img 
+              src="/attached_assets/Screenshot 2025-04-11 at 12.59.15.png" 
+              alt="3D property visualization with mobile overlay" 
+              className="w-[500px] h-auto object-contain drop-shadow-2xl"
+            />
           </div>
           
           {/* Multimodal Search bar with modern house image in background */}
