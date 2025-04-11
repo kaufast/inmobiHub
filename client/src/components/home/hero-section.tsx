@@ -424,7 +424,7 @@ export default function HeroSection() {
             <div className="absolute top-[15%] right-[14px] w-80 bg-gray-900/90 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700 shadow-lg">
               <div className="relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1613553507747-5f8d62ad5904?q=80&w=1000&auto=format&fit=crop" 
+                  src="/assets/mexican-modern-house.jpg" 
                   alt="Modern Mexican house" 
                   className="w-full h-36 object-cover"
                 />

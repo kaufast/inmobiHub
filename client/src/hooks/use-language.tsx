@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 export const supportedLanguages = [
   { code: 'en-GB', name: 'English', flag: '🇬🇧' },
   { code: 'es-MX', name: 'Español', flag: '🇲🇽' },
+  { code: 'ca-ES', name: 'Català', flag: '🇪🇸' },
   { code: 'fr-FR', name: 'Français', flag: '🇫🇷' },
   { code: 'de-DE', name: 'Deutsch', flag: '🇩🇪' },
   { code: 'zh-CN', name: '中文', flag: '🇨🇳' },
@@ -17,6 +18,7 @@ export const supportedLanguages = [
 const languageCodeMap: Record<string, string> = {
   'en': 'en-GB',
   'es': 'es-MX',
+  'ca': 'ca-ES',
   'fr': 'fr-FR',
   'de': 'de-DE',
   'zh': 'zh-CN',
