@@ -163,6 +163,21 @@ export default function AuthPage() {
                         ) : null}
                         Sign In
                       </Button>
+                      
+                      <div className="mt-4 text-sm text-center">
+                        <Button 
+                          type="button" 
+                          variant="link" 
+                          className="text-secondary-600 hover:text-secondary-500"
+                          onClick={() => {
+                            // Fill in test credentials
+                            loginForm.setValue('username', 'testuser');
+                            loginForm.setValue('password', 'password123');
+                          }}
+                        >
+                          Use demo credentials for testing
+                        </Button>
+                      </div>
                     </form>
                   </Form>
                 </TabsContent>

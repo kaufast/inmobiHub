@@ -108,6 +108,20 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
           <XCircle className="h-4 w-4 mr-2" />
           <AlertTitle>Authentication Error</AlertTitle>
           <AlertDescription>{authError}</AlertDescription>
+          
+          {authError.includes('not authorized in Firebase') && (
+            <div className="mt-4 flex justify-between items-center">
+              <span className="text-sm">Firebase authentication is only enabled on our official domain.</span>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="gap-1"
+                onClick={() => window.open('https://inmobi.mobi', '_blank')}
+              >
+                Visit inmobi.mobi
+              </Button>
+            </div>
+          )}
         </Alert>
       )}
       
