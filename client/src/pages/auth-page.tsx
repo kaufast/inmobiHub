@@ -25,6 +25,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const { user, login, register, isAuthenticating } = useAuth();
+  const { toast } = useToast();
   const [, navigate] = useLocation();
 
   // Redirect if already logged in
@@ -70,32 +71,57 @@ export default function AuthPage() {
     // Get current time
     const now = Date.now();
     
-    // Prevent multiple submissions via time-based debounce and state checks
-    if (isSubmitting || isAuthenticating || (now - lastSubmitTime < DEBOUNCE_TIME)) {
-      console.log("Login already in progress or too soon after last attempt, ignoring submission");
+    // Hard block on multiple submissions
+    if (isSubmitting || isAuthenticating) {
+      console.log("Login already in progress, blocking submission");
+      return;
+    }
+    
+    // Implement strict time-based debounce
+    if (now - lastSubmitTime < DEBOUNCE_TIME) {
+      console.log(`Too many login attempts. Please wait ${Math.ceil((DEBOUNCE_TIME - (now - lastSubmitTime))/1000)} seconds.`);
+      toast({
+        title: "Rate limited",
+        description: `Please wait a moment before trying again.`,
+        variant: "destructive",
+      });
       return;
     }
     
     try {
-      // Update submission state and timestamp
+      // Lock submission completely
       setIsSubmitting(true);
       setLastSubmitTime(now);
       
-      // Disable form fields during submission
-      Object.keys(loginForm.getValues()).forEach(fieldName => {
-        loginForm.setDisabled(fieldName as 'username' | 'password', true);
-      });
+      // Disable the entire form
+      const formEl = document.querySelector('form') as HTMLFormElement;
+      if (formEl) {
+        Array.from(formEl.elements).forEach((el: any) => {
+          if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') {
+            el.disabled = true;
+          }
+        });
+      }
       
       // Execute login
       await login(data);
     } catch (error) {
       console.error("Login error:", error);
     } finally {
-      // Reset submission state after a delay to prevent rapid re-submissions
+      // Reset submission state after a significant delay
       setTimeout(() => {
         setIsSubmitting(false);
-        loginForm.disabled = false;
-      }, 1000);
+        
+        // Re-enable form elements
+        const formEl = document.querySelector('form') as HTMLFormElement;
+        if (formEl) {
+          Array.from(formEl.elements).forEach((el: any) => {
+            if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') {
+              el.disabled = false;
+            }
+          });
+        }
+      }, 2000); // Longer cooldown
     }
   };
 
@@ -103,30 +129,57 @@ export default function AuthPage() {
     // Get current time
     const now = Date.now();
     
-    // Prevent multiple submissions via time-based debounce and state checks
-    if (isSubmitting || isAuthenticating || (now - lastSubmitTime < DEBOUNCE_TIME)) {
-      console.log("Registration already in progress or too soon after last attempt, ignoring submission");
+    // Hard block on multiple submissions
+    if (isSubmitting || isAuthenticating) {
+      console.log("Registration already in progress, blocking submission");
+      return;
+    }
+    
+    // Implement strict time-based debounce
+    if (now - lastSubmitTime < DEBOUNCE_TIME) {
+      console.log(`Too many registration attempts. Please wait ${Math.ceil((DEBOUNCE_TIME - (now - lastSubmitTime))/1000)} seconds.`);
+      toast({
+        title: "Rate limited",
+        description: `Please wait a moment before trying again.`,
+        variant: "destructive",
+      });
       return;
     }
     
     try {
-      // Update submission state and timestamp
+      // Lock submission completely
       setIsSubmitting(true);
       setLastSubmitTime(now);
       
-      // Disable form fields during submission
-      registerForm.disabled = true;
+      // Disable the entire form
+      const formEl = document.querySelector('form') as HTMLFormElement;
+      if (formEl) {
+        Array.from(formEl.elements).forEach((el: any) => {
+          if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') {
+            el.disabled = true;
+          }
+        });
+      }
       
       // Execute registration
       await register(data);
     } catch (error) {
       console.error("Registration error:", error);
     } finally {
-      // Reset submission state after a delay to prevent rapid re-submissions
+      // Reset submission state after a significant delay
       setTimeout(() => {
         setIsSubmitting(false);
-        registerForm.disabled = false;
-      }, 1000);
+        
+        // Re-enable form elements
+        const formEl = document.querySelector('form') as HTMLFormElement;
+        if (formEl) {
+          Array.from(formEl.elements).forEach((el: any) => {
+            if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') {
+              el.disabled = false;
+            }
+          });
+        }
+      }, 2000); // Longer cooldown
     }
   };
 

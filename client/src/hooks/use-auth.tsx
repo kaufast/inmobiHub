@@ -25,6 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [lastAuthToastTime, setLastAuthToastTime] = useState(0);
+  const AUTH_TOAST_COOLDOWN = 3000; // 3 seconds between auth toasts
 
   // Fetch the current user
   const fetchCurrentUser = useCallback(async () => {
@@ -139,10 +141,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userData);
       queryClient.setQueryData(["/api/user"], userData);
       
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${userData.fullName}!`,
-      });
+      // Check if enough time has passed since last auth toast
+      const now = Date.now();
+      if (now - lastAuthToastTime > AUTH_TOAST_COOLDOWN) {
+        setLastAuthToastTime(now);
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${userData.fullName}!`,
+        });
+      } else {
+        console.log("Suppressing duplicate login toast due to cooldown");
+      }
       
       return true;
     } catch (err) {
