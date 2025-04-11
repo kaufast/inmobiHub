@@ -1796,6 +1796,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next(error);
     }
   });
+  
+  // Admin: Seed database with initial data
+  app.post("/api/admin/seed", isAdmin, async (req, res) => {
+    try {
+      const { runAllSeeds } = await import('./seeds');
+      const result = await runAllSeeds();
+      
+      res.json({
+        success: true,
+        message: "Database seeding completed successfully",
+        details: result
+      });
+    } catch (error) {
+      console.error("Error during database seeding:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error during database seeding",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
 
   // Suggested Questions API
   app.get("/api/suggested-questions", async (req, res, next) => {
