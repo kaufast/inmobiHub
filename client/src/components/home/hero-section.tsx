@@ -121,7 +121,7 @@ export default function HeroSection() {
   };
   
   return (
-    <section className="relative bg-white overflow-visible min-h-[850px] pb-96">
+    <section className="relative bg-white overflow-visible min-h-[850px] pb-20">
       {/* White background with no overlay */}
       
       <div className="container mx-auto px-4 pt-6 md:pt-8 lg:pt-10 relative z-10">
@@ -386,7 +386,7 @@ export default function HeroSection() {
         <div className="w-full max-w-4xl mx-auto mt-4 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
           <div className="relative h-[450px] w-full">
             {/* Background house image */}
-            <div className="absolute inset-0 bg-cover bg-center"></div>
+            <div className="absolute inset-0 bg-gray-600 bg-cover bg-center"></div>
             
             {/* Overlay people - commented out background images */}
             <div className="absolute inset-0 flex justify-center items-start pt-16">
@@ -421,7 +421,7 @@ export default function HeroSection() {
             <div className="absolute top-[15%] right-[14px] w-80 bg-gray-900/90 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700 shadow-lg">
               <div className="relative">
                 <img 
-                  src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400" 
+                  src="/assets/luxury-villa.jpg" 
                   alt="Modern Mexican house" 
                   className="w-full h-36 object-cover"
                 />
