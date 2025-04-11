@@ -50,15 +50,10 @@ export async function handleChatWithPerplexity(
   propertyContext?: Property
 ): Promise<string> {
   try {
-    // System message that provides context and instructions for the AI
-    const systemMessage = {
-      role: 'system',
-      content: `You are a helpful and knowledgeable real estate assistant for our platform called Inmobi.
-You provide information about properties, real estate trends, and advice to potential buyers.
-Your responses should be friendly, professional, concise, and informative.
-You should avoid making up specific details about properties that you don't know about.
-When asked about property specifics, only use the information provided to you.
-${propertyContext ? `
+    // Create property context string if property data is provided
+    let propertyContextStr = '';
+    if (propertyContext) {
+      propertyContextStr = `
 I'm going to give you information about a specific property that the user is viewing:
 Property ID: ${propertyContext.id}
 Title: ${propertyContext.title}
@@ -71,7 +66,18 @@ Square Feet: ${propertyContext.squareFeet || 'Not specified'}
 Year Built: ${propertyContext.yearBuilt || 'Not specified'}
 Description: ${propertyContext.description}
 
-When the user asks about this property, use this information to answer their questions accurately.` : ''}`
+When the user asks about this property, use this information to answer their questions accurately.`;
+    }
+
+    // System message that provides context and instructions for the AI
+    const systemMessage = {
+      role: 'system',
+      content: `You are a helpful and knowledgeable real estate assistant for our platform called Inmobi.
+You provide information about properties, real estate trends, and advice to potential buyers.
+Your responses should be friendly, professional, concise, and informative.
+You should avoid making up specific details about properties that you don't know about.
+When asked about property specifics, only use the information provided to you.
+${propertyContextStr}`
     };
 
     // Format the messages for Perplexity API
