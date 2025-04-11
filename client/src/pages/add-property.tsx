@@ -24,6 +24,7 @@ import {
   Info,
   Check
 } from 'lucide-react';
+import { ImageUploader, UploadedImage } from '@/components/ui/upload/image-uploader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -113,8 +114,7 @@ export default function AddPropertyPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('basic');
-  const [images, setImages] = useState<File[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   
   // Redirect to auth page if not logged in
@@ -270,11 +270,8 @@ export default function AddPropertyPage() {
   // Handle form submission
   const onSubmit = async (data: PropertyFormData) => {
     try {
-      let uploadedImageUrls: string[] = [];
-      
-      if (images.length > 0) {
-        uploadedImageUrls = await uploadImages();
-      }
+      // Process uploaded images
+      const propertyImageUrls = uploadedImages.map(image => image.urls.original);
       
       // Convert string values to numbers for the API
       const preparedData = {
@@ -284,7 +281,7 @@ export default function AddPropertyPage() {
         bathrooms: Number(data.bathrooms),
         squareFeet: Number(data.squareFeet),
         yearBuilt: Number(data.yearBuilt),
-        images: uploadedImageUrls,
+        images: propertyImageUrls,
         // Add features based on checkboxes
         features: [
           ...(data.hasParking ? ['parking'] : []),
