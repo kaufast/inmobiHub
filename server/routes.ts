@@ -7,6 +7,7 @@ import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
 import { handleChatMessage } from "./anthropic";
+import { handleChatWithPerplexity } from "./perplexity";
 import { generatePropertyRecommendations } from "./openai";
 import Stripe from 'stripe';
 import multer from 'multer';

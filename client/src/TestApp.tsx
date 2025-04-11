@@ -1,150 +1,191 @@
-import { Toaster } from "@/components/ui/toaster";
-import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import React, { useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Loader2, AlertTriangle, Bot, Send, RefreshCcw } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
 
-function TestApp() {
-  const [chatMessage, setChatMessage] = useState("");
-  const [chatResponse, setChatResponse] = useState("");
+// Create a new QueryClient for the test app
+const queryClient = new QueryClient();
+
+export default function TestApp() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TestAppContent />
+    </QueryClientProvider>
+  );
+}
+
+function TestAppContent() {
+  const [message, setMessage] = useState('');
+  const [response, setResponse] = useState<string | null>(null);
+  const [apiSource, setApiSource] = useState<'perplexity' | 'anthropic' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [apiSource, setApiSource] = useState<"perplexity" | "anthropic" | "">("");
+  const [error, setError] = useState<string | null>(null);
+  const [testResponse, setTestResponse] = useState<string | null>(null);
+  const [isTestLoading, setIsTestLoading] = useState(false);
+  const [testError, setTestError] = useState<string | null>(null);
 
-  const handleChatSubmit = async (e: React.FormEvent) => {
+  const handleTestApi = async () => {
+    setIsTestLoading(true);
+    setTestResponse(null);
+    setTestError(null);
+
+    try {
+      const response = await fetch('/api/test-perplexity');
+      const data = await response.json();
+
+      if (data.success) {
+        setTestResponse(data.response);
+      } else {
+        setTestError(data.message || 'Failed to test API');
+      }
+    } catch (err: any) {
+      setTestError('Error: ' + (err.message || 'Failed to connect to API'));
+    } finally {
+      setIsTestLoading(false);
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!chatMessage.trim()) return;
+    if (!message.trim() || isLoading) return;
     
     setIsLoading(true);
-    setChatResponse("");
-    setApiSource("");
+    setError(null);
     
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: chatMessage,
-        }),
-      });
+      const result = await apiRequest('POST', '/api/chat', { message });
+      const data = await result.json();
       
-      if (!response.ok) {
-        throw new Error("Failed to get response");
-      }
-      
-      const data = await response.json();
-      setChatResponse(data.response);
-      
-      // Detect which API was used based on response content or headers
-      if (response.headers.get("X-Api-Source") === "perplexity") {
-        setApiSource("perplexity");
-      } else if (response.headers.get("X-Api-Source") === "anthropic") {
-        setApiSource("anthropic");
-      } else {
-        // Guess based on response format
-        if (data.response.includes("citation") || data.response.includes("source")) {
-          setApiSource("perplexity");
-        } else {
-          setApiSource("anthropic");
-        }
-      }
-      
-      toast({
-        title: "Chat response received",
-        description: "Successfully received response from AI assistant",
-      });
-    } catch (error) {
-      console.error("Error sending chat message:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to get response",
-        variant: "destructive",
-      });
+      setResponse(data.response);
+      setApiSource(data.apiSource);
+    } catch (err: any) {
+      setError('Error: ' + (err.message || 'Failed to get response'));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <header className="bg-blue-900 text-white p-4">
-        <h1 className="text-2xl font-bold">Inmobi - Test Mode</h1>
-      </header>
-      
-      <main className="flex-grow p-8">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4">Welcome to Inmobi Test Mode</h2>
-          <p className="mb-4">
-            This is a simplified test version of the application with non-essential features disabled.
+    <div className="min-h-screen bg-gray-900 text-white py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-bold mb-2">Inmobi AI Test Interface</h1>
+          <p className="text-gray-400">
+            Testing environment for AI integrations (Perplexity API and Anthropic Claude)
           </p>
-          <p className="text-gray-600 mb-8">
-            We're using this minimal version to diagnose and test core functionality.
-          </p>
-          
-          <div className="mt-8 p-4 border border-blue-200 bg-blue-50 rounded-lg">
-            <h3 className="text-xl font-semibold mb-2">Status</h3>
-            <ul className="list-disc pl-5 space-y-2 mb-6">
-              <li>WebSocket connections disabled</li>
-              <li>Firebase authentication bypassed</li>
-              <li>Complex providers removed</li>
-              <li>Minimal UI rendering</li>
-              <li>Multi-language support disabled</li>
-              <li className="text-green-700 font-medium">Perplexity API integration enabled</li>
-            </ul>
-            
-            <h3 className="text-xl font-semibold mb-2">Test Chat Integration</h3>
-            <p className="mb-4 text-sm text-gray-600">
-              Test the Perplexity API integration by sending a question below:
-            </p>
-            
-            <form onSubmit={handleChatSubmit} className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  placeholder="Ask a question about real estate..."
-                  className="flex-1"
-                />
-                <Button type="submit" disabled={isLoading || !chatMessage.trim()}>
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Send"}
-                </Button>
-              </div>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* API Test Card */}
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RefreshCcw size={20} />
+                API Connectivity Test
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Check if the Perplexity API is configured correctly
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={handleTestApi} 
+                disabled={isTestLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                {isTestLoading ? (
+                  <><Loader2 size={16} className="animate-spin mr-2" /> Testing API...</>
+                ) : (
+                  <>Test Perplexity API</>
+                )}
+              </Button>
               
-              {isLoading && (
-                <div className="text-center p-4">
-                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-                  <p className="text-sm text-gray-500">Processing your question...</p>
+              {testError && (
+                <div className="mt-4 p-3 bg-red-900/50 border border-red-700 rounded-md flex items-start gap-2">
+                  <AlertTriangle size={18} className="text-red-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-red-300">{testError}</p>
                 </div>
               )}
               
-              {chatResponse && (
-                <div className="mt-4 p-4 border rounded-lg bg-gray-50">
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium">Response:</h4>
-                    {apiSource && (
-                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        via {apiSource === "perplexity" ? "Perplexity API" : "Anthropic Claude"}
-                      </span>
-                    )}
+              {testResponse && (
+                <div className="mt-4">
+                  <div className="bg-gray-700/50 border border-gray-600 rounded-md p-3">
+                    <div className="inline-block mb-2 text-xs font-semibold bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded">
+                      Perplexity API Test Result
+                    </div>
+                    <p className="text-sm whitespace-pre-line text-gray-300">{testResponse}</p>
                   </div>
-                  <p className="whitespace-pre-wrap">{chatResponse}</p>
                 </div>
               )}
-            </form>
+            </CardContent>
+          </Card>
+
+          {/* Chat Test Card */}
+          <Card className="bg-gray-800 border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bot size={20} />
+                Chat Integration Test
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Test the chat API with a custom message
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSendMessage} className="space-y-4">
+                <div className="relative">
+                  <Input
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Ask a real estate question..."
+                    disabled={isLoading}
+                    className="bg-gray-700 border-gray-600 text-white"
+                  />
+                  <Button 
+                    type="submit" 
+                    size="sm" 
+                    disabled={isLoading || !message.trim()}
+                    className="absolute right-1 top-1 h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700"
+                  >
+                    {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                  </Button>
+                </div>
+              </form>
+
+              {error && (
+                <div className="mt-4 p-3 bg-red-900/50 border border-red-700 rounded-md flex items-start gap-2">
+                  <AlertTriangle size={18} className="text-red-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-red-300">{error}</p>
+                </div>
+              )}
+              
+              {response && (
+                <div className="mt-4">
+                  <div className="bg-gray-700/50 border border-gray-600 rounded-md p-3">
+                    <div className="inline-block mb-2 text-xs font-semibold bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded">
+                      {apiSource === 'perplexity' ? 'Perplexity API' : 'Anthropic Claude'}
+                    </div>
+                    <p className="text-sm whitespace-pre-line text-gray-300">{response}</p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-8">
+          <Separator className="my-4 bg-gray-700" />
+          <div className="text-center text-gray-500 text-sm">
+            <p>This is a testing interface for AI API integrations</p>
+            <p>Both Perplexity API and Anthropic Claude are supported, with automatic fallback</p>
           </div>
         </div>
-      </main>
-      
-      <footer className="bg-gray-800 text-white p-4 text-center">
-        <p>Inmobi Real Estate Platform &copy; 2025</p>
-      </footer>
-      
-      <Toaster />
+      </div>
     </div>
   );
 }
-
-export default TestApp;
