@@ -147,32 +147,29 @@ export default function HeroSection() {
                 searchType: type
               }));
             }}>
-              <div className="w-full mb-2">
-                <div className="flex rounded-t-lg overflow-hidden border-b-0 justify-start">
-                  <div className="px-6 py-3 bg-gray-700 text-white text-xs font-medium border border-gray-700 border-r-0 border-b-0 rounded-tl-lg flex items-center">
-                    <span className="text-xs">Search by:</span>
-                  </div>
-                  <TabsList className="rounded-none bg-transparent border-0 border-gray-700 space-x-1 p-0">
+              <div className="w-full mb-0">
+                <div className="flex overflow-hidden justify-start">
+                  <TabsList className="w-full flex rounded-t-lg bg-transparent p-0 gap-1">
                     <TabsTrigger 
                       value="text" 
-                      className="flex items-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg border border-gray-700 data-[state=active]:border-b-0 py-1.5 px-3"
+                      className="flex-1 flex items-center justify-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 rounded-tl-lg py-3 px-6"
                     >
-                      <Search className="w-3.5 h-3.5" />
-                      <span className="text-xs">Text</span>
+                      <Search className="w-4 h-4 mr-1" />
+                      <span>Text</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="image" 
-                      className="flex items-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg border border-gray-700 data-[state=active]:border-b-0 py-1.5 px-3"
+                      className="flex-1 flex items-center justify-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 py-3 px-6"
                     >
-                      <Image className="w-3.5 h-3.5" />
-                      <span className="text-xs">Image</span>
+                      <Image className="w-4 h-4 mr-1" />
+                      <span>Image</span>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="audio" 
-                      className="flex items-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 data-[state=active]:border-secondary-500 rounded-t-lg border border-gray-700 data-[state=active]:border-b-0 py-1.5 px-3"
+                      className="flex-1 flex items-center justify-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 rounded-tr-lg py-3 px-6"
                     >
-                      <Mic className="w-3.5 h-3.5" />
-                      <span className="text-xs">Voice</span>
+                      <Mic className="w-4 h-4 mr-1" />
+                      <span>Voice</span>
                     </TabsTrigger>
                   </TabsList>
                 </div>
