@@ -405,6 +405,23 @@ export type InsertPropertyTour = z.infer<typeof insertPropertyTourSchema>;
 export type UpdatePropertyTour = z.infer<typeof updatePropertyTourSchema>;
 export type PropertyTour = typeof propertyTours.$inferSelect;
 
+// Property Drafts
+export const propertyDrafts = pgTable("property_drafts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  formData: jsonb("form_data").notNull(),
+  name: text("name").notNull(),
+  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const propertyDraftsRelations = relations(propertyDrafts, ({ one }) => ({
+  user: one(users, {
+    fields: [propertyDrafts.userId],
+    references: [users.id],
+  }),
+}));
+
 // Chat Analytics
 export const chatAnalytics = pgTable("chat_analytics", {
   id: serial("id").primaryKey(),
@@ -457,6 +474,15 @@ export const insertChatAnalyticsSchema = createInsertSchema(chatAnalytics).omit(
   id: true,
   timestamp: true,
 });
+
+export const insertPropertyDraftSchema = createInsertSchema(propertyDrafts).omit({
+  id: true,
+  lastUpdated: true,
+  createdAt: true,
+});
+
+export type InsertPropertyDraft = z.infer<typeof insertPropertyDraftSchema>;
+export type PropertyDraft = typeof propertyDrafts.$inferSelect;
 
 export type InsertChatAnalytics = z.infer<typeof insertChatAnalyticsSchema>;
 export type ChatAnalytics = typeof chatAnalytics.$inferSelect;
