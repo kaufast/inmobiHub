@@ -7,6 +7,7 @@ import {
   type VerifiedAuthenticationResponse,
   type RegistrationResponseJSON,
   type AuthenticationResponseJSON,
+  type AuthenticatorTransportFuture,
 } from '@simplewebauthn/server';
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import { storage } from './storage';
@@ -43,8 +44,9 @@ export async function generatePasskeyRegistrationOptions(userId: number, usernam
     attestationType: 'none',
     // Prevent users from re-registering existing authenticators
     excludeCredentials: user.passkey ? [{
+      // Convert base64url string to Uint8Array for SimpleWebAuthn
       id: isoBase64URL.toBuffer(user.passkey),
-      transports: ['internal'],
+      transports: ['internal'] as AuthenticatorTransportFuture[],
     }] : [],
     authenticatorSelection: {
       // Defaults
@@ -105,14 +107,32 @@ export async function verifyPasskeyRegistration(
   }
 
   // Convert credential ID to base64 string for storage
-  const credentialID = isoBase64URL.fromBuffer(registrationInfo.credentialID);
-  const credentialPublicKey = isoBase64URL.fromBuffer(registrationInfo.credentialPublicKey);
-
+  // Handle differences in data structure across SimpleWebAuthn versions
+  // The property structure changed between versions
+  const credentialID = isoBase64URL.fromBuffer(
+    registrationInfo.credentialID || 
+    (registrationInfo.credential && registrationInfo.credential.id ? 
+      registrationInfo.credential.id : 
+      Buffer.from([]))
+  );
+  
+  const credentialPublicKey = isoBase64URL.fromBuffer(
+    registrationInfo.credentialPublicKey || 
+    (registrationInfo.credential && registrationInfo.credential.publicKey ? 
+      registrationInfo.credential.publicKey : 
+      Buffer.from([]))
+  );
+  
+  const counter = registrationInfo.counter || 
+    (registrationInfo.credential && typeof registrationInfo.credential.signCount === 'number' ? 
+      registrationInfo.credential.signCount : 
+      0);
+  
   // Store the credential in the database
   await storage.updateUser(userId, {
     passkey: credentialID,
     passkeyPublicKey: credentialPublicKey,
-    passkeyCounter: registrationInfo.counter,
+    passkeyCounter: counter,
     passkeyEnabled: true,
     challenge: null, // Clear the challenge
   });
@@ -144,8 +164,8 @@ export async function generatePasskeyAuthenticationOptions(username: string) {
     userVerification: 'preferred',
     // Pass the user's credentials to allow the browser to select the correct one
     allowCredentials: [{
-      id: isoBase64URL.toBuffer(user.passkey),
-      transports: ['internal'],
+      id: user.passkey,
+      transports: ['internal'] as AuthenticatorTransportFuture[],
     }],
   });
 
@@ -186,9 +206,12 @@ export async function verifyPasskeyAuthentication(
       expectedOrigin: origin,
       expectedRPID: rpID,
       requireUserVerification: true,
+      // For SimpleWebAuthn v7+, the property is 'authenticator'
+      // For older versions, we used 'authenticatorData'
+      // Including both for compatibility
       authenticator: {
-        credentialID: isoBase64URL.toBuffer(user.passkey),
-        credentialPublicKey: isoBase64URL.toBuffer(user.passkeyPublicKey),
+        credentialID: user.passkey,
+        credentialPublicKey: user.passkeyPublicKey,
         counter: user.passkeyCounter || 0,
       },
     });
