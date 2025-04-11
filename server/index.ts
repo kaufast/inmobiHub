@@ -9,16 +9,36 @@ app.use(express.urlencoded({ extended: false }));
 // Add CORS headers for all API requests
 app.use((req, res, next) => {
   // Allow requests from any origin in development
-  // In production, this should be restricted to your actual domain
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // In production, use specific allowed domains
+  const allowedOrigins = [
+    'http://localhost:5000',
+    'https://inmobi.replit.app',
+    'https://inmobi-app.replit.app',
+    'https://inmobi.mobi',
+    // Add any other domains that might be used in production
+  ];
+  
+  const origin = req.headers.origin;
+  
+  // In development or when origin is undefined, allow all
+  if (!origin || process.env.NODE_ENV === 'development') {
+    res.header('Access-Control-Allow-Origin', '*');
+  } else if (allowedOrigins.includes(origin)) {
+    // In production, only allow specific origins
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, Pragma, X-Requested-With');
   res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Vary', 'Origin'); // Important for caching with multiple origins
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
+  
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   
   next();
 });

@@ -215,19 +215,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticating(true);
       setError(null);
       
+      console.log("Starting logout process...");
+      
       // First, log out from Firebase if the user was authenticated with it
       if (auth.currentUser) {
-        await firebaseSignOut();
+        try {
+          await firebaseSignOut();
+          console.log("Firebase sign-out successful");
+        } catch (firebaseError) {
+          console.warn("Firebase sign-out error:", firebaseError);
+          // Continue with server logout even if Firebase logout fails
+        }
       }
       
       // Then log out from our server
-      const res = await apiRequest('POST', '/api/logout');
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || 'Logout failed');
+      let res;
+      try {
+        res = await apiRequest('POST', '/api/logout');
+      } catch (apiError) {
+        console.warn("Initial logout request failed, trying alternative approach...", apiError);
+        
+        // As a fallback, try a direct fetch with different options
+        res = await fetch('/api/logout', {
+          method: 'POST',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          },
+          credentials: 'include'
+        });
       }
       
+      // Process the response
+      if (!res.ok) {
+        let errorMessage = 'Logout failed';
+        
+        try {
+          // Try to parse as JSON first
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorData.error || 'Logout failed';
+        } catch (jsonError) {
+          // If not JSON, try text
+          try {
+            const errorText = await res.text();
+            errorMessage = errorText || 'Logout failed';
+          } catch (textError) {
+            // If all else fails, use status text
+            errorMessage = `Logout failed: ${res.status} ${res.statusText}`;
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      console.log("Logout successful");
+      
+      // Clear user data from state and query cache
       setUser(null);
       queryClient.setQueryData(["/api/user"], null);
       
@@ -238,6 +281,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return true;
     } catch (err) {
+      console.error("Logout error:", err);
       const message = err instanceof Error ? err.message : 'Logout failed';
       setError(message);
       
@@ -246,6 +290,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: message,
         variant: "destructive",
       });
+      
+      // Even if the server logout fails, clear the local state to allow
+      // the user to try logging in again
+      setUser(null);
+      queryClient.setQueryData(["/api/user"], null);
       
       return false;
     } finally {
