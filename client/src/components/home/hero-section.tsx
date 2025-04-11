@@ -377,8 +377,8 @@ export default function HeroSection() {
               <div className="absolute inset-0 bg-[url('/assets/modern-house.png')] bg-cover bg-center"></div>
               
               {/* Overlay people */}
-              <div className="absolute inset-0 flex justify-center items-end">
-                <div className="w-[50%] h-[25%] bg-[url('/assets/people-standing.jpg')] bg-contain bg-no-repeat bg-bottom"></div>
+              <div className="absolute inset-0 flex justify-center items-center">
+                <div className="w-[50%] h-[25%] translate-y-[25%] bg-[url('/assets/people-standing.jpg')] bg-contain bg-no-repeat bg-bottom"></div>
               </div>
               
               <div className="absolute inset-0 bg-gray-900/20"></div>
