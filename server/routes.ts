@@ -1817,6 +1817,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Development: Direct seed endpoint (only for development, no auth required)
+  if (process.env.NODE_ENV !== 'production') {
+    app.post("/api/dev/seed", async (req, res) => {
+      try {
+        const { seedSuggestedQuestions } = await import('./seeds/suggested-questions');
+        const result = await seedSuggestedQuestions();
+        
+        res.json({
+          success: true,
+          message: "Suggested questions seeding completed successfully",
+          details: result
+        });
+      } catch (error) {
+        console.error("Error during suggested questions seeding:", error);
+        res.status(500).json({
+          success: false,
+          message: "Error during suggested questions seeding",
+          error: error instanceof Error ? error.message : "Unknown error"
+        });
+      }
+    });
+  }
 
   // Suggested Questions API
   app.get("/api/suggested-questions", async (req, res, next) => {

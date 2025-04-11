@@ -1,9 +1,5 @@
 // Simple script to run the seed function
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
-// Use dynamic import for TypeScript files
-const seedModule = await import('./server/seeds/suggested-questions.ts');
+import { seedSuggestedQuestions } from './server/seeds/suggested-questions.js';
 
 async function main() {
   try {
