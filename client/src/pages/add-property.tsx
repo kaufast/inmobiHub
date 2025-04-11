@@ -192,80 +192,9 @@ export default function AddPropertyPage() {
     }
   });
   
-  // Handle file selection
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const newFiles = Array.from(event.target.files);
-      
-      // Limit to 10 images total
-      if (images.length + newFiles.length > 10) {
-        toast({
-          title: 'Too many images',
-          description: 'You can upload a maximum of 10 images per property.',
-          variant: 'destructive',
-        });
-        return;
-      }
-      
-      // Add new files and create object URLs
-      setImages(prev => [...prev, ...newFiles]);
-      
-      // Generate preview URLs
-      const newImageUrls = newFiles.map(file => URL.createObjectURL(file));
-      setImageUrls(prev => [...prev, ...newImageUrls]);
-    }
-  };
-  
-  // Remove image
-  const removeImage = (index: number) => {
-    // Revoke the object URL to avoid memory leaks
-    URL.revokeObjectURL(imageUrls[index]);
-    
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setImageUrls(prev => prev.filter((_, i) => i !== index));
-  };
-  
-  // Mock function to upload images (in a real app, this would upload to your server/cloud storage)
-  const uploadImages = async () => {
-    // In a real app, you would upload the images to a cloud storage service
-    // For now, we'll use the Replit asset paths which are already loaded in memory
-    setIsUploading(true);
-    
-    try {
-      // In a real implementation, we would use FormData to upload images to a server
-      // For demonstration, we're using the image URLs already in memory
-      console.log(`Processing ${images.length} images for upload`);
-      
-      // For each image, convert to base64 for demonstration
-      const uploadedUrls = await Promise.all(
-        images.map(async (image, index) => {
-          // Convert file to base64 string (for demo/dev only)
-          return new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              // In a real app, this would be the URL returned from your image upload service
-              // For now, we'll just use the URLs created by the FileReader (or placeholder URLs)
-              resolve(imageUrls[index] || `https://source.unsplash.com/random/800x600/?property,${index}`);
-            };
-            reader.readAsDataURL(image);
-          });
-        })
-      );
-      
-      console.log(`Successfully processed ${uploadedUrls.length} images`);
-      return uploadedUrls;
-    } catch (error) {
-      console.error('Error uploading images:', error);
-      toast({
-        title: "Image Upload Error",
-        description: "There was a problem uploading your images. Please try again.",
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  // This section previously contained the image handling functions
+  // (handleImageSelect, removeImage, uploadImages)
+  // These have been replaced by the ImageUploader component
   
   // Handle form submission
   const onSubmit = async (data: PropertyFormData) => {
@@ -843,62 +772,21 @@ export default function AddPropertyPage() {
                       </div>
                       
                       <div className="grid grid-cols-1 gap-4">
-                        <div className="border-2 border-dashed rounded-md p-6 text-center">
-                          <ImagePlus className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-                          <div className="text-lg font-medium mb-2">
-                            Drag & drop your images here
-                          </div>
-                          <div className="text-sm text-muted-foreground mb-4">
-                            Supported formats: JPEG, PNG, WebP. Max size: 5MB per image.
-                          </div>
-                          <Button
-                            variant="outline"
-                            onClick={() => document.getElementById('image-upload')?.click()}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Select Images
-                          </Button>
-                          <input
-                            id="image-upload"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={handleImageSelect}
-                          />
-                        </div>
-                        
-                        {imageUrls.length > 0 && (
-                          <div className="space-y-2">
-                            <div className="text-sm font-medium">
-                              {imageUrls.length} {imageUrls.length === 1 ? 'image' : 'images'} selected
-                            </div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                              {imageUrls.map((url, index) => (
-                                <div key={url} className="relative group">
-                                  <img
-                                    src={url}
-                                    alt={`Property image ${index + 1}`}
-                                    className="rounded-md object-cover w-full h-32"
-                                  />
-                                  {index === 0 && (
-                                    <div className="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded-md">
-                                      Main Image
-                                    </div>
-                                  )}
-                                  <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={() => removeImage(index)}
-                                  >
-                                    <Trash className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                        <ImageUploader 
+                          onChange={setUploadedImages} 
+                          value={uploadedImages}
+                          maxImages={10}
+                          showPreview={true}
+                          previewSize="md"
+                          allowMultiple={true}
+                          onError={(error) => {
+                            toast({
+                              title: "Image Upload Error",
+                              description: error.message,
+                              variant: "destructive",
+                            });
+                          }}
+                        />
                       </div>
                     </div>
                     
