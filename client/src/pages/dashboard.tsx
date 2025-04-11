@@ -4,12 +4,13 @@ import { useAuth } from "@/hooks/use-auth";
 import DashboardSidebar from "@/components/dashboard/dashboard-sidebar";
 import PropertyBrowser from "@/components/dashboard/property-browser";
 import PropertiesManagement from "@/components/dashboard/properties-management";
+import PropertyDrafts from "@/components/dashboard/property-drafts";
 import Messages from "@/components/dashboard/messages";
 import Favorites from "@/components/dashboard/favorites";
 import Profile from "@/components/dashboard/profile";
 import Subscription from "@/components/dashboard/subscription";
 
-type Tab = "properties" | "favorites" | "messages" | "profile" | "subscription" | "browse";
+type Tab = "properties" | "favorites" | "messages" | "profile" | "subscription" | "browse" | "drafts";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>("browse");
@@ -23,7 +24,7 @@ export default function DashboardPage() {
     const tabParam = url.searchParams.get('tab') as Tab | null;
     const propertyParam = url.searchParams.get('property');
     
-    if (tabParam && ["properties", "favorites", "messages", "profile", "subscription", "browse"].includes(tabParam)) {
+    if (tabParam && ["properties", "favorites", "messages", "profile", "subscription", "browse", "drafts"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
     
@@ -56,6 +57,11 @@ export default function DashboardPage() {
             {activeTab === "properties" && (
               <div className="bg-white rounded-xl shadow-md overflow-hidden">
                 <PropertiesManagement />
+              </div>
+            )}
+            {activeTab === "drafts" && (
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <PropertyDrafts />
               </div>
             )}
             {activeTab === "favorites" && (
