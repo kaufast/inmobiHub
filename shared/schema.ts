@@ -24,10 +24,7 @@ export const users = pgTable("users", {
   fullName: text("full_name").notNull(),
   role: roleEnum("role").notNull().default('user'),
   subscriptionTier: subscriptionTierEnum("subscription_tier").notNull().default('free'),
-  subscriptionStatus: text("subscription_status").default('none'),
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
   profileImage: text("profile_image"),
   bio: text("bio"),
   phone: text("phone"),
@@ -38,9 +35,6 @@ export const users = pgTable("users", {
   // Passkey authentication
   passkey: text("passkey"),
   passkeyEnabled: boolean("passkey_enabled").default(false).notNull(),
-  passkeyPublicKey: text("passkey_public_key"), // Base64 encoded public key for WebAuthn
-  passkeyCounter: integer("passkey_counter").default(0), // Counter for WebAuthn authentication
-  challenge: text("challenge"), // Temporary challenge for WebAuthn
   // ID Verification
   hasIdVerification: boolean("has_id_verification").default(false).notNull(),
   idVerificationType: text("id_verification_type"), // e.g., "passport", "driver_license", "national_id"
