@@ -1969,7 +1969,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
       
       const questions = await storage.getSuggestedQuestions(category, propertyType, limit);
-      res.json(questions);
+      res.json({
+        success: true,
+        count: questions.length,
+        questions: questions,
+        filters: {
+          category,
+          propertyType,
+          limit
+        }
+      });
     } catch (error) {
       console.error('Error fetching suggested questions:', error);
       next(error);
@@ -1980,7 +1989,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
       const questions = await storage.getPopularSuggestedQuestions(limit);
-      res.json(questions);
+      res.json({
+        success: true,
+        count: questions.length,
+        questions: questions
+      });
     } catch (error) {
       console.error('Error fetching popular questions:', error);
       next(error);
@@ -1993,9 +2006,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const success = await storage.incrementQuestionClickCount(questionId);
       
       if (success) {
-        res.json({ success: true });
+        res.json({ 
+          success: true,
+          message: `Incremented click count for question ${questionId}`
+        });
       } else {
-        res.status(404).json({ message: 'Question not found' });
+        res.status(404).json({ 
+          success: false, 
+          message: 'Question not found'
+        });
       }
     } catch (error) {
       console.error('Error incrementing question click count:', error);
