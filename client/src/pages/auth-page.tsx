@@ -19,6 +19,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
+import { PasskeyAuthForm } from "@/components/auth/passkey-auth";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -305,6 +306,13 @@ export default function AuthPage() {
                       console.error("Social auth error:", error);
                     }}
                   />
+                  
+                  {/* Passkey Authentication */}
+                  {activeTab === 'login' && (
+                    <div className="mt-4">
+                      <PasskeyAuthForm />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
