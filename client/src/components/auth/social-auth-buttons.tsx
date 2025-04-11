@@ -47,22 +47,55 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
       if (user) {
         console.log("Popup sign-in successful:", user.email);
         
-        // Manually create user data since we disabled automatic handling
-        const userData = {
-          email: user.email || '',
-          username: user.email || '',
-          fullName: user.displayName || '',
-          password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
-          profileImage: user.photoURL || null
-        };
-        
-        toast({
-          title: "Successfully authenticated with Google",
-          description: "Completing sign in process...",
-        });
-        
-        setAuthError(null);
-        onSuccess?.(userData);
+        try {
+          // First call the server endpoint to ensure user is registered properly in our system
+          const registerResponse = await fetch('/api/firebase-auth', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              firebaseUid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              photoURL: user.photoURL
+            }),
+            credentials: 'include'
+          });
+          
+          if (registerResponse.ok) {
+            const registeredUser = await registerResponse.json();
+            console.log("Server authentication successful:", registeredUser);
+            
+            toast({
+              title: "Successfully authenticated with Google",
+              description: `Welcome, ${registeredUser.fullName || user.displayName}!`,
+            });
+            
+            setAuthError(null);
+            // Pass the server-provided user data to the onSuccess callback
+            onSuccess?.(registeredUser);
+            return;
+          } else {
+            console.error("Server failed to authenticate the Firebase user:", await registerResponse.text());
+            throw new Error("Server authentication failed after Firebase login");
+          }
+        } catch (serverError) {
+          console.error("Server authentication error:", serverError);
+          
+          // Fallback to the original approach
+          console.warn("Falling back to client-side Firebase auth data");
+          const userData = {
+            email: user.email || '',
+            username: user.email || '',
+            fullName: user.displayName || '',
+            password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
+            profileImage: user.photoURL || null
+          };
+          
+          setAuthError(null);
+          onSuccess?.(userData);
+        }
       } else {
         console.log("Popup completed but no user returned");
       }
