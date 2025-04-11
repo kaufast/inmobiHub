@@ -387,7 +387,7 @@ export default function HeroSection() {
           <div className="relative h-[450px] w-full">
             {/* Background map image */}
             <div className="absolute inset-0 bg-gray-600 bg-cover bg-center" style={{
-              backgroundImage: "url('https://mapsplatform.google.com/static/map_static_satellite.jpg')",
+              backgroundImage: "url('/assets/map-background.png')",
               opacity: 0.7
             }}></div>
             
