@@ -68,7 +68,7 @@ export function PasskeyAuthForm() {
         <CardFooter>
           <Button
             type="submit"
-            className="w-full"
+            className="w-full bg-gray-900 text-white hover:bg-gray-800"
             disabled={isAuthenticating || !username.trim()}
           >
             {isAuthenticating ? (
@@ -123,7 +123,7 @@ export function PasskeyRegistration() {
       <CardFooter className="flex flex-col space-y-2">
         <Button
           variant="default"
-          className="w-full"
+          className="w-full bg-gray-900 text-white hover:bg-gray-800"
           onClick={registerPasskey}
           disabled={isRegistering}
         >
