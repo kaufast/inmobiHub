@@ -378,7 +378,7 @@ export default function HeroSection() {
               
               {/* Overlay people */}
               <div className="absolute inset-0 flex justify-center items-center">
-                <div className="w-[50%] h-[25%] translate-y-[25%] bg-[url('/assets/people-standing.jpg')] bg-contain bg-no-repeat bg-bottom"></div>
+                <div className="w-[50%] h-[25%] pt-8 bg-[url('/assets/people-standing.jpg')] bg-contain bg-no-repeat bg-bottom"></div>
               </div>
               
               <div className="absolute inset-0 bg-gray-900/20"></div>
