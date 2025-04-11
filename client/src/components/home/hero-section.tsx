@@ -121,46 +121,23 @@ export default function HeroSection() {
   };
   
   return (
-    <section className="relative bg-gradient-to-b from-gray-900 to-gray-800 overflow-hidden min-h-[800px] h-auto">
+    <section className="relative bg-gradient-to-b from-gray-900 to-gray-800 overflow-hidden min-h-screen h-screen">
       {/* Modern Entrance Background with Overlay */}
       <div className="absolute inset-0 bg-[url('/attached_assets/1343bf2110a2bb98bbaea9ec41addc3a.jpg')] bg-cover bg-center opacity-40"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-primary-900/90 to-gray-900/95"></div>
       
       <div className="container mx-auto px-4 py-16 md:py-24 lg:py-28 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-          <div className="flex flex-col items-start text-left">
-            <p className="mt-2 text-xl text-white/90 mb-6">
-              {t('common.findYourDreamProperty')}
-            </p>
-            
-            <h1 className="text-[2.6rem] md:text-[3.2rem] lg:text-[3.8rem] font-bold text-white leading-none tracking-tight mb-8">
-              OPENING MORE DOORS
-            </h1>
-            
-            <p className="text-white/80 text-lg mb-6 max-w-xl">
-              Unlocking Smart Capital For Data-Driven Investors
-            </p>
-          </div>
+        <div className="flex flex-col items-center text-center" style={{ marginTop: "5%" }}>
+          <p className="mt-2 text-xl text-white/90 max-w-2xl mx-auto mb-6">
+            {t('common.findYourDreamProperty')}
+          </p>
           
-          {/* 3D house with mobile phone property overlay */}
-          <div className="hidden md:flex items-center justify-center">
-            <img 
-              src="/attached_assets/Screenshot 2025-04-11 at 12.59.15.png" 
-              alt="3D property visualization with mobile overlay" 
-              className="w-[500px] h-auto object-contain drop-shadow-2xl"
-            />
-          </div>
+          <h1 className="text-[2.6rem] md:text-[3.2rem] lg:text-[3.8rem] font-bold text-white leading-none tracking-tight mb-8">
+            OPENING MORE DOORS
+          </h1>
           
-          {/* Multimodal Search bar with modern house image in background */}
-          <div className="w-full max-w-4xl bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700 relative">
-            {/* Modern house image background */}
-            <div className="absolute inset-0 rounded-2xl overflow-hidden opacity-10 z-0">
-              <img 
-                src="/attached_assets/fc22b533-29c2-4e45-a37a-627a17bdb980.png" 
-                alt="Modern luxury house" 
-                className="object-cover w-full h-full"
-              />
-            </div>
+          {/* Multimodal Search bar */}
+          <div className="w-full max-w-4xl bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700">
             <Tabs value={activeTab} defaultValue="text" className="w-full" onValueChange={(value) => {
               const type = value as "text" | "image" | "audio";
               setActiveTab(type);
