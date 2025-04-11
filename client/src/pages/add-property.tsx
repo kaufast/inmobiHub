@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { useLocation } from 'wouter';
+import { useLocation, useSearch } from 'wouter';
 import { 
   ArrowLeft, 
   Building, 
@@ -22,7 +22,10 @@ import {
   Trash,
   Upload,
   Info,
-  Check
+  Check,
+  Save,
+  FileText,
+  AlertCircle
 } from 'lucide-react';
 import { ImageUploader, UploadedImage } from '@/components/ui/upload/image-uploader';
 import { Button } from '@/components/ui/button';
@@ -111,11 +114,15 @@ type PropertyFormData = z.infer<typeof propertySchema>;
 
 export default function AddPropertyPage() {
   const [, navigate] = useLocation();
+  const search = useSearch();
+  const draftId = new URLSearchParams(search).get('draft');
   const { user } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('basic');
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [draftName, setDraftName] = useState<string>('');
+  const [savingDraft, setSavingDraft] = useState(false);
   
   // Redirect to auth page if not logged in
   React.useEffect(() => {
@@ -123,6 +130,18 @@ export default function AddPropertyPage() {
       navigate('/auth');
     }
   }, [user, navigate]);
+  
+  // Fetch draft data if editing a draft
+  const { data: draftData } = useQuery({
+    queryKey: ['/api/property-drafts', draftId],
+    queryFn: async () => {
+      if (!draftId) return null;
+      const res = await fetch(`/api/property-drafts/${draftId}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!draftId && !!user,
+  });
   
   // Fetch neighborhoods for dropdown
   const { data: neighborhoods } = useQuery({
@@ -164,6 +183,92 @@ export default function AddPropertyPage() {
       features: [],
     },
   });
+  
+  // Load draft data when available
+  useEffect(() => {
+    if (draftData && draftData.formData) {
+      setDraftName(draftData.name);
+      
+      // Fill the form with draft data
+      const formData = draftData.formData;
+      Object.keys(formData).forEach((key) => {
+        form.setValue(key as any, formData[key]);
+      });
+      
+      toast({
+        title: "Draft Loaded",
+        description: `"${draftData.name}" has been loaded for editing.`,
+      });
+    }
+  }, [draftData, form, toast]);
+  
+  // Save as draft mutation
+  const saveDraftMutation = useMutation({
+    mutationFn: async ({ name, formData }: { name: string, formData: any }) => {
+      // If editing an existing draft
+      if (draftId) {
+        const res = await apiRequest('PATCH', `/api/property-drafts/${draftId}`, {
+          name,
+          formData
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || 'Failed to update draft');
+        }
+        return res.json();
+      } 
+      // Creating a new draft
+      else {
+        const res = await apiRequest('POST', '/api/property-drafts', {
+          name,
+          formData
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || 'Failed to save draft');
+        }
+        return res.json();
+      }
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/property-drafts'] });
+      toast({
+        title: 'Draft saved',
+        description: 'Your property has been saved as a draft.',
+      });
+      setSavingDraft(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error saving draft',
+        description: error.message,
+        variant: 'destructive',
+      });
+      setSavingDraft(false);
+    }
+  });
+  
+  // Function to handle saving the current form state as a draft
+  const handleSaveAsDraft = async () => {
+    const formData = form.getValues();
+    
+    // Get a name for the draft if it doesn't exist
+    if (!draftName) {
+      const defaultName = formData.title || 'New Property Draft';
+      setDraftName(defaultName);
+    }
+    
+    try {
+      setSavingDraft(true);
+      await saveDraftMutation.mutateAsync({ 
+        name: draftName || 'New Property Draft', 
+        formData 
+      });
+    } catch (err) {
+      console.error('Error saving draft:', err);
+      setSavingDraft(false);
+    }
+  };
   
   // Create property mutation
   const createPropertyMutation = useMutation({
