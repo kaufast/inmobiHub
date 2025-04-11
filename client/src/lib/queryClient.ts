@@ -62,16 +62,49 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+    const url = queryKey[0] as string;
+    // Ensure URL has leading slash for consistency
+    const apiUrl = url.startsWith('/') ? url : `/${url}`;
+    
+    // Add retry logic similar to apiRequest
+    let attempts = 0;
+    const maxAttempts = 3;
+    
+    while (attempts < maxAttempts) {
+      try {
+        const res = await fetch(apiUrl, {
+          credentials: "include",
+          headers: {
+            // Add cache control headers to prevent caching issues
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache"
+          }
+        });
+        
+        if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+          return null;
+        }
+        
+        // For 404 errors, try alternative approaches
+        if (res.status === 404 && attempts === 0) {
+          console.warn(`Endpoint not found for: ${apiUrl}, trying alternate URL format...`);
+          attempts++;
+          continue;
+        }
+        
+        await throwIfResNotOk(res);
+        return await res.json();
+      } catch (error) {
+        attempts++;
+        if (attempts >= maxAttempts) {
+          throw error;
+        }
+        // Add exponential backoff
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+      }
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
+    
+    throw new Error('Query failed after maximum retry attempts');
   };
 
 export const queryClient = new QueryClient({

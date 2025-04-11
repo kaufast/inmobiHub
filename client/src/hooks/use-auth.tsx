@@ -57,14 +57,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticating(true);
       setError(null);
       
-      const res = await apiRequest('POST', '/api/login', credentials);
+      console.log("Starting login process...");
       
+      // First, try the enhanced apiRequest which has retry logic
+      let res;
+      try {
+        res = await apiRequest('POST', '/api/login', credentials);
+      } catch (apiError) {
+        console.warn("Initial login request failed, trying alternative approach...", apiError);
+        
+        // As a fallback, try a direct fetch with different options
+        res = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          },
+          body: JSON.stringify(credentials),
+          credentials: 'include'
+        });
+      }
+      
+      // Process the response
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || 'Login failed');
+        let errorMessage = 'Login failed';
+        
+        try {
+          // Try to parse as JSON first
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorData.error || 'Login failed';
+        } catch (jsonError) {
+          // If not JSON, try text
+          try {
+            const errorText = await res.text();
+            errorMessage = errorText || 'Login failed';
+          } catch (textError) {
+            // If all else fails, use status text
+            errorMessage = `Login failed: ${res.status} ${res.statusText}`;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
       
       const userData = await res.json();
+      console.log("Login successful:", userData);
+      
       setUser(userData);
       queryClient.setQueryData(["/api/user"], userData);
       
@@ -75,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return true;
     } catch (err) {
+      console.error("Login error:", err);
       const message = err instanceof Error ? err.message : 'Login failed';
       setError(message);
       
@@ -96,14 +136,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticating(true);
       setError(null);
       
-      const res = await apiRequest('POST', '/api/register', userData);
+      console.log("Starting registration process...");
       
+      // First, try the directly enhanced apiRequest which has retry logic
+      let res;
+      try {
+        res = await apiRequest('POST', '/api/register', userData);
+      } catch (apiError) {
+        console.warn("Initial registration request failed, trying alternative approach...", apiError);
+        
+        // As a fallback, try a direct fetch with different options
+        res = await fetch('/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          },
+          body: JSON.stringify(userData),
+          credentials: 'include'
+        });
+      }
+      
+      // Process the response
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || 'Registration failed');
+        let errorMessage = 'Registration failed';
+        
+        try {
+          // Try to parse as JSON first
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorData.error || 'Registration failed';
+        } catch (jsonError) {
+          // If not JSON, try text
+          try {
+            const errorText = await res.text();
+            errorMessage = errorText || 'Registration failed';
+          } catch (textError) {
+            // If all else fails, use status text
+            errorMessage = `Registration failed: ${res.status} ${res.statusText}`;
+          }
+        }
+        
+        throw new Error(errorMessage);
       }
       
       const newUser = await res.json();
+      console.log("Registration successful:", newUser);
+      
       setUser(newUser);
       queryClient.setQueryData(["/api/user"], newUser);
       
@@ -114,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       return true;
     } catch (err) {
+      console.error("Registration error:", err);
       const message = err instanceof Error ? err.message : 'Registration failed';
       setError(message);
       

@@ -20,6 +20,21 @@
       "dest": "server/index.ts"
     },
     {
+      "src": "/api/login",
+      "methods": ["POST"],
+      "dest": "server/index.ts"
+    },
+    {
+      "src": "/api/logout",
+      "methods": ["POST"],
+      "dest": "server/index.ts"
+    },
+    {
+      "src": "/api/user",
+      "methods": ["GET"],
+      "dest": "server/index.ts"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "server/index.ts"
     },
