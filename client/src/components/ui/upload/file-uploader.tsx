@@ -60,15 +60,7 @@ export const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
       onDropRejected: () => setIsDragging(false),
     });
 
-    // Convert the external ref to a React ref for internal use
-    const inputRef = React.useRef<HTMLInputElement>(null);
-    
-    // Use effect to sync external ref with internal ref
-    React.useEffect(() => {
-      if (ref && 'current' in ref) {
-        ref.current = inputRef.current;
-      }
-    }, [ref]);
+    // Nothing needed here, the ref will be properly forwarded to the input element
 
     return (
       <div
@@ -81,7 +73,7 @@ export const FileUploader = forwardRef<HTMLInputElement, FileUploaderProps>(
         )}
         {...props}
       >
-        <input {...getInputProps()} ref={inputRef} />
+        <input {...getInputProps()} ref={ref} />
         {children}
       </div>
     );

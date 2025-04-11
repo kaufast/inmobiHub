@@ -79,7 +79,11 @@ export function ImageUploader({
         if (files.length === 1 && !allowMultiple) {
           formData.append('image', files[0]);
           
-          const response = await apiRequest('POST', '/api/images/upload', formData);
+          const response = await fetch('/api/images/upload', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+          });
           
           const data = await response.json();
           if (!data.success) {
@@ -105,7 +109,11 @@ export function ImageUploader({
           
           console.log('Uploading files:', files.length);
           
-          const response = await apiRequest('POST', '/api/images/upload-multiple', formData);
+          const response = await fetch('/api/images/upload-multiple', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+          });
           
           const data = await response.json();
           if (!data.success) {
