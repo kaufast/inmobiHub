@@ -82,7 +82,12 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
       } else if (errorCode === 'auth/popup-closed-by-user') {
         displayMessage = "You closed the sign-in window before completing authentication. Please try again.";
       } else if (errorCode === 'auth/unauthorized-domain') {
-        displayMessage = `This website (${window.location.hostname}) is not authorized in Firebase. Please visit our main site at inmobi.mobi.`;
+        displayMessage = `This website (${window.location.hostname}) is not authorized in Firebase. Please visit our main site at inmobi.mobi or foundation-hub-kaufast.replit.app.`;
+        
+        // If we're on a development domain, provide more helpful information
+        if (window.location.hostname.includes('replit') || window.location.hostname.includes('localhost')) {
+          displayMessage = `This development domain (${window.location.hostname}) is not authorized for Firebase authentication. Use the demo credentials instead for testing, or visit our production site at inmobi.mobi.`;
+        }
       }
       
       // Set error message for display
@@ -110,16 +115,30 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
           <AlertDescription>{authError}</AlertDescription>
           
           {authError.includes('not authorized in Firebase') && (
-            <div className="mt-4 flex justify-between items-center">
-              <span className="text-sm">Firebase authentication is only enabled on our official domain.</span>
-              <Button
-                variant="destructive"
-                size="sm"
-                className="gap-1"
-                onClick={() => window.open('https://inmobi.mobi', '_blank')}
-              >
-                Visit inmobi.mobi
-              </Button>
+            <div className="mt-4 flex flex-col space-y-3">
+              <span className="text-sm">Firebase authentication is only enabled on our official domains.</span>
+              
+              {/* Recommend test credentials in development mode */}
+              {(window.location.hostname.includes('replit') || window.location.hostname.includes('localhost')) && (
+                <div className="bg-blue-50 text-blue-800 p-3 rounded-md border border-blue-200 text-sm">
+                  <strong>Development Mode:</strong> Use the demo credentials above for testing:
+                  <div className="mt-1 font-mono bg-gray-100 p-1 rounded text-xs">
+                    Username: testuser<br/>
+                    Password: password123
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex justify-end">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => window.open('https://inmobi.mobi', '_blank')}
+                >
+                  Visit inmobi.mobi
+                </Button>
+              </div>
             </div>
           )}
         </Alert>

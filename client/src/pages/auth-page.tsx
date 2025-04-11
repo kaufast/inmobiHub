@@ -17,9 +17,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { Loader2, InfoIcon, AlertCircle } from "lucide-react";
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { PasskeyAuthForm } from "@/components/auth/passkey-auth";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -95,6 +96,18 @@ export default function AuthPage() {
                   Access exclusive property insights and investment opportunities
                 </p>
               </div>
+              
+              {/* Development Mode Warning - Only show on development domains */}
+              {(window.location.hostname.includes('replit') || window.location.hostname.includes('localhost')) && (
+                <Alert variant="destructive" className="mb-6 bg-blue-50 border-blue-200">
+                  <AlertCircle className="h-4 w-4 text-blue-500" />
+                  <AlertTitle className="text-blue-700">Development Mode</AlertTitle>
+                  <AlertDescription className="text-blue-600">
+                    You're using Inmobi on a development domain. Some features like social authentication may be limited.
+                    Use the demo credentials below for testing.
+                  </AlertDescription>
+                </Alert>
+              )}
               
               <Tabs
                 defaultValue="login"
@@ -271,6 +284,23 @@ export default function AuthPage() {
                         ) : null}
                         Create Account
                       </Button>
+                      
+                      <div className="mt-4 text-sm text-center">
+                        <Button 
+                          type="button" 
+                          variant="link" 
+                          className="text-secondary-600 hover:text-secondary-500"
+                          onClick={() => {
+                            // Fill in test credentials
+                            registerForm.setValue('username', 'testuser');
+                            registerForm.setValue('email', 'test@example.com');
+                            registerForm.setValue('password', 'password123');
+                            registerForm.setValue('fullName', 'Test User');
+                          }}
+                        >
+                          Use demo credentials for testing
+                        </Button>
+                      </div>
                     </form>
                   </Form>
                 </TabsContent>
