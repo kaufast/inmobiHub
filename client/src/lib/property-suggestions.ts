@@ -311,6 +311,24 @@ export function getAddressSuggestions(country: string): string[] {
       "Calle Serrano 303",
       "Avenida del Paralelo 404"
     ],
+    de: [
+      "Frankfurter Allee 123, 4. OG",
+      "Kurfürstendamm 456",
+      "Unter den Linden 789",
+      "Friedrichstraße 101, Wohnung 5",
+      "Kaiserstraße 202",
+      "Hauptstraße 303",
+      "Bahnhofstraße 404"
+    ],
+    at: [
+      "Mariahilfer Straße 123, Top 4",
+      "Kärntner Straße 456",
+      "Stephansplatz 789",
+      "Graben 101",
+      "Ringstraße 202",
+      "Praterstraße 303",
+      "Landstraßer Hauptstraße 404"
+    ],
     gb: [
       "123 High Street, Flat 4B",
       "456 Oxford Street",

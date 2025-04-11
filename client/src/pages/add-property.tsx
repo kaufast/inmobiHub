@@ -693,36 +693,7 @@ export default function AddPropertyPage() {
                           )}
                         />
                         
-                        <FormField
-                          control={form.control}
-                          name="neighborhoodId"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Neighborhood</FormLabel>
-                              <Select 
-                                onValueChange={(value) => field.onChange(value ? Number(value) : undefined)} 
-                                defaultValue={field.value ? String(field.value) : undefined}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select neighborhood" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {neighborhoods?.map((neighborhood: any) => (
-                                    <SelectItem 
-                                      key={neighborhood.id} 
-                                      value={String(neighborhood.id)}
-                                    >
-                                      {neighborhood.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        {/* Neighborhood field has been removed as requested */}
                       </div>
                       
                       <Separator />
