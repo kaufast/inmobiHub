@@ -22,6 +22,7 @@ import UserVerificationPage from "@/pages/user-verification";
 import SubscriptionPage from "@/pages/subscription-page";
 import PaymentPage from "@/pages/payment-page";
 import TestFormComponentsPage from "@/pages/test-form-components";
+import AuthTestPage from "@/pages/auth-test";
 import { 
   ProtectedRoute, 
   UserProtectedRoute, 
@@ -66,6 +67,7 @@ function AppContent() {
           <Route path="/payment" component={PaymentPage} />
           <Route path="/payment/success" component={PaymentPage} />
           <Route path="/test-form-components" component={TestFormComponentsPage} />
+          <Route path="/auth-test" component={AuthTestPage} />
           <UserProtectedRoute path="/subscription" component={SubscriptionPage} />
           
           {/* Role-Specific Dashboard Routes */}

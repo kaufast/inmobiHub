@@ -6,10 +6,22 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged } from 'firebase/auth';
 import { Loader2, CheckCircle, XCircle, Info } from 'lucide-react';
 
+interface TestResult {
+  success: boolean;
+  message: string;
+}
+
+interface TestResults {
+  configCheck?: TestResult;
+  initCheck?: TestResult;
+  redirectResultCheck?: TestResult;
+  authStateCheck?: TestResult;
+}
+
 export function FirebaseTest() {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
-  const [results, setResults] = useState<{[key: string]: {success: boolean, message: string}>>({}); 
+  const [results, setResults] = useState<TestResults>({});
   const [firebaseConfig, setFirebaseConfig] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
