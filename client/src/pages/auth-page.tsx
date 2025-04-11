@@ -319,19 +319,19 @@ export default function AuthPage() {
             
             {/* Hero Section */}
             <div className="hidden md:block relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-900 to-primary-950">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3')] bg-cover bg-center opacity-15 mix-blend-overlay"></div>
+              <div className="absolute inset-0 bg-[#0f1620]">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3')] bg-cover bg-center opacity-10 mix-blend-multiply"></div>
               </div>
               
               <div className="relative z-10 p-12 flex flex-col h-full justify-center">
-                <h2 className="text-4xl font-bold text-white mb-6 drop-shadow-md">
+                <h2 className="text-4xl font-bold text-white mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">
                   Data-Driven Real Estate Investments
                 </h2>
-                <p className="text-white/90 text-lg mb-8 max-w-md drop-shadow">
+                <p className="text-white text-lg mb-8 max-w-md [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
                   Join thousands of investors making smarter real estate decisions with powerful analytics, market insights, and premium properties.
                 </p>
                 
-                <div className="bg-white/15 backdrop-blur-lg p-6 rounded-xl border border-white/20 shadow-lg">
+                <div className="bg-[#192231]/80 backdrop-blur-lg p-6 rounded-xl border border-white/10 shadow-xl">
                   <div className="flex items-center mb-4">
                     <div className="text-yellow-300 flex drop-shadow">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -351,7 +351,7 @@ export default function AuthPage() {
                       </svg>
                     </div>
                   </div>
-                  <blockquote className="text-white font-medium drop-shadow mb-4">
+                  <blockquote className="text-white font-medium [text-shadow:0_1px_2px_rgba(0,0,0,0.5)] mb-4">
                     "Inmobi has completely transformed how I approach real estate investing. The data insights helped me find properties with 20% higher ROI than my previous investments."
                   </blockquote>
                   <div className="flex items-center">
@@ -359,8 +359,8 @@ export default function AuthPage() {
                       RC
                     </div>
                     <div className="ml-3">
-                      <p className="text-white font-medium drop-shadow">Robert Chen</p>
-                      <p className="text-white/90 text-sm drop-shadow">Real Estate Investor</p>
+                      <p className="text-white font-medium [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">Robert Chen</p>
+                      <p className="text-white/90 text-sm [text-shadow:0_1px_1px_rgba(0,0,0,0.5)]">Real Estate Investor</p>
                     </div>
                   </div>
                 </div>
