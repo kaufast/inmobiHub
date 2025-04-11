@@ -254,12 +254,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         propertyContext = await storage.getProperty(parseInt(propertyId));
       }
       
-      // Get response from Anthropic
-      const response = await handleChatMessage(
-        message, 
-        chatHistory || [], 
-        propertyContext
-      );
+      let response: string;
+      
+      // Use Perplexity if API key exists, otherwise fallback to Anthropic
+      if (process.env.PERPLEXITY_API_KEY) {
+        // Import Perplexity handler dynamically to avoid issues if not configured
+        const { handleChatWithPerplexity } = await import('./perplexity');
+        response = await handleChatWithPerplexity(
+          message, 
+          chatHistory || [], 
+          propertyContext
+        );
+      } else {
+        // Use Anthropic as fallback
+        response = await handleChatMessage(
+          message, 
+          chatHistory || [], 
+          propertyContext
+        );
+      }
       
       // Save the chat interaction for analytics
       try {
