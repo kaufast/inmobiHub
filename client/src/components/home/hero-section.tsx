@@ -127,14 +127,31 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-primary-900/90 to-gray-900/95"></div>
       
       <div className="container mx-auto px-4 py-16 md:py-24 lg:py-28 relative z-10">
-        <div className="flex flex-col items-center text-center" style={{ marginTop: "5%" }}>
-          <p className="mt-2 text-xl text-white/90 max-w-2xl mx-auto mb-6">
-            {t('common.findYourDreamProperty')}
-          </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <div className="flex flex-col items-start text-left">
+            <p className="mt-2 text-xl text-white/90 mb-6">
+              {t('common.findYourDreamProperty')}
+            </p>
+            
+            <h1 className="text-[2.6rem] md:text-[3.2rem] lg:text-[3.8rem] font-bold text-white leading-none tracking-tight mb-8">
+              OPENING MORE DOORS
+            </h1>
+            
+            <p className="text-white/80 text-lg mb-6 max-w-xl">
+              Unlocking Smart Capital For Data-Driven Investors
+            </p>
+          </div>
           
-          <h1 className="text-[2.6rem] md:text-[3.2rem] lg:text-[3.8rem] font-bold text-white leading-none tracking-tight mb-8">
-            OPENING MORE DOORS
-          </h1>
+          {/* Modern house showcase with property data */}
+          <div className="hidden md:flex items-center justify-center">
+            <div className="relative w-[380px]">
+              <img 
+                src="/attached_assets/Screenshot 2025-04-11 at 12.59.15.png" 
+                alt="Property data visualization" 
+                className="w-full h-auto relative z-10 drop-shadow-2xl"
+              />
+            </div>
+          </div>
           
           {/* Multimodal Search bar with modern house image in background */}
           <div className="w-full max-w-4xl bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700 relative">
