@@ -31,7 +31,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="glassmorphism-dark sticky top-0 z-50 text-white">
+    <header className="bg-gray-800/90 backdrop-blur-md sticky top-0 z-50 text-white border-b border-gray-700">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
