@@ -27,6 +27,100 @@ export const countries = [
 ];
 
 /**
+ * City suggestions based on country
+ */
+export function getCitySuggestions(country: string): string[] {
+  const citiesByCountry: Record<string, string[]> = {
+    us: [
+      "New York", "Los Angeles", "Chicago", "Houston", "Phoenix",
+      "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose",
+      "Austin", "Miami", "Seattle", "Denver", "Boston"
+    ],
+    mx: [
+      "Mexico City", "Guadalajara", "Monterrey", "Puebla", "Tijuana",
+      "Cancún", "Mérida", "Querétaro", "León", "San Luis Potosí",
+      "Aguascalientes", "Mexicali", "Hermosillo", "Culiacán", "Acapulco"
+    ],
+    de: [
+      "Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt",
+      "Stuttgart", "Düsseldorf", "Leipzig", "Dortmund", "Essen",
+      "Bremen", "Dresden", "Hanover", "Nuremberg", "Duisburg"
+    ],
+    es: [
+      "Madrid", "Barcelona", "Valencia", "Seville", "Zaragoza",
+      "Málaga", "Murcia", "Palma", "Las Palmas", "Bilbao",
+      "Alicante", "Córdoba", "Valladolid", "Vigo", "Granada"
+    ],
+    at: [
+      "Vienna", "Graz", "Linz", "Salzburg", "Innsbruck",
+      "Klagenfurt", "Villach", "Wels", "Sankt Pölten", "Dornbirn",
+      "Wiener Neustadt", "Steyr", "Feldkirch", "Bregenz", "Leonding"
+    ]
+  };
+  
+  // Default cities if country is not specified
+  const defaultCities = [
+    "New York", "London", "Tokyo", "Paris", "Berlin",
+    "Madrid", "Rome", "Toronto", "Sydney", "Moscow"
+  ];
+  
+  return citiesByCountry[country] || defaultCities;
+}
+
+/**
+ * State/province suggestions based on country
+ */
+export function getStateSuggestions(country: string): string[] {
+  const statesByCountry: Record<string, string[]> = {
+    us: [
+      "Alabama", "Alaska", "Arizona", "Arkansas", "California",
+      "Colorado", "Connecticut", "Delaware", "Florida", "Georgia",
+      "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+      "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland",
+      "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri",
+      "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+      "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+      "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+      "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+      "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+    ],
+    mx: [
+      "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
+      "Chihuahua", "Coahuila", "Colima", "Durango", "Guanajuato",
+      "Guerrero", "Hidalgo", "Jalisco", "México", "Michoacán",
+      "Morelos", "Nayarit", "Nuevo León", "Oaxaca", "Puebla",
+      "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa", "Sonora",
+      "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán",
+      "Zacatecas", "Mexico City"
+    ],
+    de: [
+      "Baden-Württemberg", "Bavaria", "Berlin", "Brandenburg", "Bremen",
+      "Hamburg", "Hesse", "Lower Saxony", "Mecklenburg-Western Pomerania", "North Rhine-Westphalia",
+      "Rhineland-Palatinate", "Saarland", "Saxony", "Saxony-Anhalt", "Schleswig-Holstein",
+      "Thuringia"
+    ],
+    es: [
+      "Andalusia", "Aragon", "Asturias", "Balearic Islands", "Basque Country",
+      "Canary Islands", "Cantabria", "Castile and León", "Castile-La Mancha", "Catalonia",
+      "Extremadura", "Galicia", "La Rioja", "Madrid", "Murcia",
+      "Navarre", "Valencia"
+    ],
+    at: [
+      "Burgenland", "Carinthia", "Lower Austria", "Upper Austria", "Salzburg",
+      "Styria", "Tyrol", "Vorarlberg", "Vienna"
+    ]
+  };
+  
+  // Default states if country is not specified
+  const defaultStates = [
+    "California", "New York", "Texas", "Florida", "Ontario",
+    "Quebec", "Bavaria", "Catalonia", "New South Wales", "Tokyo"
+  ];
+  
+  return statesByCountry[country] || defaultStates;
+}
+
+/**
  * Generates title suggestions based on property type
  */
 export function getTitleSuggestions(propertyType: string): string[] {

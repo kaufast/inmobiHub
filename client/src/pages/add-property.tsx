@@ -32,7 +32,8 @@ import {
   getDescriptionSuggestions, 
   countries, 
   getAddressSuggestions,
-  propertyTypeLabels
+  getCitySuggestions,
+  getStateSuggestions
 } from '@/lib/property-suggestions';
 import { SuggestionInput } from '@/components/ui/suggestion-input';
 import { AddressSuggestionInput } from '@/components/ui/address-suggestion-input';
@@ -593,9 +594,11 @@ export default function AddPropertyPage() {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
-                                    <Input 
+                                    <SuggestionInput 
+                                      value={field.value}
+                                      onChange={field.onChange}
                                       placeholder="City" 
-                                      {...field} 
+                                      suggestions={getCitySuggestions(form.getValues().country)}
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -609,9 +612,11 @@ export default function AddPropertyPage() {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
-                                    <Input 
+                                    <SuggestionInput 
+                                      value={field.value}
+                                      onChange={field.onChange}
                                       placeholder="State/Province" 
-                                      {...field} 
+                                      suggestions={getStateSuggestions(form.getValues().country)}
                                     />
                                   </FormControl>
                                   <FormMessage />
