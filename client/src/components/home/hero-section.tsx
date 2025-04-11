@@ -136,8 +136,16 @@ export default function HeroSection() {
             OPENING MORE DOORS
           </h1>
           
-          {/* Multimodal Search bar */}
-          <div className="w-full max-w-4xl bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700">
+          {/* Multimodal Search bar with modern house image in background */}
+          <div className="w-full max-w-4xl bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700 relative">
+            {/* Modern house image background */}
+            <div className="absolute inset-0 rounded-2xl overflow-hidden opacity-10 z-0">
+              <img 
+                src="@assets/fc22b533-29c2-4e45-a37a-627a17bdb980.png" 
+                alt="Modern luxury house" 
+                className="object-cover w-full h-full"
+              />
+            </div>
             <Tabs value={activeTab} defaultValue="text" className="w-full" onValueChange={(value) => {
               const type = value as "text" | "image" | "audio";
               setActiveTab(type);
