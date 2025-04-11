@@ -145,7 +145,7 @@ export default function HeroSection() {
           {/* Right column - 3D house image */}
           <div className="hidden md:flex items-center justify-center">
             <img 
-              src="attached_assets/1e742507-91dd-445f-922a-34a1117b1959.avif" 
+              src="/attached_assets/1e742507-91dd-445f-922a-34a1117b1959.avif" 
               alt="3D isometric house visualization" 
               className="w-[500px] h-auto object-contain drop-shadow-2xl"
             />
@@ -385,11 +385,11 @@ export default function HeroSection() {
         <div className="w-full max-w-4xl mx-auto mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
           <div className="relative h-[450px] w-full">
             {/* Background house image */}
-            <div className="absolute inset-0 bg-cover bg-center"></div>
+            <div className="absolute inset-0 bg-[url('/assets/modern-house.png')] bg-cover bg-center"></div>
             
-            {/* Overlay people - commented out background images */}
+            {/* Overlay people */}
             <div className="absolute inset-0 flex justify-center items-start pt-16">
-              <div className="w-[50%] h-[25%] bg-contain bg-no-repeat bg-bottom"></div>
+              <div className="w-[50%] h-[25%] bg-[url('/assets/people-standing.jpg')] bg-contain bg-no-repeat bg-bottom"></div>
             </div>
             
             <div className="absolute inset-0 bg-gray-900/20"></div>
