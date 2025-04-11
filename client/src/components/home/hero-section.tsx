@@ -385,8 +385,11 @@ export default function HeroSection() {
         {/* Map Mockup Section */}
         <div className="w-full max-w-4xl mx-auto mt-4 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
           <div className="relative h-[450px] w-full">
-            {/* Background house image */}
-            <div className="absolute inset-0 bg-gray-600 bg-cover bg-center"></div>
+            {/* Background map image */}
+            <div className="absolute inset-0 bg-gray-600 bg-cover bg-center" style={{
+              backgroundImage: "url('https://i.imgur.com/JC6OSK2.png')",
+              opacity: 0.7
+            }}></div>
             
             {/* Overlay people - commented out background images */}
             <div className="absolute inset-0 flex justify-center items-start pt-16">
@@ -421,7 +424,7 @@ export default function HeroSection() {
             <div className="absolute top-[15%] right-[14px] w-80 bg-gray-900/90 backdrop-blur-md rounded-lg overflow-hidden border border-gray-700 shadow-lg">
               <div className="relative">
                 <img 
-                  src="/assets/luxury-villa.jpg" 
+                  src="https://images.unsplash.com/photo-1613553507747-5f8d62ad5904?q=80&w=1000&auto=format&fit=crop" 
                   alt="Modern Mexican house" 
                   className="w-full h-36 object-cover"
                 />
