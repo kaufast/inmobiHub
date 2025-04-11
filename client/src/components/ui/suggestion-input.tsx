@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, CheckCircle2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface SuggestionInputProps {
   value: string;
@@ -11,7 +9,6 @@ interface SuggestionInputProps {
   suggestions: string[];
   placeholder?: string;
   className?: string;
-  maxSuggestions?: number;
   isTextarea?: boolean;
   rows?: number;
   disabled?: boolean;
@@ -20,106 +17,137 @@ interface SuggestionInputProps {
 export function SuggestionInput({
   value,
   onChange,
-  suggestions = [],
-  placeholder = '',
-  className = '',
-  maxSuggestions = 4,
+  suggestions,
+  placeholder,
+  className,
   isTextarea = false,
-  rows = 5,
-  disabled = false,
+  rows = 4,
+  disabled = false
 }: SuggestionInputProps) {
+  const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState(-1);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   
-  // Update filtered suggestions when the input value or suggestions change
+  // Filter suggestions based on input value
   useEffect(() => {
-    if (suggestions.length > 0) {
-      setFilteredSuggestions(
-        suggestions.slice(0, maxSuggestions)
+    if (!value) {
+      setFilteredSuggestions(suggestions);
+    } else {
+      const filtered = suggestions.filter(
+        suggestion => suggestion.toLowerCase().includes(value.toLowerCase())
       );
+      setFilteredSuggestions(filtered);
     }
-  }, [suggestions, maxSuggestions]);
+  }, [value, suggestions]);
   
-  // Close suggestions panel when clicking outside
+  // Click outside handler
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
       }
-    };
+    }
     
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
   
-  // Apply suggestion on click
-  const applySuggestion = (suggestion: string) => {
-    onChange(suggestion);
-    setShowSuggestions(false);
+  const handleFocus = () => {
+    setIsFocused(true);
+    setShowSuggestions(true);
   };
   
-  // Toggle suggestions display
-  const toggleSuggestions = () => {
-    setShowSuggestions(!showSuggestions);
+  const handleBlur = () => {
+    setIsFocused(false);
+    // Don't hide immediately to allow for click on suggestion
+    setTimeout(() => {
+      if (!isFocused) {
+        setShowSuggestions(false);
+      }
+    }, 150);
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Arrow down
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (activeSuggestion < filteredSuggestions.length - 1) {
+        setActiveSuggestion(activeSuggestion + 1);
+      }
+    }
+    // Arrow up
+    else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (activeSuggestion > 0) {
+        setActiveSuggestion(activeSuggestion - 1);
+      }
+    }
+    // Enter
+    else if (e.key === "Enter" && activeSuggestion >= 0) {
+      e.preventDefault();
+      onChange(filteredSuggestions[activeSuggestion]);
+      setShowSuggestions(false);
+      setActiveSuggestion(-1);
+    }
+    // Escape
+    else if (e.key === "Escape") {
+      setShowSuggestions(false);
+      setActiveSuggestion(-1);
+    }
+  };
+  
+  const handleSuggestionClick = (suggestion: string) => {
+    onChange(suggestion);
+    setShowSuggestions(false);
+    setActiveSuggestion(-1);
   };
   
   return (
-    <div ref={containerRef} className="relative">
-      <div className="flex">
-        {isTextarea ? (
-          <Textarea
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className={cn("flex-1 rounded-r-none", className)}
-            rows={rows}
-            disabled={disabled}
-          />
-        ) : (
-          <Input
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className={cn("flex-1 rounded-r-none", className)}
-            disabled={disabled}
-          />
-        )}
-        
-        {suggestions.length > 0 && (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="rounded-l-none border-l-0"
-            onClick={toggleSuggestions}
-            disabled={disabled}
-          >
-            {showSuggestions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </Button>
-        )}
-      </div>
+    <div ref={wrapperRef} className="relative w-full">
+      {isTextarea ? (
+        <Textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className={cn("resize-none", className)}
+          rows={rows}
+          disabled={disabled}
+        />
+      ) : (
+        <Input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className={className}
+          disabled={disabled}
+        />
+      )}
       
       {showSuggestions && filteredSuggestions.length > 0 && (
-        <div className="absolute z-50 mt-1 w-full bg-background rounded-md border border-input shadow-md max-h-[300px] overflow-y-auto">
-          <div className="p-2 text-xs text-muted-foreground">Suggestions:</div>
-          <ul className="py-1 px-1">
-            {filteredSuggestions.map((suggestion, index) => (
-              <li 
-                key={index}
-                className="cursor-pointer rounded-sm text-sm p-2.5 hover:bg-accent flex items-start gap-2"
-                onClick={() => applySuggestion(suggestion)}
-              >
-                <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary opacity-70" />
-                <span className={isTextarea ? "whitespace-normal" : "truncate"}>
-                  {suggestion}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="absolute mt-1 w-full bg-popover border border-border rounded-md shadow-md z-50 max-h-60 overflow-y-auto">
+          {filteredSuggestions.map((suggestion, index) => (
+            <div
+              key={index}
+              onClick={() => handleSuggestionClick(suggestion)}
+              className={cn(
+                "px-3 py-2 cursor-pointer text-sm truncate hover:bg-muted",
+                index === activeSuggestion && "bg-muted"
+              )}
+            >
+              {suggestion}
+            </div>
+          ))}
         </div>
       )}
     </div>

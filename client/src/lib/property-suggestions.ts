@@ -1,171 +1,236 @@
-// Property suggestion data for form fields
+/**
+ * This file contains utility functions for generating property-related suggestions
+ * for the property listing form components.
+ */
 
-// Title suggestions based on property type
-export const getTitleSuggestions = (propertyType: string): string[] => {
-  const baseMap: Record<string, string[]> = {
-    house: [
-      'Charming Family Home in',
-      'Spacious House with Beautiful Garden in',
-      'Modern House with Great Views in',
-      'Elegant Family Residence in',
-      'Luxurious Villa in Exclusive',
-      'Cozy Single-Family Home in',
-      'Stunning Detached House in',
-    ],
-    condo: [
-      'Modern Urban Condo in',
-      'Luxury Condominium with City Views in',
-      'Stylish Condo in the Heart of',
-      'Elegant Condominium in Prime Location in',
-      'Contemporary Condo with Amenities in',
-      'Exclusive Penthouse Condo in',
-    ],
-    apartment: [
-      'Bright City Apartment in',
-      'Stylish Urban Apartment in',
-      'Renovated Apartment with Balcony in',
-      'Cozy Studio Apartment in Central',
-      'Modern Apartment with Great Location in',
-      'Premium Apartment with Panoramic Views in',
-    ],
-    townhouse: [
-      'Beautiful Townhouse in Residential',
-      'Modern Townhome with Terrace in',
-      'Spacious Townhouse with Garden in',
-      'Elegant Row House in Historic',
-      'Contemporary Townhouse with Garage in',
-    ],
-    land: [
-      'Prime Building Lot in Developing',
-      'Scenic Land Parcel in',
-      'Development Opportunity in Growing',
-      'Investment Land with Great Potential in',
-      'Commercial Land Plot in',
-    ],
-  };
-  
-  return baseMap[propertyType] || baseMap.house;
-};
-
-// Description suggestions based on property type
-export const getDescriptionSuggestions = (propertyType: string): string[] => {
-  const baseMap: Record<string, string[]> = {
-    house: [
-      'This beautiful house offers a perfect blend of comfort and style. Featuring spacious rooms, modern amenities, and a well-maintained garden, it\'s ideal for families looking for a peaceful neighborhood with convenient access to local services.',
-      'Welcome to this charming family home nestled in a quiet neighborhood. The property boasts open living areas, a fully equipped kitchen, and comfortable bedrooms. The backyard is perfect for entertaining and outdoor activities.',
-      'Discover this impeccably maintained home with quality finishes throughout. The thoughtful layout provides a comfortable living space with abundant natural light. Located in a friendly community with excellent schools nearby.',
-      'This elegant residence combines modern design with practical living spaces. The home features high ceilings, large windows, and premium fixtures. The landscaped garden offers privacy and tranquility in a desirable location.',
-    ],
-    condo: [
-      'Modern condominium in a premium building with excellent amenities including a fitness center, swimming pool, and 24-hour security. This stylish unit features contemporary finishes, an open floor plan, and stunning views.',
-      'Luxury condo in a sought-after location offering the perfect urban lifestyle. The unit includes high-end appliances, designer fixtures, and a private balcony. Building amenities include concierge service and a rooftop terrace.',
-      'This sleek condo combines comfort with convenience in a central location. The open-concept layout maximizes space and light, while building amenities provide additional luxury. Perfect for professionals or investors.',
-      'Elegant condominium in a secure building with resort-style amenities. The thoughtfully designed interior offers premium finishes and smart home features. Enjoy city living with all conveniences at your doorstep.',
-    ],
-    apartment: [
-      'Bright and airy apartment in a well-maintained building. The functional layout makes the most of the space, with modern fixtures and neutral decor throughout. Conveniently located near public transportation and local amenities.',
-      'This stylish apartment offers contemporary living in a vibrant neighborhood. Features include updated kitchen and bathroom, ample storage space, and energy-efficient appliances. Perfect for urban dwellers who value both comfort and location.',
-      'Beautifully renovated apartment with a practical floor plan and quality finishes. The property benefits from abundant natural light and views over the surrounding area. Located in a secure building with good amenities.',
-      'Cozy yet spacious apartment providing comfortable city living. Recent updates include modern kitchen fixtures and bathroom renovations. The central location offers easy access to restaurants, shops, and entertainment options.',
-    ],
-    townhouse: [
-      'Elegant townhouse offering the perfect balance between house and apartment living. The multi-level layout provides excellent separation of living areas, while the location offers a sense of community and security.',
-      'Modern townhome with a practical floor plan and private outdoor space. The interior features contemporary design elements and quality finishes. Enjoy low-maintenance living in a desirable residential area.',
-      'Charming townhouse with character and modern updates. The property includes multiple bedrooms, updated bathrooms, and a functional kitchen. The private yard offers outdoor enjoyment in a convenient location.',
-      'This stylish townhouse combines sophisticated design with practical living spaces. The open-concept main level flows into a private outdoor area, while upper levels provide comfortable sleeping quarters and additional living space.',
-    ],
-    land: [
-      'Prime development opportunity in a growing area with strong appreciation potential. This vacant land is ready for your custom project, with utilities nearby and good access roads already in place.',
-      'Exceptional land parcel in a desirable location, ideal for custom home construction or development. The property features natural beauty with mature trees and slight elevation changes creating character.',
-      'Versatile land offering multiple possibilities for development or private estate. The location provides a balance of privacy and convenience, with peaceful surroundings yet proximity to amenities.',
-      'Rare find - buildable lot in an established neighborhood. This parcel offers the opportunity to design and build to your specifications in an area with existing infrastructure and services.',
-    ],
-  };
-  
-  return baseMap[propertyType] || baseMap.house;
-};
-
-// Country options for dropdown
+// Country options for the dropdown
 export const countries = [
-  { value: 'Mexico', label: 'Mexico' },
-  { value: 'Spain', label: 'Spain' },
-  { value: 'USA', label: 'United States' },
-  { value: 'Germany', label: 'Germany' },
-  { value: 'Austria', label: 'Austria' },
-  { value: 'Portugal', label: 'Portugal' },
-  { value: 'France', label: 'France' },
-  { value: 'Italy', label: 'Italy' },
+  { value: "us", label: "United States" },
+  { value: "mx", label: "Mexico" },
+  { value: "ca", label: "Canada" },
+  { value: "es", label: "Spain" },
+  { value: "gb", label: "United Kingdom" },
+  { value: "fr", label: "France" },
+  { value: "de", label: "Germany" },
+  { value: "it", label: "Italy" },
+  { value: "br", label: "Brazil" },
+  { value: "ar", label: "Argentina" },
+  { value: "co", label: "Colombia" },
+  { value: "cl", label: "Chile" },
+  { value: "pe", label: "Peru" },
+  { value: "au", label: "Australia" },
+  { value: "nz", label: "New Zealand" },
+  { value: "jp", label: "Japan" },
+  { value: "cn", label: "China" },
+  { value: "sg", label: "Singapore" },
+  { value: "ae", label: "United Arab Emirates" },
 ];
 
-// Address suggestions by country
-export const getAddressSuggestions = (countryValue: string): string[] => {
-  const suggestionsMap: Record<string, string[]> = {
-    Mexico: [
-      'Calle Reforma 123, Condesa, Ciudad de México',
-      'Avenida Insurgentes 456, Polanco, Ciudad de México',
-      'Calle 10 Norte 789, Centro, Playa del Carmen, Quintana Roo',
-      'Blvd. Kukulcán Km 12.5, Zona Hotelera, Cancún',
-      'Avenida Chapultepec 278, Roma Norte, Ciudad de México',
+/**
+ * Generates title suggestions based on property type
+ */
+export function getTitleSuggestions(propertyType: string): string[] {
+  const baseSuggestions = [
+    "Beautiful Property with Amazing Views",
+    "Newly Renovated Property for Sale",
+    "Perfect Location for Your Next Home",
+    "Modern Property in Desirable Neighborhood",
+    "Spacious Property with Great Amenities"
+  ];
+
+  const typeSpecificSuggestions: Record<string, string[]> = {
+    house: [
+      "Elegant Family Home with Private Garden",
+      "Modern Single-Family House in Safe Neighborhood",
+      "Charming Ranch-Style Home with Spacious Yard",
+      "Stunning Colonial House with Classic Details",
+      "Contemporary Home with Open Concept Living",
+      "Spacious Two-Story Home Perfect for Families",
+      "Cozy Craftsman Home in Established Neighborhood"
     ],
-    Spain: [
-      'Calle Gran Vía 32, 28013 Madrid',
-      'Passeig de Gràcia 43, 08007 Barcelona',
-      'Calle Sierpes 78, 41004 Sevilla',
-      'Plaza Mayor 15, 37008 Salamanca',
-      'Avenida de la Constitución 17, 18001 Granada',
+    apartment: [
+      "Bright & Spacious Urban Apartment",
+      "Modern Apartment with City Views",
+      "Renovated Apartment in Historic Building",
+      "Luxury High-Rise Apartment with Amenities",
+      "Cozy Studio Apartment in Central Location",
+      "Stylish Loft Apartment with High Ceilings",
+      "Sunny Corner Apartment with Balcony"
     ],
-    USA: [
-      '123 Main Street, Seattle, WA 98101',
-      '456 Park Avenue, New York, NY 10022',
-      '789 Ocean Drive, Miami Beach, FL 33139',
-      '555 Market Street, San Francisco, CA 94105',
-      '321 Highland Avenue, Los Angeles, CA 90036',
+    condo: [
+      "Modern Condo with Resort-Style Amenities",
+      "Luxury Waterfront Condo with Amazing Views",
+      "Exclusive Penthouse Condo with Private Terrace",
+      "Contemporary Condo in Secure Building",
+      "Spacious Corner Condo with Updated Features",
+      "Urban Condo Steps from Shopping & Dining",
+      "Newly Built Condo with Designer Finishes"
     ],
-    Germany: [
-      'Friedrichstraße 43, 10117 Berlin',
-      'Maximilianstraße 17, 80539 München',
-      'Königsallee 30, 40212 Düsseldorf',
-      'Mönckebergstraße 15, 20095 Hamburg',
-      'Zeil 106, 60313 Frankfurt am Main',
+    townhouse: [
+      "Elegant Townhouse with Private Courtyard",
+      "Modern Townhome in Gated Community",
+      "Multi-Level Townhouse with Rooftop Deck",
+      "End-Unit Townhouse with Abundant Natural Light",
+      "Urban Townhouse with Private Garage",
+      "Contemporary Townhome with Open Floor Plan",
+      "Spacious Townhouse in Established Community"
     ],
-    Austria: [
-      'Kärntner Straße 28, 1010 Wien',
-      'Getreidegasse 9, 5020 Salzburg',
-      'Herrengasse 14, 8010 Graz',
-      'Maria-Theresien-Straße 18, 6020 Innsbruck',
-      'Landstraße 17, 4020 Linz',
+    land: [
+      "Prime Residential Building Lot",
+      "Agricultural Land with Development Potential",
+      "Commercial Lot in High-Traffic Area",
+      "Scenic Undeveloped Land with Mountain Views",
+      "Waterfront Property Ready for Development",
+      "Large Parcel with Investment Potential",
+      "Buildable Lot in Desirable Area"
     ],
-    Portugal: [
-      'Avenida da Liberdade 110, 1250-146 Lisboa',
-      'Rua de Santa Catarina 375, 4000-451 Porto',
-      'Rua Serpa Pinto 15, the 8200-471 Albufeira',
-      'Rua do Comércio 32, 1100-150 Lisboa',
-      'Avenida dos Aliados 104, 4000-065 Porto',
+    commercial: [
+      "Prime Commercial Space in Business District",
+      "Well-Located Retail Property for Sale",
+      "Commercial Building with Multiple Units",
+      "Investment Office Property with Tenants",
+      "High-Visibility Commercial Corner Lot",
+      "Mixed-Use Commercial Building with Potential",
+      "Modern Commercial Space with Parking"
     ],
-    France: [
-      'Avenue des Champs-Élysées 75, 75008 Paris',
-      'Rue de la République 42, 69002 Lyon',
-      'Promenade des Anglais 27, 06000 Nice',
-      'Rue du Faubourg Saint-Honoré 101, 75008 Paris',
-      'Quai des Belges 33, 13001 Marseille',
+    industrial: [
+      "Functional Industrial Warehouse for Sale",
+      "Modern Industrial Facility with Office Space",
+      "Versatile Industrial Property with Loading Docks",
+      "Industrial Building in Strategic Location",
+      "Multi-Bay Industrial Complex with Yard",
+      "Industrial Property with Highway Access",
+      "Turnkey Manufacturing Facility"
+    ]
+  };
+
+  // Get the specific suggestions for the property type, or use defaults
+  const specificSuggestions = typeSpecificSuggestions[propertyType] || baseSuggestions;
+  
+  // Combine and return suggestions
+  return [...specificSuggestions, ...baseSuggestions];
+}
+
+/**
+ * Generates description suggestions based on property type
+ */
+export function getDescriptionSuggestions(propertyType: string): string[] {
+  const baseSuggestions = [
+    "This property features modern design elements and quality finishes throughout. Conveniently located near shopping, dining, and public transportation. Don't miss this opportunity!",
+    "Beautifully maintained property in a desirable location. Offering the perfect blend of comfort and style, this property won't last long on the market.",
+    "Fantastic opportunity to own in a highly sought-after area. This property offers excellent value with its convenient location and attractive features.",
+    "This property boasts an ideal location with easy access to major highways, schools, and local amenities. Perfect for those seeking convenience without sacrificing comfort.",
+    "Spacious and well-designed property with plenty of natural light throughout. The layout offers versatility and comfort for various lifestyle needs."
+  ];
+
+  const typeSpecificSuggestions: Record<string, string[]> = {
+    house: [
+      "Welcome to this charming family home featuring spacious rooms and a functional layout. The property includes a welcoming front yard and private backyard, perfect for outdoor entertaining and relaxation. Located in a family-friendly neighborhood with easy access to schools, parks, and shopping centers.",
+      "This beautiful house offers the perfect blend of comfort and style. Featuring an open floor plan, updated kitchen with modern appliances, and a primary suite with ensuite bathroom. The backyard includes a covered patio area ideal for outdoor dining and entertaining. Located in a quiet neighborhood with excellent schools nearby.",
+      "Stunning single-family home with exceptional curb appeal and thoughtful design. The interior features high ceilings, abundant natural light, and quality finishes throughout. The kitchen includes stainless steel appliances and plenty of counter space. Outside, you'll find a professionally landscaped yard with irrigation system. This home is perfectly situated near parks, schools, and shopping."
     ],
-    Italy: [
-      'Via Condotti 12, 00187 Roma',
-      'Via Montenapoleone 8, 20121 Milano',
-      'Via Toledo 256, 80132 Napoli',
-      'Ponte di Rialto, 30125 Venezia',
-      'Via Tornabuoni 16, 50123 Firenze',
+    apartment: [
+      "Bright and spacious apartment offering modern urban living at its finest. This unit features an open concept layout, updated kitchen with quality appliances, and large windows providing abundant natural light. Building amenities include secure entry, fitness center, and rooftop terrace. Ideally located near public transportation, restaurants, and entertainment venues.",
+      "Stylish apartment in a well-maintained building located in the heart of the city. This unit offers a functional layout with a modern kitchen, in-unit laundry, and a private balcony with city views. Enjoy the convenience of nearby cafes, shops, and public transportation just steps from your door.",
+      "Contemporary apartment featuring an intelligent layout that maximizes space and functionality. The unit includes updated fixtures, ample storage, and energy-efficient appliances. Building amenities include 24-hour security, resident lounge, and on-site management. Centrally located with easy access to major employers, dining, and entertainment options."
     ],
+    condo: [
+      "Luxurious condominium offering resort-style living in a prime location. This unit features high-end finishes, gourmet kitchen with stone countertops, and a spacious primary suite. Community amenities include swimming pool, fitness center, and clubhouse. Located near upscale shopping, fine dining, and entertainment options.",
+      "Modern condo in a secure building with exceptional amenities. This unit offers an open floor plan, upgraded kitchen with premium appliances, and a private balcony with captivating views. Residents enjoy access to a swimming pool, fitness center, and concierge services. Perfectly situated near parks, dining options, and convenient transportation links.",
+      "Elegant condominium featuring a desirable open concept design and premium finishes throughout. The gourmet kitchen includes stone countertops and stainless steel appliances. Enjoy building amenities such as a rooftop deck, fitness facility, and secured parking. Located in a vibrant area with walkable access to restaurants, shops, and entertainment."
+    ],
+    townhouse: [
+      "Stylish townhouse offering multi-level living in a convenient location. This property features a functional layout with separate living and sleeping areas, modern kitchen with breakfast bar, and attached garage. The community offers well-maintained common areas and a central location near shopping, dining, and major transportation routes.",
+      "Contemporary townhome providing the perfect blend of privacy and community living. This residence includes an open main level, spacious bedrooms, and a private outdoor area. The community features include landscaped grounds and visitor parking. Located in a desirable area near schools, parks, and shopping centers.",
+      "Well-designed townhouse in a sought-after community offering low-maintenance living without sacrificing space or privacy. The property features multiple levels with versatile living spaces, updated kitchen, and a private patio perfect for outdoor enjoyment. Conveniently located near major employers, shopping centers, and recreational facilities."
+    ],
+    land: [
+      "Prime undeveloped land offering exceptional opportunity in a growing area. This parcel features [topography details] with [view features if applicable]. Utilities are [available/nearby]. Zoned for [residential/commercial/mixed-use] development with potential for [specific uses]. Located in an area experiencing significant growth with strong demand for new development.",
+      "Valuable land parcel ideally situated for future development. This property offers [size] acres with [road frontage details] and [natural features]. The location provides excellent visibility and accessibility, making it suitable for various development options. Area amenities include [nearby features] with strong demographic indicators supporting future growth.",
+      "Exceptional land opportunity in a strategic location. This property features desirable [flat/rolling/varied] topography with [vegetation/water features if applicable]. Currently zoned for [current zoning] with potential for [possible rezoning if applicable]. The surrounding area includes [nearby developments/amenities] with strong economic indicators."
+    ],
+    commercial: [
+      "Prime commercial property in a high-visibility location with excellent traffic counts. This property features [size] square feet of versatile space suitable for various business uses. The building includes [features like parking, loading areas, office space]. Located in a thriving commercial district with complementary businesses nearby and strong demographic indicators.",
+      "Well-maintained commercial building offering excellent investment potential. The property includes [size] square feet with [configuration details] and ample on-site parking. Currently [vacant/leased] with [lease details if applicable]. Located in a business-friendly area with strong economic indicators and development initiatives.",
+      "Strategic commercial property ideally positioned in a growing business district. This [size] square foot building features [layout details] with modern systems and infrastructure. The property offers excellent visibility, easy access, and ample parking. Surrounding businesses include [nearby businesses] creating a synergistic commercial environment."
+    ],
+    industrial: [
+      "Functional industrial property offering versatile space for manufacturing, warehousing, or distribution operations. This facility features [size] square feet with [clear height] ceilings, [loading dock details], and [power/utility details]. The property includes [office space details] and [yard/parking details]. Strategically located near major transportation routes with easy access to [highways/ports/rail].",
+      "Modern industrial building designed for operational efficiency and flexibility. This property offers [size] square feet of high-quality industrial space with [features like ESFR sprinklers, loading capabilities, power specifications]. The layout includes [configuration details] with [office percentage]. Located in an established industrial park with excellent logistics advantages.",
+      "Well-maintained industrial facility ready for immediate occupancy. This property features [size] square feet with [layout details] including [loading capabilities], [power specifications], and [ceiling heights]. The site includes [parking/yard details] with secure perimeter. Ideally located in a business-friendly area with convenient access to major transportation networks."
+    ]
+  };
+
+  // Get the specific suggestions for the property type, or use defaults
+  const specificSuggestions = typeSpecificSuggestions[propertyType] || baseSuggestions;
+  
+  // Combine and return suggestions
+  return [...specificSuggestions, ...baseSuggestions];
+}
+
+/**
+ * Generates address suggestions based on country
+ */
+export function getAddressSuggestions(country: string): string[] {
+  const baseSuggestions = [
+    "123 Main Street",
+    "456 Oak Avenue",
+    "789 Maple Boulevard",
+    "101 Pine Road",
+    "202 Cedar Lane"
+  ];
+
+  const countrySpecificSuggestions: Record<string, string[]> = {
+    us: [
+      "123 Main Street, Suite 4B",
+      "456 Oak Avenue, Apt 7C",
+      "789 Maple Boulevard",
+      "101 Pine Road",
+      "202 Cedar Lane",
+      "303 Washington Avenue",
+      "404 Jefferson Street"
+    ],
+    mx: [
+      "Calle Reforma 123, Interior 4",
+      "Avenida Insurgentes 456",
+      "Boulevard Miguel Alemán 789",
+      "Calle Juárez 101",
+      "Avenida Chapultepec 202",
+      "Paseo de la Reforma 303",
+      "Calle Madero 404"
+    ],
+    ca: [
+      "123 Maple Street, Unit 4",
+      "456 Queen Street West",
+      "789 King Street East",
+      "101 Yonge Street, Suite 200",
+      "202 Bloor Street West",
+      "303 Dundas Street",
+      "404 Bay Street"
+    ],
+    es: [
+      "Calle Gran Vía 123, 4º B",
+      "Avenida Diagonal 456, 2º 3ª",
+      "Paseo de la Castellana 789",
+      "Calle Alcalá 101",
+      "Rambla Catalunya 202",
+      "Calle Serrano 303",
+      "Avenida del Paralelo 404"
+    ],
+    gb: [
+      "123 High Street, Flat 4B",
+      "456 Oxford Street",
+      "789 Baker Street, Apartment 7",
+      "101 Regent Street",
+      "202 Piccadilly",
+      "303 Bond Street",
+      "404 Kings Road"
+    ]
   };
   
-  return suggestionsMap[countryValue] || [];
-};
-
-// Property type human-readable labels
-export const propertyTypeLabels: Record<string, string> = {
-  house: 'House',
-  condo: 'Condominium',
-  apartment: 'Apartment',
-  townhouse: 'Townhouse',
-  land: 'Land',
-};
+  // Get country-specific suggestions or use base suggestions
+  const specificSuggestions = countrySpecificSuggestions[country] || baseSuggestions;
+  
+  // Combine and return suggestions
+  return [...specificSuggestions, ...baseSuggestions];
+}

@@ -21,6 +21,7 @@ import NeighborhoodInsightsPage from "@/pages/neighborhood-insights-page";
 import UserVerificationPage from "@/pages/user-verification";
 import SubscriptionPage from "@/pages/subscription-page";
 import PaymentPage from "@/pages/payment-page";
+import TestFormComponentsPage from "@/pages/test-form-components";
 import { 
   ProtectedRoute, 
   UserProtectedRoute, 
@@ -64,6 +65,7 @@ function AppContent() {
           <Route path="/cookie-policy" component={CookiePolicy} />
           <Route path="/payment" component={PaymentPage} />
           <Route path="/payment/success" component={PaymentPage} />
+          <Route path="/test-form-components" component={TestFormComponentsPage} />
           <UserProtectedRoute path="/subscription" component={SubscriptionPage} />
           
           {/* Role-Specific Dashboard Routes */}
