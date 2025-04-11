@@ -1,14 +1,19 @@
 import Stripe from 'stripe';
 import { storage } from './storage';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required environment variable: STRIPE_SECRET_KEY');
-}
+let stripe: Stripe | undefined;
 
-// Initialize Stripe with the secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-});
+try {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.warn('STRIPE_SECRET_KEY environment variable is not set. Payment features will be disabled.');
+  } else {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    });
+  }
+} catch (error) {
+  console.error('Error initializing Stripe client:', error);
+}
 
 // Subscription plans - these should match the plans created in your Stripe dashboard
 export const SUBSCRIPTION_PLANS = {
