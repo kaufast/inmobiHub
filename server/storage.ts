@@ -969,6 +969,71 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
   }
+  
+  // Property Drafts methods
+  async getPropertyDrafts(userId: number): Promise<PropertyDraft[]> {
+    try {
+      const drafts = await db.select()
+        .from(propertyDrafts)
+        .where(eq(propertyDrafts.userId, userId))
+        .orderBy(desc(propertyDrafts.lastUpdated));
+      return drafts;
+    } catch (error) {
+      console.error('Error getting property drafts:', error);
+      return [];
+    }
+  }
+  
+  async getPropertyDraft(id: number): Promise<PropertyDraft | undefined> {
+    try {
+      const [draft] = await db.select()
+        .from(propertyDrafts)
+        .where(eq(propertyDrafts.id, id));
+      return draft;
+    } catch (error) {
+      console.error('Error getting property draft:', error);
+      return undefined;
+    }
+  }
+  
+  async createPropertyDraft(draft: InsertPropertyDraft): Promise<PropertyDraft> {
+    try {
+      const [newDraft] = await db.insert(propertyDrafts)
+        .values(draft)
+        .returning();
+      return newDraft;
+    } catch (error) {
+      console.error('Error creating property draft:', error);
+      throw error;
+    }
+  }
+  
+  async updatePropertyDraft(id: number, draft: Partial<InsertPropertyDraft>): Promise<PropertyDraft | undefined> {
+    try {
+      const [updatedDraft] = await db.update(propertyDrafts)
+        .set({ 
+          ...draft, 
+          lastUpdated: new Date() 
+        })
+        .where(eq(propertyDrafts.id, id))
+        .returning();
+      return updatedDraft;
+    } catch (error) {
+      console.error('Error updating property draft:', error);
+      return undefined;
+    }
+  }
+  
+  async deletePropertyDraft(id: number): Promise<boolean> {
+    try {
+      await db.delete(propertyDrafts)
+        .where(eq(propertyDrafts.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting property draft:', error);
+      return false;
+    }
+  }
 }
 
 export const storage = new DatabaseStorage();
