@@ -25,20 +25,30 @@ googleProvider.setCustomParameters({
 // Sign in with Google
 export async function signInWithGoogle() {
   try {
+    console.log("Starting Google sign-in process...");
     // Check if we're in Replit's preview environment which might block popups
     const isReplit = window.location.hostname.includes('replit');
+    console.log("Environment detection:", isReplit ? "Replit environment detected" : "Non-Replit environment");
     
     if (isReplit) {
-      // Use redirect for Replit environment to avoid popup blockers
+      console.log("Using redirect method for Google sign-in in Replit...");
+      // Always use redirect in Replit environment
       await signInWithRedirect(auth, googleProvider);
+      console.log("Redirect initiated, page should reload after auth...");
       return null; // The page will redirect, so no need to return anything
     } else {
+      console.log("Using popup method for Google sign-in...");
       // Use popup for other environments
       const result = await signInWithPopup(auth, googleProvider);
+      console.log("Popup sign-in successful:", result.user.email);
       return result.user;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error signing in with Google:', error);
+    // Log additional details about the error
+    if (error.code) console.error('Error code:', error.code);
+    if (error.message) console.error('Error message:', error.message);
+    if (error.customData) console.error('Error custom data:', error.customData);
     throw error;
   }
 }
@@ -48,14 +58,20 @@ export async function signInWithGoogle() {
 // Check for redirect result (to be called on app initialization)
 export async function handleRedirectResult() {
   try {
+    console.log("Checking for redirect result...");
     const result = await getRedirectResult(auth);
+    console.log("Redirect result:", result ? "Successfully got result" : "No result found");
+    
     if (result) {
       // User successfully authenticated after redirect
+      console.log("User successfully authenticated after redirect:", result.user.email);
       return result.user;
     }
     return null;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error handling redirect result:', error);
+    if (error.code) console.error('Redirect error code:', error.code);
+    if (error.message) console.error('Redirect error message:', error.message);
     return null;
   }
 }
@@ -64,8 +80,10 @@ export async function handleRedirectResult() {
 export async function firebaseSignOut() {
   try {
     await signOut(auth);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error signing out:', error);
+    if (error.code) console.error('Sign out error code:', error.code);
+    if (error.message) console.error('Sign out error message:', error.message);
     throw error;
   }
 }
