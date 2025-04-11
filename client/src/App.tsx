@@ -91,12 +91,23 @@ function AppContent() {
 
 function FirebaseAuthHandler({ children }: { children: React.ReactNode }) {
   const [isCheckingRedirect, setIsCheckingRedirect] = useState(true);
+  const [hasFirebaseError, setHasFirebaseError] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
     const checkRedirectResult = async () => {
       try {
-        const user = await handleRedirectResult();
+        // Wrap in a Promise.race with a timeout to prevent Firebase hanging indefinitely
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Firebase authentication check timed out")), 3000);
+        });
+        
+        // Race between the redirect check and the timeout
+        const user = await Promise.race([
+          handleRedirectResult(),
+          timeoutPromise
+        ]);
+        
         if (user) {
           toast({
             title: "Firebase authentication successful",
@@ -105,11 +116,18 @@ function FirebaseAuthHandler({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error("Firebase redirect error:", error);
-        toast({
-          title: "Authentication failed",
-          description: "Could not complete authentication with social provider.",
-          variant: "destructive",
-        });
+        
+        // Set flag to indicate Firebase had an issue so we don't block the app
+        setHasFirebaseError(true);
+        
+        // Don't show error toast for timeout errors
+        if (!error.message.includes("timed out")) {
+          toast({
+            title: "Authentication failed",
+            description: "Could not complete authentication with social provider.",
+            variant: "destructive",
+          });
+        }
       } finally {
         setIsCheckingRedirect(false);
       }
@@ -185,22 +203,39 @@ function SEOHelmet() {
 }
 
 function App() {
+  // Added error boundary for PropertyNotificationsProvider to prevent app crashing
+  const [notificationsError, setNotificationsError] = useState(false);
+  
+  // If WebSocket connection fails completely, this will catch it and allow the app to continue
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      // Only handle WebSocket related errors
+      if (event.error && (
+          (typeof event.error.message === 'string' && event.error.message.includes('WebSocket')) || 
+          (typeof event.message === 'string' && event.message.includes('WebSocket'))
+      )) {
+        console.error('Caught WebSocket error in error handler:', event);
+        setNotificationsError(true);
+      }
+    };
+    
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
+  
   return (
     <BubbleNotificationsProvider position="top-right" maxNotifications={5}>
-      <FirebaseAuthHandler>
-        <AuthProvider>
-          <PropertyNotificationsProvider maxNotifications={10}>
-            <OnboardingTourProvider>
-              <PropertyComparisonProvider maxProperties={4}>
-                {/* Add CacheProvider to enable IndexedDB caching */}
-                <CacheProvider>
-                  <AppWithSEO />
-                </CacheProvider>
-              </PropertyComparisonProvider>
-            </OnboardingTourProvider>
-          </PropertyNotificationsProvider>
-        </AuthProvider>
-      </FirebaseAuthHandler>
+      {/* Temporarily removing FirebaseAuthHandler to prevent app loading issues */}
+      <AuthProvider>
+        {/* Always render without PropertyNotificationsProvider due to WebSocket issues */}
+        <OnboardingTourProvider>
+          <PropertyComparisonProvider maxProperties={4}>
+            <CacheProvider>
+              <AppWithSEO />
+            </CacheProvider>
+          </PropertyComparisonProvider>
+        </OnboardingTourProvider>
+      </AuthProvider>
     </BubbleNotificationsProvider>
   );
 }

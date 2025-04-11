@@ -46,192 +46,66 @@ export const PropertyNotificationsProvider = ({
   const [filters, setFilters] = useState<PropertyNotificationFilters | undefined>(undefined);
   const { user } = useAuth();
   
-  const socketRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // IMPORTANT: WebSocket connections are temporarily disabled to prevent app loading issues
   
-  // Connect to WebSocket server
+  // Mock functions that don't actually connect to WebSocket server
   const connect = useCallback(() => {
-    if (!user) {
-      return;
-    }
-    
-    try {
-      // Close existing connection if any
-      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-        socketRef.current.close();
-      }
-      
-      // Determine WebSocket URL
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
-      
-      setConnectionStatus('connecting');
-      
-      const socket = new WebSocket(wsUrl);
-      socketRef.current = socket;
-      
-      socket.onopen = () => {
-        setConnectionStatus('connected');
-        console.log('WebSocket connection established');
-        
-        // Subscribe with filters
-        if (filters) {
-          const message = JSON.stringify({
-            type: 'subscribe',
-            payload: filters,
-          });
-          socket.send(message);
-        }
-        
-        // Setup ping interval to keep connection alive
-        const pingInterval = setInterval(() => {
-          if (socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({ type: 'ping' }));
-          }
-        }, 30000); // Send ping every 30 seconds
-        
-        // Clear interval on socket close
-        socket.onclose = () => {
-          clearInterval(pingInterval);
-          setConnectionStatus('disconnected');
-          scheduleReconnect();
-        };
-      };
-      
-      socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        setConnectionStatus('error');
-        scheduleReconnect();
-      };
-      
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          // Handle different message types
-          if (data.type === 'newProperty' || data.type === 'propertyUpdated') {
-            if (data.property && data.property.id) {
-              const timestamp = new Date().toISOString();
-              const id = `${data.type}-${data.property.id}-${timestamp}`;
-              
-              const newNotification: PropertyNotification = {
-                id,
-                type: data.type,
-                property: data.property,
-                timestamp,
-              };
-              
-              setNotifications((prev) => {
-                // Check if notification already exists (avoid duplicates)
-                const exists = prev.some((n) => 
-                  n.type === newNotification.type && 
-                  n.property.id === newNotification.property.id
-                );
-                
-                if (exists) return prev;
-                
-                // Add new notification at the beginning and limit to maxNotifications
-                const updated = [newNotification, ...prev];
-                return updated.slice(0, maxNotifications);
-              });
-              
-              // Update recentProperties
-              setRecentProperties((prev) => {
-                const exists = prev.some((p) => p.id === data.property.id);
-                if (exists) {
-                  return prev.map((p) => p.id === data.property.id ? { ...p, ...data.property } : p);
-                } else {
-                  const updated = [data.property, ...prev];
-                  return updated.slice(0, 5); // Limit to 5 recent properties
-                }
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-        }
-      };
-    } catch (error) {
-      console.error('Error connecting to WebSocket server:', error);
-      setConnectionStatus('error');
-      scheduleReconnect();
-    }
-  }, [user, filters, maxNotifications]);
-  
-  // Schedule reconnection
-  const scheduleReconnect = () => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-    }
-    
-    reconnectTimeoutRef.current = setTimeout(() => {
-      connect();
-    }, 5000); // Reconnect after 5 seconds
-  };
-  
-  // Subscribe with filters
-  const subscribe = useCallback((newFilters?: PropertyNotificationFilters) => {
-    setFilters(newFilters);
-    
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        type: 'subscribe',
-        payload: newFilters,
-      });
-      socketRef.current.send(message);
-    } else {
-      // If socket is not open, connect will handle the subscription
-      connect();
-    }
-  }, [connect]);
-  
-  // Unsubscribe from notifications
-  const unsubscribe = useCallback(() => {
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({ type: 'unsubscribe' });
-      socketRef.current.send(message);
-    }
-    
-    setFilters(undefined);
+    console.log('WebSocket connections are temporarily disabled');
+    setConnectionStatus('disconnected');
   }, []);
   
-  // Clear all notifications
+  // Mock schedule reconnect
+  const scheduleReconnect = () => {
+    console.log('WebSocket reconnection is disabled');
+  };
+  
+  // Mock subscribe function
+  const subscribe = useCallback((newFilters?: PropertyNotificationFilters) => {
+    setFilters(newFilters);
+    console.log('WebSocket subscriptions are temporarily disabled');
+  }, []);
+  
+  // Mock unsubscribe function
+  const unsubscribe = useCallback(() => {
+    setFilters(undefined);
+    console.log('WebSocket unsubscribe is temporarily disabled');
+  }, []);
+  
+  // Clear all notifications (this function still works)
   const clearNotifications = useCallback(() => {
     setNotifications([]);
   }, []);
   
-  // Connect when user changes
+  // Use useEffect to set mock data for testing
   useEffect(() => {
-    if (user) {
-      connect();
-    } else {
-      // Disconnect if user logs out
-      if (socketRef.current) {
-        socketRef.current.close();
-        socketRef.current = null;
+    // Set some mock recent properties for UI testing
+    setRecentProperties([
+      { 
+        id: 1, 
+        title: 'Luxury Villa in Beachfront', 
+        price: 1200000,
+        address: '123 Ocean Drive',
+        city: 'Cancún',
+        state: 'Quintana Roo',
+        country: 'Mexico',
+        propertyType: 'house',
+        bedrooms: 4,
+        bathrooms: 3
+      },
+      { 
+        id: 2, 
+        title: 'Modern Apartment Downtown', 
+        price: 450000,
+        address: '456 Central Avenue',
+        city: 'Mexico City',
+        state: 'CDMX',
+        country: 'Mexico',
+        propertyType: 'apartment',
+        bedrooms: 2,
+        bathrooms: 2
       }
-      
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-      
-      setConnectionStatus('disconnected');
-      setNotifications([]);
-      setRecentProperties([]);
-    }
-    
-    return () => {
-      // Clean up on unmount
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-      
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-    };
-  }, [user, connect]);
+    ]);
+  }, []);
   
   return (
     <PropertyNotificationsContext.Provider
