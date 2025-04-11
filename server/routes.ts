@@ -1818,8 +1818,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Development: Direct seed endpoint (only for development, no auth required)
+  // Development endpoints (only for development, no auth required)
   if (process.env.NODE_ENV !== 'production') {
+    // Seed endpoint
     app.post("/api/dev/seed", async (req, res) => {
       try {
         const { seedSuggestedQuestions } = await import('./seeds/suggested-questions');
@@ -1839,41 +1840,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
     });
+    
+    // Get suggested questions
+    app.get("/api/dev/suggested-questions", async (req, res) => {
+      try {
+        const category = req.query.category as string | undefined;
+        const propertyType = req.query.propertyType as string | undefined;
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+        
+        const questions = await storage.getSuggestedQuestions(category, propertyType, limit);
+        res.json({
+          success: true,
+          count: questions.length,
+          questions: questions
+        });
+      } catch (error) {
+        console.error("Error fetching suggested questions:", error);
+        res.status(500).json({ 
+          success: false,
+          error: 'Failed to fetch suggested questions',
+          message: error instanceof Error ? error.message : "Unknown error"
+        });
+      }
+    });
+    
+    // Get popular suggested questions
+    app.get("/api/dev/suggested-questions/popular", async (req, res) => {
+      try {
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+        const questions = await storage.getPopularSuggestedQuestions(limit);
+        res.json({
+          success: true,
+          count: questions.length,
+          questions: questions
+        });
+      } catch (error) {
+        console.error("Error fetching popular suggested questions:", error);
+        res.status(500).json({ 
+          success: false,
+          error: 'Failed to fetch popular suggested questions',
+          message: error instanceof Error ? error.message : "Unknown error"
+        });
+      }
+    });
   }
 
-  // Suggested Questions API
-  app.get("/api/suggested-questions", async (req, res, next) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
-      const category = req.query.category as string | undefined;
-      const propertyType = req.query.propertyType as string | undefined;
-      
-      const questions = await storage.getSuggestedQuestions(category, propertyType, limit);
-      res.json(questions);
-    } catch (error) {
-      next(error);
-    }
-  });
-  
-  app.get("/api/suggested-questions/popular", async (req, res, next) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
-      const questions = await storage.getPopularSuggestedQuestions(limit);
-      res.json(questions);
-    } catch (error) {
-      next(error);
-    }
-  });
-  
-  app.post("/api/suggested-questions/:id/click", async (req, res, next) => {
-    try {
-      const id = parseInt(req.params.id);
-      await storage.incrementQuestionClickCount(id);
-      res.status(204).end();
-    } catch (error) {
-      next(error);
-    }
-  });
+  // Suggested Questions API - Regular authenticated endpoints
   
   // Admin routes for managing suggested questions
   app.post("/api/admin/suggested-questions", isAdmin, async (req, res, next) => {
