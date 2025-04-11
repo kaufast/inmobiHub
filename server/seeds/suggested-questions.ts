@@ -372,8 +372,17 @@ export async function seedSuggestedQuestions() {
   }
 }
 
-// For direct execution of this file
-if (require.main === module) {
+// For direct execution of this file in ESM
+// Note: This section is only for direct execution, not when imported
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Check if this file is being run directly
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// If this is the main module (direct execution)
+if (process.argv[1] === __filename) {
   seedSuggestedQuestions()
     .then(() => {
       console.log('Suggested questions seeding completed');
