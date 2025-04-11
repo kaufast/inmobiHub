@@ -128,14 +128,14 @@ export default function HeroSection() {
         {/* Top section with 2 columns: text and image */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center" style={{ marginTop: "0%" }}>
           {/* Left column - Text content */}
-          <div className="flex flex-col items-start text-left">
-            <h1 className="text-[2.8rem] md:text-[3.5rem] lg:text-[4.2rem] font-bold text-gray-800 leading-none tracking-tight mb-8">
+          <div className="flex flex-col items-start text-left pl-4 md:pl-16 lg:pl-24">
+            <h1 className="text-[2.8rem] md:text-[3.5rem] lg:text-[4.2rem] font-bold text-gray-800 leading-none tracking-tight mb-6">
               Find your <br /> 
               Dream <br />
               Property
             </h1>
             
-            <p className="text-gray-600 text-lg mb-8 max-w-xl">
+            <p className="text-gray-600 text-lg mb-6 max-w-xl">
               Unlocking Smart Capital For Data-Driven Investors
             </p>
           </div>
@@ -205,12 +205,15 @@ export default function HeroSection() {
                       list="search-suggestions"
                     />
                     <datalist id="search-suggestions">
+                      <option value="Barcelona, compra" />
+                      <option value="Girona, lloguer" />
+                      <option value="Tarragona, venda" />
                       <option value="New York, buy" />
                       <option value="Miami, rent" />
                       <option value="Los Angeles, sell" />
                       <option value="Chicago, buy" />
                       <option value="Austin, rent" />
-                      <option value="Seattle, buy" />
+                      <option value="Cancún, venta" />
                     </datalist>
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-3">
                       <button onClick={handleSearch} className="bg-secondary-500 hover:bg-secondary-600 rounded-md p-2">
