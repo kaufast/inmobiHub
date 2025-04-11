@@ -124,7 +124,7 @@ export default function HeroSection() {
     <section className="relative bg-white overflow-hidden min-h-screen h-screen">
       {/* White background with no overlay */}
       
-      <div className="container mx-auto px-4 py-6 md:py-8 lg:py-10 relative z-10">
+      <div className="container mx-auto px-4 pt-6 pb-32 md:pt-8 lg:pt-10 relative z-10">
         {/* Top section with 2 columns: text and image */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center" style={{ marginTop: "0%" }}>
           {/* Left column - Text content */}
@@ -151,7 +151,7 @@ export default function HeroSection() {
         </div>
         
         {/* Search bar section below - Full width */}
-        <div className="w-full max-w-4xl mx-auto mt-2 bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700">
+        <div className="w-full max-w-4xl mx-auto mt-2 bg-gray-800/90 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-700 mb-8">
           <Tabs value={activeTab} defaultValue="text" className="w-full" onValueChange={(value) => {
             const type = value as "text" | "image" | "audio";
             setActiveTab(type);
