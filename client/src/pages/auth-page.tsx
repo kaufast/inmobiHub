@@ -504,6 +504,15 @@ export default function AuthPage() {
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3')] bg-cover bg-center opacity-10 mix-blend-multiply"></div>
               </div>
               
+              {/* Modern house image */}
+              <div className="absolute right-0 bottom-0 w-[350px] h-[350px] opacity-80">
+                <img 
+                  src="@assets/fc22b533-29c2-4e45-a37a-627a17bdb980.png" 
+                  alt="Modern luxury house" 
+                  className="object-contain"
+                />
+              </div>
+              
               <div className="relative z-10 p-12 flex flex-col h-full justify-center">
                 <h2 className="text-4xl font-bold text-white mb-6 [text-shadow:0_2px_4px_rgba(0,0,0,0.5)]">
                   Data-Driven Real Estate Investments
