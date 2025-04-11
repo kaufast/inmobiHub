@@ -149,7 +149,7 @@ export default function HeroSection() {
             }}>
               <div className="w-full mb-2">
                 <div className="flex rounded-t-lg overflow-hidden border-b-0 justify-start">
-                  <div className="px-3 py-1.5 bg-gray-700 text-white text-xs font-medium border border-gray-700 border-r-0 border-b-0 rounded-tl-lg flex items-center">
+                  <div className="px-6 py-3 bg-gray-700 text-white text-xs font-medium border border-gray-700 border-r-0 border-b-0 rounded-tl-lg flex items-center">
                     <span className="text-xs">Search by:</span>
                   </div>
                   <TabsList className="rounded-none bg-transparent border-0 border-gray-700 space-x-1 p-0">
