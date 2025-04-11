@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -27,6 +27,15 @@ import {
   FileText,
   AlertCircle
 } from 'lucide-react';
+import { 
+  getTitleSuggestions, 
+  getDescriptionSuggestions, 
+  countries, 
+  getAddressSuggestions,
+  propertyTypeLabels
+} from '@/lib/property-suggestions';
+import { SuggestionInput } from '@/components/ui/suggestion-input';
+import { AddressSuggestionInput } from '@/components/ui/address-suggestion-input';
 import { ImageUploader, UploadedImage } from '@/components/ui/upload/image-uploader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -375,9 +384,11 @@ export default function AddPropertyPage() {
                           <FormItem>
                             <FormLabel>Property Title</FormLabel>
                             <FormControl>
-                              <Input 
+                              <SuggestionInput 
+                                value={field.value}
+                                onChange={field.onChange}
                                 placeholder="e.g. Modern Apartment in Downtown" 
-                                {...field} 
+                                suggestions={getTitleSuggestions(form.getValues().propertyType)}
                               />
                             </FormControl>
                             <FormMessage />
@@ -392,10 +403,13 @@ export default function AddPropertyPage() {
                           <FormItem>
                             <FormLabel>Description</FormLabel>
                             <FormControl>
-                              <Textarea 
+                              <SuggestionInput 
+                                value={field.value}
+                                onChange={field.onChange}
                                 placeholder="Describe your property..." 
+                                suggestions={getDescriptionSuggestions(form.getValues().propertyType)}
+                                isTextarea={true}
                                 rows={5}
-                                {...field} 
                               />
                             </FormControl>
                             <FormMessage />
@@ -560,9 +574,11 @@ export default function AddPropertyPage() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <Input 
+                                  <AddressSuggestionInput 
+                                    value={field.value}
+                                    onChange={field.onChange}
                                     placeholder="Street Address" 
-                                    {...field} 
+                                    suggestions={getAddressSuggestions(form.getValues().country)}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -611,10 +627,23 @@ export default function AddPropertyPage() {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormControl>
-                                    <Input 
-                                      placeholder="Country" 
-                                      {...field} 
-                                    />
+                                    <Select 
+                                      onValueChange={field.onChange} 
+                                      defaultValue={field.value}
+                                    >
+                                      <FormControl>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Select Country" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {countries.map((country) => (
+                                          <SelectItem key={country.value} value={country.value}>
+                                            {country.label}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
                                   </FormControl>
                                   <FormMessage />
                                 </FormItem>
