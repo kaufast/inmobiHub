@@ -184,8 +184,19 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createUser(user: RegisterUser): Promise<User> {
-    const [newUser] = await db.insert(users).values(user).returning();
-    return newUser;
+    try {
+      // Check for existing email first
+      const existingEmail = await this.getUserByEmail(user.email);
+      if (existingEmail) {
+        throw new Error('Email already exists');
+      }
+      
+      const [newUser] = await db.insert(users).values(user).returning();
+      return newUser;
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
   }
   
   async updateUser(id: number, user: Partial<InsertUser> & { subscriptionTier?: 'free' | 'premium' | 'enterprise' }): Promise<User | undefined> {

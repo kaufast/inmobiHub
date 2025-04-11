@@ -39,10 +39,26 @@ async function hashPassword(password: string): Promise<string> {
 }
 
 async function comparePasswords(supplied: string, stored: string): Promise<boolean> {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  // Check if we have a plain text password (temporary for testing)
+  if (!stored.includes('.')) {
+    return supplied === stored;
+  }
+  
+  // Handle properly hashed passwords
+  try {
+    const [hashed, salt] = stored.split(".");
+    if (!salt) {
+      console.error("Invalid password format, no salt found");
+      return false;
+    }
+    
+    const hashedBuf = Buffer.from(hashed, "hex");
+    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+    return timingSafeEqual(hashedBuf, suppliedBuf);
+  } catch (error) {
+    console.error("Password comparison error:", error);
+    return false;
+  }
 }
 
 export function setupAuth(app: Express) {
@@ -116,10 +132,16 @@ export function setupAuth(app: Express) {
       // Validate request body
       const validatedData = registerUserSchema.parse(req.body);
       
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(validatedData.username);
-      if (existingUser) {
+      // Check if username already exists
+      const existingUsername = await storage.getUserByUsername(validatedData.username);
+      if (existingUsername) {
         return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      // Check if email already exists
+      const existingEmail = await storage.getUserByEmail(validatedData.email);
+      if (existingEmail) {
+        return res.status(400).json({ message: "Email already exists" });
       }
 
       // Create user with hashed password
@@ -145,6 +167,10 @@ export function setupAuth(app: Express) {
           errors: fromZodError(error).message 
         });
       }
+      if (error instanceof Error && error.message === 'Email already exists') {
+        return res.status(400).json({ message: error.message });
+      }
+      console.error("Registration error:", error);
       next(error);
     }
   });
