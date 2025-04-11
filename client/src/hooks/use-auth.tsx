@@ -27,6 +27,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [lastAuthToastTime, setLastAuthToastTime] = useState(0);
   const AUTH_TOAST_COOLDOWN = 3000; // 3 seconds between auth toasts
+  
+  // Rate limiter for API requests
+  const [lastLoginAttemptTime, setLastLoginAttemptTime] = useState(0);
+  const LOGIN_REQUEST_COOLDOWN = 3000; // 3 seconds between login attempts
 
   // Fetch the current user
   const fetchCurrentUser = useCallback(async () => {
@@ -56,6 +60,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Login function
   const login = async (credentials: LoginUser): Promise<boolean> => {
     try {
+      // Rate limit check
+      const now = Date.now();
+      if (now - lastLoginAttemptTime < LOGIN_REQUEST_COOLDOWN) {
+        console.log(`Rate limiting login requests. Please wait ${Math.ceil((LOGIN_REQUEST_COOLDOWN - (now - lastLoginAttemptTime))/1000)} seconds before trying again.`);
+        toast({
+          title: "Too many attempts",
+          description: "Please wait a few seconds before trying again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Set rate limit timestamp
+      setLastLoginAttemptTime(now);
+      
       setIsAuthenticating(true);
       setError(null);
       
@@ -142,9 +161,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.setQueryData(["/api/user"], userData);
       
       // Check if enough time has passed since last auth toast
-      const now = Date.now();
-      if (now - lastAuthToastTime > AUTH_TOAST_COOLDOWN) {
-        setLastAuthToastTime(now);
+      const currentTime = Date.now();
+      if (currentTime - lastAuthToastTime > AUTH_TOAST_COOLDOWN) {
+        setLastAuthToastTime(currentTime);
         toast({
           title: "Login successful",
           description: `Welcome back, ${userData.fullName}!`,
@@ -174,6 +193,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register function
   const register = async (userData: RegisterUser): Promise<boolean> => {
     try {
+      // Rate limit check
+      const now = Date.now();
+      if (now - lastLoginAttemptTime < LOGIN_REQUEST_COOLDOWN) {
+        console.log(`Rate limiting registration requests. Please wait ${Math.ceil((LOGIN_REQUEST_COOLDOWN - (now - lastLoginAttemptTime))/1000)} seconds before trying again.`);
+        toast({
+          title: "Too many attempts",
+          description: "Please wait a few seconds before trying again.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      // Set rate limit timestamp
+      setLastLoginAttemptTime(now);
+      
       setIsAuthenticating(true);
       setError(null);
       
