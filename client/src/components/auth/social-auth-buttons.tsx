@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { FaGoogle } from "react-icons/fa";
 import { signInWithGoogle, auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -15,6 +16,7 @@ interface SocialAuthButtonsProps {
 
 export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps) {
   const { toast } = useToast();
+  const { handleFirebaseAuth } = useAuth();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -34,7 +36,7 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
     });
 
     return () => unsubscribe();
-  }, [toast]);
+  }, [toast, handleFirebaseAuth, onSuccess]);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -47,57 +49,37 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
       if (user) {
         console.log("Popup sign-in successful:", user.email);
         
-        try {
-          // First call the server endpoint to ensure user is registered properly in our system
-          const registerResponse = await fetch('/api/firebase-auth', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              firebaseUid: user.uid,
-              email: user.email,
-              displayName: user.displayName,
-              photoURL: user.photoURL
-            }),
-            credentials: 'include'
-          });
-          
-          if (registerResponse.ok) {
-            const registeredUser = await registerResponse.json();
-            console.log("Server authentication successful:", registeredUser);
-            
-            toast({
-              title: "Successfully authenticated with Google",
-              description: `Welcome, ${registeredUser.fullName || user.displayName}!`,
-            });
-            
-            setAuthError(null);
-            // Pass the server-provided user data to the onSuccess callback
-            onSuccess?.(registeredUser);
-            return;
-          } else {
-            console.error("Server failed to authenticate the Firebase user:", await registerResponse.text());
-            throw new Error("Server authentication failed after Firebase login");
-          }
-        } catch (serverError) {
-          console.error("Server authentication error:", serverError);
-          
-          // Fallback to the original approach
-          console.warn("Falling back to client-side Firebase auth data");
-          const userData = {
-            email: user.email || '',
-            username: user.email || '',
-            fullName: user.displayName || '',
-            password: `firebase_${user.uid}`, // Secure password that user doesn't need to know
-            profileImage: user.photoURL || null
-          };
-          
+        // Use the centralized Firebase authentication handler from useAuth
+        const success = await handleFirebaseAuth(user);
+        
+        if (success) {
+          console.log("Firebase authentication completed successfully");
           setAuthError(null);
-          onSuccess?.(userData);
+          onSuccess?.(user);
+        } else {
+          console.error("Firebase authentication failed through the centralized handler");
+          
+          // Provide user-friendly error for unauthorized domains
+          if (window.location.hostname !== 'inmobi.mobi' && 
+              window.location.hostname !== 'foundation-hub-kaufast.replit.app') {
+            const domainErrorMessage = `This website (${window.location.hostname}) is not authorized in Firebase. Please visit our main site at inmobi.mobi or foundation-hub-kaufast.replit.app.`;
+            
+            // If we're on a development domain, provide more helpful information
+            if (window.location.hostname.includes('replit') || window.location.hostname.includes('localhost')) {
+              const devMessage = `This development domain (${window.location.hostname}) is not authorized for Firebase authentication. Use the demo credentials instead for testing, or visit our production site at inmobi.mobi.`;
+              setAuthError(`Sign-in failed: ${devMessage}`);
+            } else {
+              setAuthError(`Sign-in failed: ${domainErrorMessage}`);
+            }
+          } else {
+            setAuthError("Authentication failed. Please try again.");
+          }
+          
+          onError?.(new Error("Firebase authentication failed"));
         }
       } else {
         console.log("Popup completed but no user returned");
+        setAuthError("Authentication canceled. Please try again.");
       }
     } catch (error: any) {
       console.error('Google sign-in error:', error);
@@ -126,14 +108,7 @@ export function SocialAuthButtons({ onSuccess, onError }: SocialAuthButtonsProps
       // Set error message for display
       setAuthError(`Sign-in failed: ${displayMessage}`);
       
-      toast({
-        title: "Authentication failed",
-        description: displayMessage,
-        variant: "destructive",
-      });
-      
       onError?.(error as Error);
-      setIsGoogleLoading(false);
     } finally {
       setIsGoogleLoading(false);
     }

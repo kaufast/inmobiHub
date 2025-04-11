@@ -77,6 +77,65 @@ export function setupAuth(app: Express) {
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
+  
+  // Add Firebase authentication handler
+  app.post("/api/firebase-auth", async (req, res, next) => {
+    try {
+      // Extract Firebase user data
+      const { firebaseUid, email, displayName, photoURL } = req.body;
+      
+      if (!firebaseUid || !email) {
+        return res.status(400).json({ message: "Firebase UID and email are required" });
+      }
+      
+      console.log("Processing Firebase authentication for:", email);
+      
+      // Check if user already exists by email
+      let user = await storage.getUserByEmail(email);
+      let isNewUser = false;
+      
+      if (user) {
+        // User exists - update Firebase info
+        console.log("Firebase user exists, updating:", email);
+        user = await storage.updateUser(user.id, {
+          firebaseUid: firebaseUid,
+          profileImage: user.profileImage || photoURL || null,
+          lastLoginAt: new Date()
+        });
+      } else {
+        // Create new user
+        isNewUser = true;
+        console.log("Creating new user from Firebase:", email);
+        
+        // Generate a secure password that the user doesn't need to know
+        const securePassword = await hashPassword(`firebase_${firebaseUid}`);
+        
+        // Create user
+        user = await storage.createUser({
+          email,
+          username: email.split('@')[0] + '_' + Math.floor(Math.random() * 1000), // Generate random username
+          password: securePassword,
+          fullName: displayName || email.split('@')[0],
+          profileImage: photoURL || null,
+          role: 'user', 
+          subscriptionTier: 'free',
+        });
+      }
+      
+      // Log the user in
+      req.login(user, (err) => {
+        if (err) return next(err);
+        
+        // Return user without password
+        const { password, ...userWithoutPassword } = user;
+        
+        return res.status(isNewUser ? 201 : 200).json(userWithoutPassword);
+      });
+    } catch (error) {
+      console.error("Firebase auth error:", error);
+      next(error);
+    }
+  });
 
   passport.use(
     new LocalStrategy(async (username, password, done) => {

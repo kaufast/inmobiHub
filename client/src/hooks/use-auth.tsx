@@ -13,6 +13,7 @@ type AuthContextType = {
   register: (userData: RegisterUser) => Promise<boolean>;
   logout: () => Promise<boolean>;
   isAuthenticating: boolean;
+  handleFirebaseAuth: (firebaseUser: any) => Promise<boolean>;
 };
 
 // Create the auth context with a default value
@@ -351,6 +352,92 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Handle Firebase authentication
+  const handleFirebaseAuth = async (firebaseUser: any): Promise<boolean> => {
+    try {
+      setIsAuthenticating(true);
+      setError(null);
+      
+      console.log("Processing Firebase authentication:", firebaseUser?.email);
+      
+      if (!firebaseUser?.uid || !firebaseUser?.email) {
+        throw new Error("Invalid Firebase user data");
+      }
+      
+      // Call the server endpoint to register/login the Firebase user
+      const res = await fetch('/api/firebase-auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        },
+        body: JSON.stringify({
+          firebaseUid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL
+        }),
+        credentials: 'include'
+      });
+      
+      if (!res.ok) {
+        // Handle error response
+        let errorMessage = 'Firebase authentication failed on server';
+        
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (jsonError) {
+          try {
+            const errorText = await res.text();
+            errorMessage = errorText || errorMessage;
+          } catch (textError) {
+            errorMessage = `Firebase auth failed: ${res.status} ${res.statusText}`;
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      // Process successful response
+      const userData = await res.json();
+      console.log("Server Firebase authentication successful:", userData);
+      
+      // Update user state
+      setUser(userData);
+      queryClient.setQueryData(["/api/user"], userData);
+      
+      // Show success toast only if enough time has passed
+      const currentTime = Date.now();
+      if (currentTime - lastAuthToastTime > AUTH_TOAST_COOLDOWN) {
+        setLastAuthToastTime(currentTime);
+        toast({
+          title: "Authentication successful",
+          description: `Welcome, ${userData.fullName || firebaseUser.displayName || firebaseUser.email}!`,
+        });
+      } else {
+        console.log("Suppressing duplicate authentication toast due to cooldown");
+      }
+      
+      return true;
+    } catch (err) {
+      console.error("Firebase authentication error:", err);
+      const message = err instanceof Error ? err.message : 'Firebase authentication failed';
+      setError(message);
+      
+      toast({
+        title: "Authentication failed",
+        description: message,
+        variant: "destructive",
+      });
+      
+      return false;
+    } finally {
+      setIsAuthenticating(false);
+    }
+  };
+
   // Create the context value
   const contextValue: AuthContextType = {
     user,
@@ -360,6 +447,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     logout,
     isAuthenticating,
+    handleFirebaseAuth
   };
 
   return (
