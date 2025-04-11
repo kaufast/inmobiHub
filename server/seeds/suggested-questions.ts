@@ -354,11 +354,13 @@ export async function seedSuggestedQuestions() {
     // Insert seed data
     for (const question of questionSeedData) {
       await db.insert(suggestedQuestions).values({
-        ...question,
+        question: question.question,
+        category: question.category,
+        propertyType: question.propertyType,
+        isGeneralQuestion: question.isGeneralQuestion,
+        displayOrder: question.displayOrder,
         isActive: true,
-        clickCount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        clickCount: 0
       });
     }
     
