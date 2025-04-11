@@ -129,15 +129,13 @@ export default function HeroSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center" style={{ marginTop: "5%" }}>
           {/* Left column - Text content */}
           <div className="flex flex-col items-start text-left">
-            <p className="mt-2 text-xl text-gray-700 mb-6">
-              {t('common.findYourDreamProperty')}
-            </p>
-            
-            <h1 className="text-[2.6rem] md:text-[3.2rem] lg:text-[3.8rem] font-bold text-gray-800 leading-none tracking-tight mb-8">
-              OPENING MORE DOORS
+            <h1 className="text-[2.8rem] md:text-[3.5rem] lg:text-[4.2rem] font-bold text-gray-800 leading-none tracking-tight mb-8">
+              Find your <br /> 
+              Dream <br />
+              Property
             </h1>
             
-            <p className="text-gray-600 text-lg mb-6 max-w-xl">
+            <p className="text-gray-600 text-lg mb-8 max-w-xl">
               Unlocking Smart Capital For Data-Driven Investors
             </p>
           </div>
@@ -145,9 +143,9 @@ export default function HeroSection() {
           {/* Right column - 3D house image */}
           <div className="hidden md:flex items-center justify-center">
             <img 
-              src="/assets/1e742507-91dd-445f-922a-34a1117b1959.avif" 
-              alt="3D isometric house visualization" 
-              className="w-[500px] h-auto object-contain drop-shadow-2xl"
+              src="/assets/933a3800-f285-4dee-910f-e41ddb8e69e7.png" 
+              alt="3D isometric rowhouses visualization" 
+              className="w-[750px] h-auto object-contain drop-shadow-2xl"
             />
           </div>
         </div>
