@@ -175,14 +175,48 @@ export function setupAuth(app: Express) {
     }
   });
 
+  // Track login attempts per IP
+  const loginAttempts = new Map<string, { count: number, lastAttempt: number }>();
+  const MAX_ATTEMPTS = 5;
+  const COOLDOWN_PERIOD = 30000; // 30 seconds
+
   app.post("/api/login", (req, res, next) => {
+    const ip = req.ip || "unknown";
+    const now = Date.now();
+    
+    // Get or initialize attempt tracker for this IP
+    const attempts = loginAttempts.get(ip) || { count: 0, lastAttempt: 0 };
+    
+    // If in cooldown period, reject immediately
+    if (attempts.count >= MAX_ATTEMPTS && (now - attempts.lastAttempt) < COOLDOWN_PERIOD) {
+      console.log(`[RATE LIMIT] Blocking login attempt from ${ip}. Too many attempts.`);
+      return res.status(429).json({ 
+        message: "Too many login attempts. Please try again later.",
+        retryAfter: Math.ceil((COOLDOWN_PERIOD - (now - attempts.lastAttempt)) / 1000)
+      });
+    }
+    
+    // Update attempt counter
+    attempts.count = (now - attempts.lastAttempt > COOLDOWN_PERIOD) ? 1 : attempts.count + 1;
+    attempts.lastAttempt = now;
+    loginAttempts.set(ip, attempts);
+    
+    // If this is an automated request with empty credentials, reject it
+    if (!req.body.username && !req.body.password) {
+      console.log(`[SECURITY] Rejecting empty credential login attempt from ${ip}`);
+      return res.status(400).json({ message: "Username and password are required" });
+    }
+    
+    // Proceed with authentication
     passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
       if (!user) {
-        return res.status(401).json({ message: info.message || "Authentication failed" });
+        return res.status(401).json({ message: info?.message || "Authentication failed" });
       }
       req.login(user, (err) => {
         if (err) return next(err);
+        // Reset attempts on successful login
+        loginAttempts.set(ip, { count: 0, lastAttempt: now });
         // Return user without password
         const { password, ...userWithoutPassword } = user;
         return res.status(200).json(userWithoutPassword);

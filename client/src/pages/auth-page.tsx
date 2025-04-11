@@ -21,6 +21,7 @@ import { Loader2, InfoIcon, AlertCircle } from "lucide-react";
 import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 import { PasskeyAuthForm } from "@/components/auth/passkey-auth";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -252,9 +253,17 @@ export default function AuthPage() {
                           <FormItem>
                             <div className="flex items-center justify-between">
                               <FormLabel>Password</FormLabel>
-                              <a href="#" className="text-sm text-secondary-600 hover:text-secondary-500">
+                              <Button 
+                                variant="link" 
+                                type="button"
+                                className="h-auto p-0 text-sm text-secondary-600 hover:text-secondary-500"
+                                onClick={() => toast({
+                                  title: "Password Reset",
+                                  description: "Password reset functionality is coming soon.",
+                                })}
+                              >
                                 Forgot password?
-                              </a>
+                              </Button>
                             </div>
                             <FormControl>
                               <Input type="password" placeholder="Enter your password" {...field} />
@@ -367,19 +376,38 @@ export default function AuthPage() {
                       
                       <div className="flex items-start space-x-2">
                         <Checkbox id="terms" className="mt-1" />
-                        <label
-                          htmlFor="terms"
-                          className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
+                        <div className="text-sm leading-none">
                           I agree to the{" "}
-                          <a href="#" className="text-secondary-600 hover:text-secondary-500">
+                          <Button 
+                            variant="link" 
+                            type="button"
+                            className="h-auto p-0 text-secondary-600 hover:text-secondary-500"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toast({
+                                title: "Terms of Service",
+                                description: "Terms of Service page is coming soon.",
+                              });
+                            }}
+                          >
                             Terms of Service
-                          </a>{" "}
+                          </Button>{" "}
                           and{" "}
-                          <a href="#" className="text-secondary-600 hover:text-secondary-500">
+                          <Button 
+                            variant="link" 
+                            type="button"
+                            className="h-auto p-0 text-secondary-600 hover:text-secondary-500"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toast({
+                                title: "Privacy Policy",
+                                description: "Privacy Policy page is coming soon.",
+                              });
+                            }}
+                          >
                             Privacy Policy
-                          </a>
-                        </label>
+                          </Button>
+                        </div>
                       </div>
                       
                       <Button 
