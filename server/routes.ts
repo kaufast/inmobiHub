@@ -8,6 +8,12 @@ import { fromZodError } from "zod-validation-error";
 import { WebSocketServer, WebSocket } from 'ws';
 import { handleChatMessage } from "./anthropic";
 import { generatePropertyRecommendations } from "./openai";
+import { 
+  generatePasskeyRegistrationOptions, 
+  verifyPasskeyRegistration,
+  generatePasskeyAuthenticationOptions,
+  verifyPasskeyAuthentication
+} from './webauthn';
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
@@ -1241,29 +1247,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Passkey routes
   
-  // Register a passkey for a user
-  app.post("/api/users/passkey", isAuthenticated, async (req, res, next) => {
+  // Generate registration options for passkey
+  app.get("/api/users/passkey/register-options", isAuthenticated, async (req, res, next) => {
     try {
-      const { passkey } = passkeyRegisterSchema.parse({
-        ...req.body,
-        userId: req.user!.id
-      });
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
       
-      // Update user with passkey
-      const user = await storage.updateUser(req.user!.id, {
-        passkey,
-        passkeyEnabled: true
-      });
+      const registrationOptions = await generatePasskeyRegistrationOptions(
+        req.user.id,
+        req.user.username
+      );
       
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+      res.status(200).json(registrationOptions);
+    } catch (error) {
+      console.error("Error generating passkey registration options:", error);
+      next(error);
+    }
+  });
+  
+  // Verify passkey registration response
+  app.post("/api/users/passkey/register-verify", isAuthenticated, async (req, res, next) => {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const verification = await verifyPasskeyRegistration(
+        req.user.id,
+        req.body
+      );
+      
+      if (!verification.verified) {
+        return res.status(400).json({ message: "Passkey registration failed" });
       }
       
       res.status(200).json({ 
         message: "Passkey registered successfully",
-        passkeyEnabled: user.passkeyEnabled
+        passkeyEnabled: true
       });
     } catch (error) {
+      console.error("Error verifying passkey registration:", error);
       if (error instanceof ZodError) {
         return res.status(400).json({
           message: "Invalid passkey data",
@@ -1274,13 +1298,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Generate authentication options for passkey login
+  app.post("/api/auth/passkey/login-options", async (req, res, next) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+      }
+      
+      try {
+        const authOptions = await generatePasskeyAuthenticationOptions(username);
+        res.status(200).json(authOptions);
+      } catch (error) {
+        // Don't reveal if user exists or not for security
+        console.error("Error generating passkey authentication options:", error);
+        res.status(400).json({ message: "Could not generate authentication options" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Verify passkey authentication
+  app.post("/api/auth/passkey/login-verify", async (req, res, next) => {
+    try {
+      const { username } = req.body;
+      
+      if (!username) {
+        return res.status(400).json({ message: "Username is required" });
+      }
+      
+      try {
+        const verification = await verifyPasskeyAuthentication(
+          username,
+          req.body
+        );
+        
+        if (!verification.verified) {
+          return res.status(401).json({ message: "Authentication failed" });
+        }
+        
+        // Login the user
+        req.login(verification.user, (err) => {
+          if (err) {
+            return next(err);
+          }
+          
+          return res.status(200).json({
+            message: "Authentication successful",
+            user: verification.user
+          });
+        });
+      } catch (error) {
+        console.error("Error verifying passkey authentication:", error);
+        res.status(401).json({ message: "Authentication failed" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Disable passkey for a user
   app.delete("/api/users/passkey", isAuthenticated, async (req, res, next) => {
     try {
       // Update user to disable passkey
       const user = await storage.updateUser(req.user!.id, {
         passkey: null,
-        passkeyEnabled: false
+        passkeyEnabled: false,
+        challenge: null
       });
       
       if (!user) {

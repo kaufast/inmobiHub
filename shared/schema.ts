@@ -35,6 +35,9 @@ export const users = pgTable("users", {
   // Passkey authentication
   passkey: text("passkey"),
   passkeyEnabled: boolean("passkey_enabled").default(false).notNull(),
+  passkeyPublicKey: text("passkey_public_key"), // Base64 encoded public key for WebAuthn
+  passkeyCounter: integer("passkey_counter").default(0), // Counter for WebAuthn authentication
+  challenge: text("challenge"), // Temporary challenge for WebAuthn
   // ID Verification
   hasIdVerification: boolean("has_id_verification").default(false).notNull(),
   idVerificationType: text("id_verification_type"), // e.g., "passport", "driver_license", "national_id"
