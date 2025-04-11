@@ -319,21 +319,21 @@ export default function AuthPage() {
             
             {/* Hero Section */}
             <div className="hidden md:block relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-800 to-primary-900">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3')] bg-cover bg-center opacity-20"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-900 to-primary-950">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3')] bg-cover bg-center opacity-15 mix-blend-overlay"></div>
               </div>
               
               <div className="relative z-10 p-12 flex flex-col h-full justify-center">
-                <h2 className="text-4xl font-bold text-white mb-6">
+                <h2 className="text-4xl font-bold text-white mb-6 drop-shadow-md">
                   Data-Driven Real Estate Investments
                 </h2>
-                <p className="text-white/80 text-lg mb-8 max-w-md">
+                <p className="text-white/90 text-lg mb-8 max-w-md drop-shadow">
                   Join thousands of investors making smarter real estate decisions with powerful analytics, market insights, and premium properties.
                 </p>
                 
-                <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl border border-white/20">
+                <div className="bg-white/15 backdrop-blur-lg p-6 rounded-xl border border-white/20 shadow-lg">
                   <div className="flex items-center mb-4">
-                    <div className="text-yellow-400 flex">
+                    <div className="text-yellow-300 flex drop-shadow">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                       </svg>
@@ -351,16 +351,16 @@ export default function AuthPage() {
                       </svg>
                     </div>
                   </div>
-                  <blockquote className="text-white mb-4">
+                  <blockquote className="text-white font-medium drop-shadow mb-4">
                     "Inmobi has completely transformed how I approach real estate investing. The data insights helped me find properties with 20% higher ROI than my previous investments."
                   </blockquote>
                   <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-primary-400 flex items-center justify-center text-white font-bold">
+                    <div className="w-10 h-10 rounded-full bg-primary-400 flex items-center justify-center text-white font-bold shadow-md">
                       RC
                     </div>
                     <div className="ml-3">
-                      <p className="text-white font-medium">Robert Chen</p>
-                      <p className="text-white/70 text-sm">Real Estate Investor</p>
+                      <p className="text-white font-medium drop-shadow">Robert Chen</p>
+                      <p className="text-white/90 text-sm drop-shadow">Real Estate Investor</p>
                     </div>
                   </div>
                 </div>
