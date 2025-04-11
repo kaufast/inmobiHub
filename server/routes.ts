@@ -9,6 +9,9 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { handleChatMessage } from "./anthropic";
 import { generatePropertyRecommendations } from "./openai";
 import Stripe from 'stripe';
+import multer from 'multer';
+import path from 'path';
+import { processImage, processMultipleImages } from './image-utils';
 import {
   createStripeCustomer,
   createPaymentIntent,
