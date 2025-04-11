@@ -1883,6 +1883,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
     });
+    
+    // Track question clicks
+    app.post("/api/dev/suggested-questions/:id/click", async (req, res) => {
+      try {
+        const questionId = parseInt(req.params.id);
+        const success = await storage.incrementQuestionClickCount(questionId);
+        
+        if (success) {
+          res.json({ 
+            success: true,
+            message: `Incremented click count for question ${questionId}`
+          });
+        } else {
+          res.status(404).json({ 
+            success: false,
+            error: 'Question not found' 
+          });
+        }
+      } catch (error) {
+        console.error('Error incrementing question click count:', error);
+        res.status(500).json({ 
+          success: false,
+          error: 'Failed to increment question click count',
+          message: error instanceof Error ? error.message : "Unknown error"
+        });
+      }
+    });
   }
 
   // Suggested Questions API - Regular authenticated endpoints
@@ -1935,7 +1962,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Suggested Questions API endpoints
-  app.get('/api/suggested-questions', async (req, res) => {
+  app.get('/api/suggested-questions', async (req, res, next) => {
     try {
       const category = req.query.category as string | undefined;
       const propertyType = req.query.propertyType as string | undefined;
@@ -1943,22 +1970,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const questions = await storage.getSuggestedQuestions(category, propertyType, limit);
       res.json(questions);
-    } catch (err) {
-      res.status(500).json({ error: 'Failed to fetch suggested questions' });
+    } catch (error) {
+      console.error('Error fetching suggested questions:', error);
+      next(error);
     }
   });
   
-  app.get('/api/suggested-questions/popular', async (req, res) => {
+  app.get('/api/suggested-questions/popular', async (req, res, next) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
       const questions = await storage.getPopularSuggestedQuestions(limit);
       res.json(questions);
-    } catch (err) {
-      res.status(500).json({ error: 'Failed to fetch popular questions' });
+    } catch (error) {
+      console.error('Error fetching popular questions:', error);
+      next(error);
     }
   });
   
-  app.post('/api/suggested-questions/:id/click', async (req, res) => {
+  app.post('/api/suggested-questions/:id/click', async (req, res, next) => {
     try {
       const questionId = parseInt(req.params.id);
       const success = await storage.incrementQuestionClickCount(questionId);
@@ -1966,10 +1995,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (success) {
         res.json({ success: true });
       } else {
-        res.status(404).json({ error: 'Question not found' });
+        res.status(404).json({ message: 'Question not found' });
       }
-    } catch (err) {
-      res.status(500).json({ error: 'Failed to increment question click count' });
+    } catch (error) {
+      console.error('Error incrementing question click count:', error);
+      next(error);
     }
   });
   
