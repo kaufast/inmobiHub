@@ -69,6 +69,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuth(app);
   
+  // Serve static files from the uploads directory
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  
+  // Configure multer for file uploads
+  const storage = multer.memoryStorage();
+  const upload = multer({
+    storage,
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB max file size
+    },
+    fileFilter: (req, file, cb) => {
+      // Accept only image files
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed'));
+      }
+    }
+  });
+  
+  // Image upload endpoints
+  app.post("/api/images/upload", isAuthenticated, upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+      
+      const result = await processImage(
+        req.file.buffer,
+        req.file.originalname,
+        {
+          quality: 80,
+          stripExif: true,
+          generateSizes: ['thumbnail', 'medium', 'large'],
+          format: 'webp',
+          preserveOriginal: true
+        }
+      );
+      
+      // Return paths and metadata
+      res.status(201).json({
+        success: true,
+        image: {
+          id: result.id,
+          filename: result.filename,
+          urls: {
+            original: `/uploads/original/${path.basename(result.paths.original || '')}`,
+            webp: `/uploads/webp/${path.basename(result.paths.webp || '')}`,
+            thumbnail: `/uploads/thumbnails/${path.basename(result.paths.thumbnail || '')}`,
+            medium: `/uploads/webp/${path.basename(result.paths.medium || '')}`,
+            large: `/uploads/webp/${path.basename(result.paths.large || '')}`,
+            lqip: `/uploads/webp/${path.basename(result.paths.lqip || '')}`
+          },
+          metadata: result.metadata
+        }
+      });
+    } catch (error) {
+      console.error("Error processing image:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to process image",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+  
+  // Multiple images upload
+  app.post("/api/images/upload-multiple", isAuthenticated, upload.array('images', 10), async (req, res) => {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No image files provided" });
+      }
+      
+      // Process each image
+      const images = req.files as Express.Multer.File[];
+      const imagePromises = images.map(file => 
+        processImage(
+          file.buffer,
+          file.originalname,
+          {
+            quality: 80,
+            stripExif: true,
+            generateSizes: ['thumbnail', 'medium'],
+            format: 'webp',
+            preserveOriginal: true
+          }
+        )
+      );
+      
+      const results = await Promise.all(imagePromises);
+      
+      // Format the response
+      const processedImages = results.map(result => ({
+        id: result.id,
+        filename: result.filename,
+        urls: {
+          original: `/uploads/original/${path.basename(result.paths.original || '')}`,
+          webp: `/uploads/webp/${path.basename(result.paths.webp || '')}`,
+          thumbnail: `/uploads/thumbnails/${path.basename(result.paths.thumbnail || '')}`,
+          medium: `/uploads/webp/${path.basename(result.paths.medium || '')}`,
+          lqip: `/uploads/webp/${path.basename(result.paths.lqip || '')}`
+        },
+        metadata: result.metadata
+      }));
+      
+      res.status(201).json({
+        success: true,
+        images: processedImages
+      });
+    } catch (error) {
+      console.error("Error processing images:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to process images",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+  
+  // Image delete endpoint
+  app.delete("/api/images/:id", isAuthenticated, async (req, res) => {
+    try {
+      const fileId = req.params.id;
+      const result = await import('./image-utils').then(module => module.deleteImage(fileId));
+      
+      res.json({
+        success: true,
+        ...result
+      });
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to delete image",
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
   // ChatAI Agent endpoint
   app.post("/api/chat", async (req, res, next) => {
     try {
