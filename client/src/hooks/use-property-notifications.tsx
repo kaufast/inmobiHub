@@ -36,6 +36,10 @@ interface PropertyNotificationsProviderProps {
   maxNotifications?: number;
 }
 
+// Flag to disable WebSocket connections if they fail repeatedly
+// This prevents the application from trying endlessly when WebSockets aren't available
+const WEBSOCKET_ENABLED = true;
+
 export const PropertyNotificationsProvider = ({
   children,
   maxNotifications = 20,
@@ -48,17 +52,32 @@ export const PropertyNotificationsProvider = ({
   
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef<number>(0);
+  const maxReconnectAttempts = 3;
   
   // Connect to WebSocket server
   const connect = useCallback(() => {
-    if (!user) {
+    if (!user || !WEBSOCKET_ENABLED) {
+      return;
+    }
+    
+    // Check if we've reached the maximum number of reconnect attempts
+    if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+      console.warn('Maximum WebSocket reconnect attempts reached, giving up');
+      setConnectionStatus('error');
       return;
     }
     
     try {
       // Close existing connection if any
-      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-        socketRef.current.close();
+      if (socketRef.current) {
+        try {
+          if (socketRef.current.readyState === WebSocket.OPEN) {
+            socketRef.current.close();
+          }
+        } catch (err) {
+          console.warn('Error closing existing WebSocket:', err);
+        }
       }
       
       // Determine WebSocket URL
@@ -67,26 +86,48 @@ export const PropertyNotificationsProvider = ({
       
       setConnectionStatus('connecting');
       
-      const socket = new WebSocket(wsUrl);
-      socketRef.current = socket;
+      // Attempt to create a new WebSocket connection
+      let socket: WebSocket;
+      
+      try {
+        socket = new WebSocket(wsUrl);
+        socketRef.current = socket;
+      } catch (socketError) {
+        console.error('Failed to create WebSocket:', socketError);
+        setConnectionStatus('error');
+        reconnectAttemptsRef.current++;
+        scheduleReconnect();
+        return;
+      }
       
       socket.onopen = () => {
+        // Reset reconnect counter on successful connection
+        reconnectAttemptsRef.current = 0;
         setConnectionStatus('connected');
         console.log('WebSocket connection established');
         
         // Subscribe with filters
         if (filters) {
-          const message = JSON.stringify({
-            type: 'subscribe',
-            payload: filters,
-          });
-          socket.send(message);
+          try {
+            const message = JSON.stringify({
+              type: 'subscribe',
+              payload: filters,
+            });
+            socket.send(message);
+          } catch (err) {
+            console.warn('Error sending subscribe message:', err);
+          }
         }
         
         // Setup ping interval to keep connection alive
         const pingInterval = setInterval(() => {
-          if (socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({ type: 'ping' }));
+          try {
+            if (socket.readyState === WebSocket.OPEN) {
+              socket.send(JSON.stringify({ type: 'ping' }));
+            }
+          } catch (err) {
+            console.warn('Error sending ping:', err);
+            clearInterval(pingInterval);
           }
         }, 30000); // Send ping every 30 seconds
         
@@ -101,6 +142,7 @@ export const PropertyNotificationsProvider = ({
       socket.onerror = (error) => {
         console.error('WebSocket error:', error);
         setConnectionStatus('error');
+        reconnectAttemptsRef.current++;
         scheduleReconnect();
       };
       
@@ -154,42 +196,65 @@ export const PropertyNotificationsProvider = ({
     } catch (error) {
       console.error('Error connecting to WebSocket server:', error);
       setConnectionStatus('error');
+      reconnectAttemptsRef.current++;
       scheduleReconnect();
     }
   }, [user, filters, maxNotifications]);
   
   // Schedule reconnection
-  const scheduleReconnect = () => {
+  const scheduleReconnect = useCallback(() => {
+    if (!WEBSOCKET_ENABLED) return;
+    
+    if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+      console.warn('Maximum WebSocket reconnect attempts reached, giving up');
+      return;
+    }
+    
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
     
+    // Exponential backoff for reconnection attempts
+    const backoffTime = Math.min(5000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
+    
     reconnectTimeoutRef.current = setTimeout(() => {
       connect();
-    }, 5000); // Reconnect after 5 seconds
-  };
+    }, backoffTime);
+  }, [connect]);
   
   // Subscribe with filters
   const subscribe = useCallback((newFilters?: PropertyNotificationFilters) => {
     setFilters(newFilters);
     
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        type: 'subscribe',
-        payload: newFilters,
-      });
-      socketRef.current.send(message);
-    } else {
-      // If socket is not open, connect will handle the subscription
-      connect();
+    if (!WEBSOCKET_ENABLED) return;
+    
+    try {
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        const message = JSON.stringify({
+          type: 'subscribe',
+          payload: newFilters,
+        });
+        socketRef.current.send(message);
+      } else {
+        // If socket is not open, connect will handle the subscription
+        connect();
+      }
+    } catch (error) {
+      console.error('Error in subscribe:', error);
     }
   }, [connect]);
   
   // Unsubscribe from notifications
   const unsubscribe = useCallback(() => {
-    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({ type: 'unsubscribe' });
-      socketRef.current.send(message);
+    if (!WEBSOCKET_ENABLED) return;
+    
+    try {
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        const message = JSON.stringify({ type: 'unsubscribe' });
+        socketRef.current.send(message);
+      }
+    } catch (error) {
+      console.error('Error in unsubscribe:', error);
     }
     
     setFilters(undefined);
@@ -202,35 +267,39 @@ export const PropertyNotificationsProvider = ({
   
   // Connect when user changes
   useEffect(() => {
-    if (user) {
-      connect();
+    // Cleanup function to handle unmounting or user changes
+    const cleanup = () => {
+      try {
+        if (socketRef.current) {
+          socketRef.current.close();
+          socketRef.current = null;
+        }
+        
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
+        }
+      } catch (error) {
+        console.error('Error in WebSocket cleanup:', error);
+      }
+    };
+    
+    if (user && WEBSOCKET_ENABLED) {
+      try {
+        connect();
+      } catch (error) {
+        console.error('Error initiating WebSocket connection:', error);
+      }
     } else {
       // Disconnect if user logs out
-      if (socketRef.current) {
-        socketRef.current.close();
-        socketRef.current = null;
-      }
-      
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-      
+      cleanup();
       setConnectionStatus('disconnected');
       setNotifications([]);
       setRecentProperties([]);
     }
     
-    return () => {
-      // Clean up on unmount
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-      
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-    };
+    // Clean up on unmount or user change
+    return cleanup;
   }, [user, connect]);
   
   return (
