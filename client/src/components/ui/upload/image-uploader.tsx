@@ -3,7 +3,7 @@ import { FileUploader } from '@/components/ui/upload/file-uploader';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus, Loader2, Upload, Image, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+
 import { cn } from '@/lib/utils';
 
 export interface UploadedImage {
@@ -154,7 +154,10 @@ export function ImageUploader({
   const handleRemoveImage = useCallback(
     async (imageId: string) => {
       try {
-        const response = await apiRequest('DELETE', `/api/images/${imageId}`);
+        const response = await fetch(`/api/images/${imageId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
         
         if (!response.ok) {
           const error = await response.json();
