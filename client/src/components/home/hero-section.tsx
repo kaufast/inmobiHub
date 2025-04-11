@@ -145,7 +145,7 @@ export default function HeroSection() {
           {/* Right column - 3D house image */}
           <div className="hidden md:flex items-center justify-center">
             <img 
-              src="attached_assets/1e742507-91dd-445f-922a-34a1117b1959.avif" 
+              src="/assets/1e742507-91dd-445f-922a-34a1117b1959.avif" 
               alt="3D isometric house visualization" 
               className="w-[500px] h-auto object-contain drop-shadow-2xl"
             />
