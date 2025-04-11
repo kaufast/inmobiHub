@@ -24,6 +24,14 @@ export function FirebaseTest() {
   const [results, setResults] = useState<TestResults>({});
   const [firebaseConfig, setFirebaseConfig] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [domainInfo, setDomainInfo] = useState<string>("");
+  
+  // Get current domain information on component mount
+  useEffect(() => {
+    const currentDomain = window.location.hostname;
+    const fullUrl = window.location.href;
+    setDomainInfo(`Current domain: ${currentDomain} | Full URL: ${fullUrl}`);
+  }, []);
 
   const testFirebaseConfig = () => {
     try {
@@ -208,7 +216,14 @@ export function FirebaseTest() {
       // The page will redirect, so no need to set loading state
     } catch (error: any) {
       console.error("Google sign-in error:", error);
-      setError(`Google sign-in error: ${error.message}`);
+      
+      // Check if it's an unauthorized domain error
+      if (error.code === 'auth/unauthorized-domain') {
+        setError(`Google sign-in error: This domain (${window.location.hostname}) is not authorized in the Firebase console. Please add it to the Authorized Domains list in the Firebase Authentication settings.`);
+      } else {
+        setError(`Google sign-in error: ${error.message} (Error code: ${error.code})`);
+      }
+      
       setIsLoading(false);
     }
   };
@@ -229,6 +244,12 @@ export function FirebaseTest() {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+        
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Domain Information</AlertTitle>
+          <AlertDescription className="text-xs break-all font-mono">{domainInfo}</AlertDescription>
+        </Alert>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between">
