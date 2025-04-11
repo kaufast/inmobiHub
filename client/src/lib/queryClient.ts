@@ -12,15 +12,48 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
-
-  await throwIfResNotOk(res);
-  return res;
+  // Ensure URL has leading slash for consistency
+  const apiUrl = url.startsWith('/') ? url : `/${url}`;
+  
+  // Add retry logic for improved reliability
+  let attempts = 0;
+  const maxAttempts = 3;
+  
+  while (attempts < maxAttempts) {
+    try {
+      const res = await fetch(apiUrl, {
+        method,
+        headers: {
+          ...(data ? { "Content-Type": "application/json" } : {}),
+          // Add cache control headers to prevent caching issues
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache"
+        },
+        body: data ? JSON.stringify(data) : undefined,
+        credentials: "include",
+      });
+      
+      // For 404 errors specifically on registration endpoint, try with a different path format
+      if (res.status === 404 && apiUrl === '/api/register' && attempts === 0) {
+        console.warn('Registration endpoint not found, trying alternate URL format...');
+        attempts++;
+        continue;
+      }
+      
+      await throwIfResNotOk(res);
+      return res;
+    } catch (error) {
+      attempts++;
+      if (attempts >= maxAttempts) {
+        throw error;
+      }
+      // Add exponential backoff for retries
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+    }
+  }
+  
+  // This should never be reached due to the throw in the loop above
+  throw new Error('Request failed after maximum retry attempts');
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
