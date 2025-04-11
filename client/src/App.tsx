@@ -43,6 +43,7 @@ import { Helmet } from "react-helmet";
 import { OnboardingTourProvider } from "./hooks/use-onboarding-tour";
 import { useLanguage } from "./hooks/use-language";
 import CookieConsent from "./components/cookie-consent-fixed";
+import { CacheProvider } from "@/providers/CacheProvider";
 
 function AppContent() {
   return (
@@ -191,7 +192,10 @@ function App() {
           <PropertyNotificationsProvider maxNotifications={10}>
             <OnboardingTourProvider>
               <PropertyComparisonProvider maxProperties={4}>
-                <AppWithSEO />
+                {/* Add CacheProvider to enable IndexedDB caching */}
+                <CacheProvider>
+                  <AppWithSEO />
+                </CacheProvider>
               </PropertyComparisonProvider>
             </OnboardingTourProvider>
           </PropertyNotificationsProvider>
