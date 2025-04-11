@@ -121,10 +121,10 @@ export default function HeroSection() {
   };
   
   return (
-    <section className="relative bg-white overflow-hidden min-h-screen h-screen">
+    <section className="relative bg-white overflow-visible min-h-[850px] pb-96">
       {/* White background with no overlay */}
       
-      <div className="container mx-auto px-4 pt-6 pb-32 md:pt-8 lg:pt-10 relative z-10">
+      <div className="container mx-auto px-4 pt-6 md:pt-8 lg:pt-10 relative z-10">
         {/* Top section with 2 columns: text and image */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center" style={{ marginTop: "0%" }}>
           {/* Left column - Text content */}
@@ -383,7 +383,7 @@ export default function HeroSection() {
         </div>
         
         {/* Map Mockup Section */}
-        <div className="w-full max-w-4xl mx-auto mt-12 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
+        <div className="w-full max-w-4xl mx-auto mt-4 bg-gray-800/70 backdrop-blur-md rounded-xl overflow-hidden border border-gray-700 shadow-xl">
           <div className="relative h-[450px] w-full">
             {/* Background house image */}
             <div className="absolute inset-0 bg-cover bg-center"></div>
