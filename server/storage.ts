@@ -6,7 +6,8 @@ import {
   searchHistory, type SearchProperties, neighborhoods, type Neighborhood,
   propertyTours, type PropertyTour, type InsertPropertyTour, type UpdatePropertyTour,
   chatAnalytics, type ChatAnalytics, type InsertChatAnalytics,
-  suggestedQuestions, type SuggestedQuestion, type InsertSuggestedQuestion
+  suggestedQuestions, type SuggestedQuestion, type InsertSuggestedQuestion,
+  propertyDrafts, type PropertyDraft, type InsertPropertyDraft
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, inArray, like, gte, lte, desc, sql } from "drizzle-orm";
@@ -32,6 +33,13 @@ export interface IStorage {
   updateProperty(id: number, property: Partial<InsertProperty>): Promise<Property | undefined>;
   deleteProperty(id: number): Promise<boolean>;
   getPropertiesByUser(userId: number): Promise<Property[]>;
+  
+  // Property Drafts
+  getPropertyDrafts(userId: number): Promise<PropertyDraft[]>;
+  getPropertyDraft(id: number): Promise<PropertyDraft | undefined>;
+  createPropertyDraft(draft: InsertPropertyDraft): Promise<PropertyDraft>;
+  updatePropertyDraft(id: number, draft: Partial<InsertPropertyDraft>): Promise<PropertyDraft | undefined>;
+  deletePropertyDraft(id: number): Promise<boolean>;
   
   // Recommendations
   getRecommendedProperties(userId: number, limit?: number): Promise<{ property: Property; reason: string }[]>;
