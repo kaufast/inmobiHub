@@ -454,6 +454,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Property Drafts - "Continue Later" feature
+  app.get("/api/property-drafts", isAuthenticated, async (req, res, next) => {
+    try {
+      const drafts = await storage.getPropertyDrafts(req.user!.id);
+      res.json(drafts);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.get("/api/property-drafts/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const draft = await storage.getPropertyDraft(id);
+      
+      if (!draft) {
+        return res.status(404).json({ message: "Draft not found" });
+      }
+      
+      // Check ownership
+      if (draft.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized to access this draft" });
+      }
+      
+      res.json(draft);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  app.post("/api/property-drafts", isAuthenticated, async (req, res, next) => {
+    try {
+      const draftData = insertPropertyDraftSchema.parse({
+        ...req.body,
+        userId: req.user!.id
+      });
+      
+      const newDraft = await storage.createPropertyDraft(draftData);
+      res.status(201).json(newDraft);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid draft data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  app.put("/api/property-drafts/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const draft = await storage.getPropertyDraft(id);
+      
+      if (!draft) {
+        return res.status(404).json({ message: "Draft not found" });
+      }
+      
+      // Check ownership
+      if (draft.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized to update this draft" });
+      }
+      
+      const updatedDraft = await storage.updatePropertyDraft(id, req.body);
+      res.json(updatedDraft);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          message: "Invalid draft data",
+          errors: fromZodError(error).message,
+        });
+      }
+      next(error);
+    }
+  });
+  
+  app.delete("/api/property-drafts/:id", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const draft = await storage.getPropertyDraft(id);
+      
+      if (!draft) {
+        return res.status(404).json({ message: "Draft not found" });
+      }
+      
+      // Check ownership
+      if (draft.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized to delete this draft" });
+      }
+      
+      await storage.deletePropertyDraft(id);
+      res.status(204).end();
+    } catch (error) {
+      next(error);
+    }
+  });
+  
+  // Convert draft to full property listing
+  app.post("/api/property-drafts/:id/publish", isAuthenticated, async (req, res, next) => {
+    try {
+      const id = parseInt(req.params.id);
+      const draft = await storage.getPropertyDraft(id);
+      
+      if (!draft) {
+        return res.status(404).json({ message: "Draft not found" });
+      }
+      
+      // Check ownership
+      if (draft.userId !== req.user!.id) {
+        return res.status(403).json({ message: "Not authorized to publish this draft" });
+      }
+      
+      // Convert draft.formData to a format compatible with insertPropertySchema
+      const propertyData = {
+        ...draft.formData,
+        ownerId: req.user!.id
+      };
+      
+      try {
+        // Create the actual property listing
+        const property = await storage.createProperty(propertyData);
+        
+        // Delete the draft since it's now published
+        await storage.deletePropertyDraft(id);
+        
+        res.status(201).json({
+          success: true,
+          property,
+          message: "Draft successfully published as property listing"
+        });
+      } catch (propertyError) {
+        res.status(400).json({
+          success: false,
+          message: "Failed to publish draft as property",
+          error: propertyError instanceof Error ? propertyError.message : "Unknown error"
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   // Favorites
   app.get("/api/user/favorites", isAuthenticated, async (req, res, next) => {
     try {
