@@ -62,15 +62,31 @@ export default function AuthPage() {
   // Add submission tracking to prevent multiple rapid submissions
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Track last submission time to prevent multiple rapid submissions 
+  const [lastSubmitTime, setLastSubmitTime] = useState(0);
+  const DEBOUNCE_TIME = 2000; // 2 seconds
+
   const onLoginSubmit = async (data: LoginUser) => {
-    // Prevent multiple submissions
-    if (isSubmitting || isAuthenticating) {
-      console.log("Login already in progress, ignoring additional submission");
+    // Get current time
+    const now = Date.now();
+    
+    // Prevent multiple submissions via time-based debounce and state checks
+    if (isSubmitting || isAuthenticating || (now - lastSubmitTime < DEBOUNCE_TIME)) {
+      console.log("Login already in progress or too soon after last attempt, ignoring submission");
       return;
     }
     
     try {
+      // Update submission state and timestamp
       setIsSubmitting(true);
+      setLastSubmitTime(now);
+      
+      // Disable form fields during submission
+      Object.keys(loginForm.getValues()).forEach(fieldName => {
+        loginForm.setDisabled(fieldName as 'username' | 'password', true);
+      });
+      
+      // Execute login
       await login(data);
     } catch (error) {
       console.error("Login error:", error);
@@ -78,19 +94,30 @@ export default function AuthPage() {
       // Reset submission state after a delay to prevent rapid re-submissions
       setTimeout(() => {
         setIsSubmitting(false);
+        loginForm.disabled = false;
       }, 1000);
     }
   };
 
   const onRegisterSubmit = async (data: RegisterUser) => {
-    // Prevent multiple submissions
-    if (isSubmitting || isAuthenticating) {
-      console.log("Registration already in progress, ignoring additional submission");
+    // Get current time
+    const now = Date.now();
+    
+    // Prevent multiple submissions via time-based debounce and state checks
+    if (isSubmitting || isAuthenticating || (now - lastSubmitTime < DEBOUNCE_TIME)) {
+      console.log("Registration already in progress or too soon after last attempt, ignoring submission");
       return;
     }
     
     try {
+      // Update submission state and timestamp
       setIsSubmitting(true);
+      setLastSubmitTime(now);
+      
+      // Disable form fields during submission
+      registerForm.disabled = true;
+      
+      // Execute registration
       await register(data);
     } catch (error) {
       console.error("Registration error:", error);
@@ -98,6 +125,7 @@ export default function AuthPage() {
       // Reset submission state after a delay to prevent rapid re-submissions
       setTimeout(() => {
         setIsSubmitting(false);
+        registerForm.disabled = false;
       }, 1000);
     }
   };
@@ -196,9 +224,9 @@ export default function AuthPage() {
                       <Button 
                         type="submit" 
                         className="w-full bg-gray-900 text-white hover:bg-gray-800"
-                        disabled={isAuthenticating}
+                        disabled={isAuthenticating || isSubmitting}
                       >
-                        {isAuthenticating ? (
+                        {isAuthenticating || isSubmitting ? (
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         ) : null}
                         Sign In
@@ -304,9 +332,9 @@ export default function AuthPage() {
                       <Button 
                         type="submit" 
                         className="w-full bg-gray-900 text-white hover:bg-gray-800"
-                        disabled={isAuthenticating}
+                        disabled={isAuthenticating || isSubmitting}
                       >
-                        {isAuthenticating ? (
+                        {isAuthenticating || isSubmitting ? (
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                         ) : null}
                         Create Account
