@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged } from 'firebase/auth';
-import { Loader2, CheckCircle, XCircle, Info } from 'lucide-react';
+import { initializeApp, FirebaseError, FirebaseApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, Auth, User as FirebaseUser } from 'firebase/auth';
+import { Loader2, CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
 
 interface TestResult {
   success: boolean;
