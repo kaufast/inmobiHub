@@ -15,6 +15,7 @@ export const STORES = {
   NEIGHBORHOODS: 'neighborhoods',
   FEATURED_PROPERTIES: 'featuredProperties',
   USER_PREFERENCES: 'userPreferences',
+  SEARCH_HISTORY: 'searchHistory',
 };
 
 /**
@@ -60,6 +61,11 @@ export function initDatabase(): Promise<IDBDatabase> {
       
       if (!db.objectStoreNames.contains(STORES.USER_PREFERENCES)) {
         db.createObjectStore(STORES.USER_PREFERENCES, { keyPath: 'key' });
+      }
+      
+      if (!db.objectStoreNames.contains(STORES.SEARCH_HISTORY)) {
+        const searchStore = db.createObjectStore(STORES.SEARCH_HISTORY, { keyPath: 'key' });
+        searchStore.createIndex('timestamp', 'timestamp', { unique: false });
       }
     };
   });
@@ -118,15 +124,15 @@ export async function addOrUpdateBulkData<T>(storeName: string, items: T[]): Pro
 }
 
 /**
- * Get data from a store by ID
+ * Get data from a store by key
  */
-export async function getData<T>(storeName: string, id: number | string): Promise<T | null> {
+export async function getData<T>(storeName: string, key: string): Promise<T | null> {
   const db = await initDatabase();
   
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readonly');
     const store = transaction.objectStore(storeName);
-    const request = store.get(id);
+    const request = store.get(key);
     
     request.onerror = (event) => {
       console.error(`Error getting data from ${storeName}:`, (event.target as IDBRequest).error);
@@ -170,15 +176,15 @@ export async function getAllData<T>(storeName: string): Promise<T[]> {
 }
 
 /**
- * Delete data from a store by ID
+ * Delete data from a store by key
  */
-export async function deleteData(storeName: string, id: number | string): Promise<void> {
+export async function deleteData(storeName: string, key: string): Promise<void> {
   const db = await initDatabase();
   
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite');
     const store = transaction.objectStore(storeName);
-    const request = store.delete(id);
+    const request = store.delete(key);
     
     request.onerror = (event) => {
       console.error(`Error deleting data from ${storeName}:`, (event.target as IDBRequest).error);
@@ -230,4 +236,81 @@ export async function clearStore(storeName: string): Promise<void> {
 export function needsRefresh(timestamp: number, maxAgeMs = 1000 * 60 * 10): boolean {
   if (!timestamp) return true;
   return Date.now() - timestamp > maxAgeMs;
+}
+
+/**
+ * Get data with a specific index value
+ */
+export async function getDataByIndex<T>(
+  storeName: string,
+  indexName: string,
+  value: IDBValidKey
+): Promise<T[]> {
+  const db = await initDatabase();
+  
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, 'readonly');
+    const store = transaction.objectStore(storeName);
+    const index = store.index(indexName);
+    const request = index.getAll(value);
+    
+    request.onerror = (event) => {
+      console.error(`Error getting data by index from ${storeName}:`, (event.target as IDBRequest).error);
+      reject((event.target as IDBRequest).error);
+    };
+    
+    request.onsuccess = () => {
+      resolve(request.result || []);
+    };
+    
+    transaction.oncomplete = () => {
+      db.close();
+    };
+  });
+}
+
+/**
+ * Get the most recent records based on timestamp
+ */
+export async function getMostRecentData<T>(
+  storeName: string,
+  limit: number = 10
+): Promise<T[]> {
+  const db = await initDatabase();
+  
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, 'readonly');
+    const store = transaction.objectStore(storeName);
+    
+    // Make sure the store has a timestamp index
+    if (!store.indexNames.contains('timestamp')) {
+      reject(new Error(`Store ${storeName} does not have a timestamp index`));
+      return;
+    }
+    
+    const index = store.index('timestamp');
+    const request = index.openCursor(null, 'prev'); // 'prev' for descending order
+    
+    const results: T[] = [];
+    
+    request.onerror = (event) => {
+      console.error(`Error getting recent data from ${storeName}:`, (event.target as IDBRequest).error);
+      reject((event.target as IDBRequest).error);
+    };
+    
+    request.onsuccess = (event) => {
+      const cursor = (event.target as IDBRequest).result;
+      
+      if (cursor && results.length < limit) {
+        results.push(cursor.value);
+        cursor.continue();
+      } else {
+        resolve(results);
+      }
+    };
+    
+    transaction.oncomplete = () => {
+      db.close();
+    };
+  });
 }

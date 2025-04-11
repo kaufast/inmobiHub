@@ -28,6 +28,7 @@ import {
   generatePasskeyAuthenticationOptions,
   verifyPasskeyAuthentication
 } from './webauthn';
+import { generateSitemaps } from './sitemap-generator';
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
@@ -86,6 +87,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         cb(new Error('Only image files are allowed'));
       }
+    }
+  });
+  
+  // SEO Routes - Sitemap generation
+  app.get("/api/sitemap/generate", isAdmin, async (req, res) => {
+    try {
+      const outputDir = path.join(process.cwd(), 'public');
+      const result = await generateSitemaps(outputDir);
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: "Sitemaps generated successfully",
+          sitemapIndexPath: result.sitemapIndexPath
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: "Failed to generate sitemaps",
+          error: result.error
+        });
+      }
+    } catch (error) {
+      console.error("Error generating sitemaps:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate sitemaps",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
   

@@ -1,87 +1,125 @@
-import React from 'react';
-import { Property, Neighborhood } from '@shared/schema';
+import { 
+  generateOrganizationSchema, 
+  generatePropertySchema, 
+  generateBreadcrumbSchema 
+} from '@/utils/structuredData';
 
-interface JsonLdProps {
-  data: Record<string, any>;
+// Organization Schema Component
+interface OrganizationSchemaProps {
+  name?: string;
+  baseUrl: string;
+  logoUrl: string;
+  description?: string;
+  email?: string;
+  telephone?: string;
+  address?: string;
+  socialProfiles?: string[];
 }
 
-// Generic JsonLd component for any schema
-export function JsonLd({ data }: JsonLdProps) {
+/**
+ * OrganizationSchema - Component to add global organization schema for SEO
+ */
+export function OrganizationSchema({
+  name = 'Inmobi Real Estate',
+  baseUrl,
+  logoUrl,
+  description = 'Inmobi is a leading real estate platform connecting buyers, sellers, and renters with an AI-powered property search and recommendation system.',
+  email = 'info@inmobi.mobi',
+  telephone = '+34679680000',
+  address = 'c. de la Ribera 14, 08003 Barcelona',
+  socialProfiles = [
+    'https://facebook.com/inmobirealestate',
+    'https://twitter.com/inmobirealestate',
+    'https://instagram.com/inmobirealestate',
+    'https://linkedin.com/company/inmobirealestate'
+  ]
+}: OrganizationSchemaProps) {
+  const schemaData = {
+    name,
+    url: baseUrl,
+    logo: logoUrl,
+    description,
+    email,
+    telephone,
+    address,
+    sameAs: socialProfiles
+  };
+  
+  const schemaJson = generateOrganizationSchema(schemaData);
+  
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify(data)
-      }}
-    />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaJson }} />
   );
 }
 
-// Property (RealEstateListing) schema markup
-export interface PropertySchemaProps {
-  property: Property;
-  neighborhood?: Neighborhood;
-  baseUrl: string;
-}
-
-export function PropertySchema({ property, neighborhood, baseUrl }: PropertySchemaProps) {
-  const fullUrl = `${baseUrl}/property/${property.id}`;
-  
-  const schemaData = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateListing',
-    '@id': fullUrl,
-    'url': fullUrl,
-    'name': property.title,
-    'description': property.description,
-    'datePosted': property.createdAt,
-    'mainEntityOfPage': fullUrl,
-    'image': property.images.map(img => img),
-    'price': `$${property.price.toLocaleString()}`,
-    'priceCurrency': 'USD',
-    'offerCount': 1,
-    'offers': {
-      '@type': 'Offer',
-      'price': property.price,
-      'priceCurrency': 'USD',
-      'availability': 'https://schema.org/InStock'
-    },
-    'address': {
-      '@type': 'PostalAddress',
-      'streetAddress': property.address,
-      'addressLocality': property.city,
-      'addressRegion': property.state,
-      'postalCode': property.zipCode,
-      'addressCountry': property.country
-    },
-    'geo': {
-      '@type': 'GeoCoordinates',
-      'latitude': property.latitude,
-      'longitude': property.longitude
-    },
-    'numberOfBedrooms': property.bedrooms,
-    'numberOfBathrooms': property.bathrooms,
-    'floorSize': {
-      '@type': 'QuantitativeValue',
-      'value': property.squareFeet,
-      'unitCode': 'SQFT',
-      'unitText': 'Square Feet'
-    },
-    'propertyType': getPropertyType(property.propertyType),
-    'yearBuilt': property.yearBuilt
+// Property Schema Component
+interface PropertySchemaProps {
+  property: {
+    id: string | number;
+    title: string;
+    description: string;
+    price: number;
+    currency?: string;
+    bedrooms: number;
+    bathrooms: number;
+    squareMeters: number;
+    location: string;
+    imageUrl: string;
+    status?: 'ForRent' | 'ForSale' | 'SaleUnderContract' | 'Sold';
+    additionalImages?: string[];
+    yearBuilt?: number;
+    agent?: {
+      name: string;
+      email?: string;
+      telephone?: string;
+      image?: string;
+    };
   };
-
-  return <JsonLd data={schemaData} />;
-}
-
-// Property Search Results schema markup
-export interface PropertyListSchemaProps {
-  properties: Property[];
   baseUrl: string;
 }
 
+/**
+ * PropertySchema - Component for adding property structured data
+ */
+export function PropertySchema({ property, baseUrl }: PropertySchemaProps) {
+  const schemaJson = generatePropertySchema(property, baseUrl);
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaJson }} />
+  );
+}
+
+// Breadcrumbs Schema Component
+interface BreadcrumbsSchemaProps {
+  breadcrumbs: Array<{ name: string; url: string }>;
+}
+
+/**
+ * BreadcrumbsSchema - Component for adding breadcrumb structured data
+ */
+export function BreadcrumbsSchema({ breadcrumbs }: BreadcrumbsSchemaProps) {
+  const schemaJson = generateBreadcrumbSchema(breadcrumbs);
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: schemaJson }} />
+  );
+}
+
+// List Schema Component for property listings
+interface PropertyListSchemaProps {
+  properties: Array<{
+    id: string | number;
+    title: string;
+    price: number;
+    location: string;
+    imageUrl: string;
+  }>;
+  baseUrl: string;
+}
+
+/**
+ * PropertyListSchema - Component for adding property list structured data
+ */
 export function PropertyListSchema({ properties, baseUrl }: PropertyListSchemaProps) {
-  const schemaData = {
+  const schema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     'itemListElement': properties.map((property, index) => ({
@@ -91,132 +129,21 @@ export function PropertyListSchema({ properties, baseUrl }: PropertyListSchemaPr
         '@type': 'RealEstateListing',
         'name': property.title,
         'url': `${baseUrl}/property/${property.id}`,
-        'image': property.images[0],
-        'description': property.description,
+        'image': property.imageUrl,
         'offers': {
           '@type': 'Offer',
           'price': property.price,
-          'priceCurrency': 'USD'
-        },
-        'numberOfBedrooms': property.bedrooms,
-        'numberOfBathrooms': property.bathrooms,
-        'floorSize': {
-          '@type': 'QuantitativeValue',
-          'value': property.squareFeet,
-          'unitCode': 'SQFT'
+          'priceCurrency': 'EUR'
         },
         'address': {
           '@type': 'PostalAddress',
-          'addressLocality': property.city,
-          'addressRegion': property.state,
-          'postalCode': property.zipCode,
-          'addressCountry': property.country
+          'addressLocality': property.location
         }
       }
     }))
   };
-
-  return <JsonLd data={schemaData} />;
-}
-
-// Organization schema markup
-export interface OrganizationSchemaProps {
-  baseUrl: string;
-  logoUrl: string;
-  name?: string;
-}
-
-export function OrganizationSchema({ baseUrl, logoUrl, name = 'Inmobi' }: OrganizationSchemaProps) {
-  const schemaData = {
-    '@context': 'https://schema.org',
-    '@type': 'RealEstateAgent',
-    '@id': baseUrl,
-    'name': name,
-    'url': baseUrl,
-    'logo': logoUrl,
-    'sameAs': [
-      'https://www.facebook.com/foundation',
-      'https://www.twitter.com/foundation',
-      'https://www.instagram.com/foundation',
-      'https://www.linkedin.com/company/foundation'
-    ],
-    'contactPoint': {
-      '@type': 'ContactPoint',
-      'telephone': '+1-555-123-4567',
-      'contactType': 'customer service',
-      'availableLanguage': ['English', 'Spanish']
-    }
-  };
-
-  return <JsonLd data={schemaData} />;
-}
-
-// Neighborhood schema markup
-export interface NeighborhoodSchemaProps {
-  neighborhood: Neighborhood;
-  baseUrl: string;
-}
-
-export function NeighborhoodSchema({ neighborhood, baseUrl }: NeighborhoodSchemaProps) {
-  const fullUrl = `${baseUrl}/neighborhood/${neighborhood.id}`;
   
-  const schemaData = {
-    '@context': 'https://schema.org',
-    '@type': 'Place',
-    '@id': fullUrl,
-    'name': `${neighborhood.name} Neighborhood`,
-    'description': neighborhood.description,
-    'url': fullUrl,
-    'address': {
-      '@type': 'PostalAddress',
-      'addressLocality': neighborhood.city,
-      'addressRegion': neighborhood.state,
-      'postalCode': neighborhood.zipCode,
-      'addressCountry': 'USA'
-    },
-    'geo': {
-      '@type': 'GeoCoordinates',
-      'latitude': neighborhood.latitude,
-      'longitude': neighborhood.longitude
-    }
-  };
-
-  return <JsonLd data={schemaData} />;
-}
-
-// Breadcrumbs schema markup
-export interface BreadcrumbsSchemaProps {
-  items: {
-    name: string;
-    url: string;
-  }[];
-  baseUrl: string;
-}
-
-export function BreadcrumbsSchema({ items, baseUrl }: BreadcrumbsSchemaProps) {
-  const schemaData = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    'itemListElement': items.map((item, index) => ({
-      '@type': 'ListItem',
-      'position': index + 1,
-      'name': item.name,
-      'item': item.url.startsWith('http') ? item.url : `${baseUrl}${item.url}`
-    }))
-  };
-
-  return <JsonLd data={schemaData} />;
-}
-
-// Helper function to map property types to schema.org types
-function getPropertyType(type: string): string {
-  const mapping: Record<string, string> = {
-    'house': 'SingleFamilyResidence',
-    'condo': 'Apartment',
-    'apartment': 'Apartment',
-    'townhouse': 'Residence',
-    'land': 'LandForm'
-  };
-  
-  return mapping[type] || 'Residence';
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+  );
 }

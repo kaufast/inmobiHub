@@ -1,127 +1,262 @@
+import { useState, useEffect, type ReactNode } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useState, useEffect } from 'react';
-import { MapPin, Bed, Bath, Maximize } from 'lucide-react';
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Property } from '@shared/schema';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
+import { Link } from 'wouter';
+import { Heart, MapPin, Building, BedDouble, Bath, ArrowUpRight, Maximize } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { formatCurrency } from '@/utils/format';
+import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/use-auth';
 
-type PropertyCardProps = {
-  property: {
-    id: string | number;
-    title: string;
-    price: number;
-    location: string;
-    bedrooms: number;
-    bathrooms: number;
-    squareMeters: number;
-    imageUrl: string;
-    featured?: boolean;
-  };
-  priority?: boolean;
-};
+interface LazyPropertyCardProps {
+  property: Property;
+  showFavoriteButton?: boolean;
+  priority?: boolean; 
+  className?: string;
+  matchScore?: number; // For AI recommendation match score
+  matchReason?: string; // For AI recommendation reason
+  onClick?: () => void;
+  onFavoriteToggle?: (propertyId: number, isFavorited: boolean) => void;
+}
 
-export default function LazyPropertyCard({ property, priority = false }: PropertyCardProps) {
+/**
+ * Optimized Property Card Component with lazy loading for better LCP
+ * - Uses Intersection Observer for visibility detection
+ * - Only renders full content when in viewport
+ * - Optimizes image loading
+ * - Shows skeleton while loading
+ * - Provides favorite functionality
+ */
+export function LazyPropertyCard({
+  property,
+  showFavoriteButton = true,
+  priority = false,
+  className = '',
+  matchScore,
+  matchReason,
+  onClick,
+  onFavoriteToggle
+}: LazyPropertyCardProps) {
   const { ref, inView } = useInView({
-    threshold: 0.1,
     triggerOnce: true,
-    rootMargin: '200px 0px',
+    rootMargin: '200px 0px', // Start loading earlier for better UX
   });
-
+  
   const [isLoaded, setIsLoaded] = useState(priority);
+  const [favorited, setFavorited] = useState(property.favorited || false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+  
+  // Handle image load
+  const handleImageLoad = () => {
+    setIsLoaded(true);
+  };
 
-  useEffect(() => {
-    if (inView && !isLoaded) {
-      setIsLoaded(true);
+  // Toggle favorite status
+  const toggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to save properties to your favorites",
+        variant: "destructive",
+      });
+      return;
     }
-  }, [inView, isLoaded]);
+    
+    if (isTogglingFavorite) return;
+    
+    setIsTogglingFavorite(true);
+    
+    try {
+      if (favorited) {
+        await apiRequest('DELETE', `/api/user/favorites/${property.id}`);
+        toast({
+          title: "Removed from favorites",
+          description: "Property removed from your saved list"
+        });
+      } else {
+        await apiRequest('POST', '/api/user/favorites', { propertyId: property.id });
+        toast({
+          title: "Added to favorites!",
+          description: "Property saved to your favorites"
+        });
+      }
+      
+      setFavorited(!favorited);
+      if (onFavoriteToggle) {
+        onFavoriteToggle(property.id, !favorited);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not update favorite status. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Failed to toggle favorite:', error);
+    } finally {
+      setIsTogglingFavorite(false);
+    }
+  };
 
-  // Format price with commas e.g. 1,450,000
-  const formattedPrice = new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(property.price);
+  // Get the first image or fallback
+  const coverImage = property.images && property.images.length > 0 
+    ? property.images[0] 
+    : '/assets/property-placeholder.jpg';
+  
+  // For loading skeleton or partial content
+  if (!inView && !priority) {
+    return (
+      <div 
+        ref={ref}
+        className={`rounded-lg overflow-hidden border border-border bg-card shadow-sm h-[400px] ${className}`}
+        aria-busy="true"
+      >
+        <Skeleton className="w-full h-[200px]" />
+        <div className="p-4 space-y-3">
+          <Skeleton className="w-3/4 h-6" />
+          <Skeleton className="w-1/2 h-4" />
+          <div className="flex space-x-2 mt-2">
+            <Skeleton className="w-1/4 h-4" />
+            <Skeleton className="w-1/4 h-4" />
+            <Skeleton className="w-1/4 h-4" />
+          </div>
+          <Skeleton className="w-full h-10 mt-4" />
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div ref={ref} className="transition-opacity duration-500" style={{ opacity: isLoaded ? 1 : 0 }}>
-      {isLoaded ? (
-        <Card className="overflow-hidden h-full border border-gray-700 bg-gray-900/90 backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300">
-          <div className="relative">
-            <img 
-              src={property.imageUrl} 
-              alt={property.title} 
-              className="w-full h-48 object-cover"
-              loading={priority ? "eager" : "lazy"}
-              width={400}
-              height={300}
-            />
-            {property.featured && (
-              <div className="absolute top-2 right-2">
-                <div className="bg-[#131c28] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
-                  Featured
-                </div>
-              </div>
-            )}
-            <div className="absolute top-2 left-2">
-              <button className="bg-[#131c28] p-1.5 rounded-full shadow-md transition-transform hover:scale-110 hover:bg-[#0c1319]">
-                <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-              </button>
-            </div>
+    <div
+      ref={ref}
+      className={`group relative rounded-lg overflow-hidden border border-border bg-card shadow-sm hover:shadow-md transition-all ${className}`}
+      onClick={onClick}
+    >
+      {/* Premium badge */}
+      {property.isPremium && (
+        <Badge variant="default" className="absolute top-3 left-3 z-10 bg-primary text-white">
+          Premium
+        </Badge>
+      )}
+      
+      {/* Match score badge for recommendations */}
+      {matchScore !== undefined && (
+        <div className="absolute top-3 right-3 z-10 bg-primary/90 text-white rounded-md px-2 py-1 text-sm font-semibold flex items-center gap-1">
+          <span className="text-xs">Match</span>
+          <span>{Math.round(matchScore)}%</span>
+        </div>
+      )}
+      
+      {/* Favorite button */}
+      {showFavoriteButton && (
+        <Button
+          size="icon"
+          variant={favorited ? "default" : "outline"}
+          className={`absolute top-3 right-3 z-10 rounded-full p-1 h-8 w-8 ${favorited ? 'bg-primary text-white' : 'bg-background/70 backdrop-blur-sm hover:bg-background/90'}`}
+          onClick={toggleFavorite}
+          disabled={isTogglingFavorite}
+          aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+        >
+          <Heart className={favorited ? 'fill-current' : ''} size={18} />
+        </Button>
+      )}
+      
+      {/* Property image with optimization */}
+      <div className="relative h-[200px] overflow-hidden">
+        <OptimizedImage
+          src={coverImage}
+          alt={property.title}
+          width={400}
+          height={200}
+          priority={priority}
+          onLoad={handleImageLoad}
+          className="transition-transform duration-500 group-hover:scale-105"
+        />
+        
+        {/* Absolute positioned property type badge */}
+        <Badge variant="outline" className="absolute bottom-3 left-3 z-10 bg-background/70 backdrop-blur-sm text-foreground">
+          {property.propertyType === 'apartment' ? (
+            <Building size={14} className="mr-1" />
+          ) : (
+            <Building size={14} className="mr-1" />
+          )}
+          {property.propertyType.charAt(0).toUpperCase() + property.propertyType.slice(1)}
+        </Badge>
+      </div>
+      
+      {/* Content */}
+      <div className="p-4">
+        <Link href={`/property/${property.id}`}>
+          <a className="block group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-lg line-clamp-1 flex items-center">
+              {property.title}
+              <ArrowUpRight size={14} className="ml-1 inline-block opacity-0 group-hover:opacity-100 transition-opacity" />
+            </h3>
+          </a>
+        </Link>
+        
+        <div className="flex items-center mt-1 text-muted-foreground text-sm">
+          <MapPin size={14} className="mr-1" />
+          <span className="line-clamp-1">
+            {property.address}, {property.city}, {property.country}
+          </span>
+        </div>
+        
+        <div className="mt-3 flex items-center justify-between">
+          <div className="text-xl font-bold text-primary">
+            {formatCurrency(property.price)}
           </div>
           
-          <CardContent className="p-3">
-            <h3 className="font-bold text-white">{property.title}</h3>
-            <p className="text-white font-medium">{formattedPrice}</p>
-            
-            <div className="flex items-center text-gray-400 text-xs mt-1">
-              <MapPin className="h-3 w-3 mr-1" />
-              <span>{property.location}</span>
-            </div>
-            
-            <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-700">
-              <div className="flex space-x-3 text-xs">
-                <div className="flex items-center text-gray-300">
-                  <Bed className="h-3 w-3 mr-1" />
-                  <span>{property.bedrooms}</span>
-                </div>
-                <div className="flex items-center text-gray-300">
-                  <Bath className="h-3 w-3 mr-1" />
-                  <span>{property.bathrooms}</span>
-                </div>
-                <div className="flex items-center text-gray-300">
-                  <Maximize className="h-3 w-3 mr-1" />
-                  <span>{property.squareMeters} m²</span>
-                </div>
-              </div>
-              <button className="text-white bg-[#131c28] hover:bg-[#0c1319] text-xs py-1.5 px-3 rounded-md shadow-sm transition-all hover:shadow-md">
-                View
-              </button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="overflow-hidden h-full border border-gray-700 bg-gray-900/90 backdrop-blur-md">
-          <div className="relative w-full h-48">
-            <Skeleton className="w-full h-full" />
+          {property.transactionType === 'rent' && (
+            <Badge variant="outline" className="text-xs">
+              For Rent
+            </Badge>
+          )}
+        </div>
+        
+        <div className="flex items-center justify-between mt-3 text-sm">
+          <div className="flex items-center text-muted-foreground">
+            <BedDouble size={16} className="mr-1" />
+            <span>{property.bedrooms} {property.bedrooms === 1 ? 'Bed' : 'Beds'}</span>
           </div>
-          <CardContent className="p-3">
-            <Skeleton className="h-6 w-4/5 mb-2" />
-            <Skeleton className="h-5 w-2/5 mb-2" />
-            <Skeleton className="h-4 w-3/5 mb-3" />
-            <div className="pt-3 border-t border-gray-700">
-              <div className="flex justify-between">
-                <div className="flex space-x-3">
-                  <Skeleton className="h-4 w-10" />
-                  <Skeleton className="h-4 w-10" />
-                  <Skeleton className="h-4 w-10" />
-                </div>
-                <Skeleton className="h-6 w-16" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          
+          <div className="flex items-center text-muted-foreground">
+            <Bath size={16} className="mr-1" />
+            <span>{property.bathrooms} {property.bathrooms === 1 ? 'Bath' : 'Baths'}</span>
+          </div>
+          
+          <div className="flex items-center text-muted-foreground">
+            <Maximize size={16} className="mr-1" />
+            <span>{property.squareFeet} ft²</span>
+          </div>
+        </div>
+        
+        {/* AI Match Reason Tooltip */}
+        {matchReason && (
+          <div className="mt-3 text-xs bg-muted p-2 rounded-md">
+            <span className="font-semibold">Match reason:</span> {matchReason}
+          </div>
+        )}
+        
+        {/* View Details Button */}
+        <Button 
+          variant="default" 
+          className="w-full mt-4"
+          asChild
+        >
+          <Link href={`/property/${property.id}`}>
+            <a>View Details</a>
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

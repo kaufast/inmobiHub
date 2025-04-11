@@ -1,63 +1,136 @@
 import { Helmet } from 'react-helmet';
+import { MetaTags } from '@/components/seo/meta-tags';
+import { PropertySchema } from '@/components/seo/property-schema';
+import { Property } from '@shared/schema';
+import { 
+  generateWebPageStructuredData, 
+  generateOrganizationStructuredData,
+  generateBreadcrumbStructuredData
+} from '@/utils/structuredData';
 
 interface SEOHeadProps {
   title: string;
   description: string;
-  canonicalUrl?: string;
+  canonicalPath?: string; // Path without domain, e.g. "/properties/123"
   ogImage?: string;
   ogType?: 'website' | 'article' | 'profile' | 'product';
-  twitterCard?: 'summary' | 'summary_large_image';
-  structuredData?: object;
+  keywords?: string[];
+  author?: string; 
+  publishedTime?: string;
+  modifiedTime?: string;
   noIndex?: boolean;
+  property?: Property; // For property specific schema
+  breadcrumbs?: Array<{ name: string; path: string }>;
+  children?: React.ReactNode; // For additional custom meta tags
 }
 
-export default function SEOHead({
+/**
+ * A comprehensive SEO component that combines meta tags and structured data
+ * Use this component on all key pages to ensure proper SEO
+ */
+export function SEOHead({
   title,
   description,
-  canonicalUrl,
-  ogImage = '/assets/og-default.jpg',
+  canonicalPath,
+  ogImage,
   ogType = 'website',
-  twitterCard = 'summary_large_image',
-  structuredData,
-  noIndex = false,
+  keywords,
+  author,
+  publishedTime,
+  modifiedTime,
+  noIndex,
+  property,
+  breadcrumbs,
+  children
 }: SEOHeadProps) {
-  const siteName = 'Inmobi®';
-  const fullTitle = `${title} | ${siteName}`;
-  const domain = 'https://inmobi.replit.app';
-  const fullCanonicalUrl = canonicalUrl ? `${domain}${canonicalUrl}` : undefined;
-  const fullOgImage = ogImage.startsWith('http') ? ogImage : `${domain}${ogImage}`;
+  // Get the base URL dynamically
+  const baseUrl = typeof window !== 'undefined' 
+    ? window.location.origin 
+    : 'https://inmobi.replit.app';
+  
+  // Format the canonical URL
+  const canonicalUrl = canonicalPath ? `${baseUrl}${canonicalPath}` : undefined;
+  
+  // Company data for organization structured data
+  const companyData = {
+    name: 'Inmobi Real Estate',
+    logo: `${baseUrl}/assets/logo.png`,
+    url: baseUrl,
+    sameAs: [
+      'https://facebook.com/inmobirealestate',
+      'https://twitter.com/inmobirealestate',
+      'https://instagram.com/inmobirealestate',
+      'https://linkedin.com/company/inmobirealestate',
+    ],
+    address: {
+      streetAddress: 'c. de la Ribera 14',
+      addressLocality: 'Barcelona',
+      addressRegion: 'Catalonia',
+      postalCode: '08003',
+      addressCountry: 'Spain',
+    },
+    contactPoint: {
+      telephone: '+34679680000',
+      email: 'info@inmobi.mobi',
+      contactType: 'Customer Support',
+      availableLanguage: ['English', 'Spanish'],
+    },
+  };
+  
+  // Process breadcrumbs for structured data if provided
+  const breadcrumbItems = breadcrumbs?.map(item => ({
+    name: item.name,
+    url: `${baseUrl}${item.path}`
+  }));
 
   return (
-    <Helmet>
-      <title>{fullTitle}</title>
-      <meta name="description" content={description} />
+    <>
+      {/* Meta tags for standard SEO */}
+      <MetaTags
+        title={title}
+        description={description}
+        canonicalUrl={canonicalUrl}
+        ogImage={ogImage}
+        ogType={ogType}
+        keywords={keywords}
+        author={author}
+        publishedTime={publishedTime}
+        modifiedTime={modifiedTime}
+        noIndex={noIndex}
+      />
       
-      {/* Canonical URL */}
-      {fullCanonicalUrl && <link rel="canonical" href={fullCanonicalUrl} />}
-      
-      {/* OpenGraph Tags */}
-      <meta property="og:site_name" content={siteName} />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:type" content={ogType} />
-      {fullOgImage && <meta property="og:image" content={fullOgImage} />}
-      {fullCanonicalUrl && <meta property="og:url" content={fullCanonicalUrl} />}
-      
-      {/* Twitter Tags */}
-      <meta name="twitter:card" content={twitterCard} />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
-      {fullOgImage && <meta name="twitter:image" content={fullOgImage} />}
-      
-      {/* No Index (if needed) */}
-      {noIndex && <meta name="robots" content="noindex,nofollow" />}
-      
-      {/* Structured Data */}
-      {structuredData && (
+      {/* Structured data for enhanced search results */}
+      <Helmet>
+        {/* Basic webpage structured data */}
         <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
+          {generateWebPageStructuredData({
+            title,
+            description,
+            url: canonicalUrl || baseUrl,
+            image: ogImage,
+            datePublished: publishedTime,
+            dateModified: modifiedTime || publishedTime,
+          })}
         </script>
-      )}
-    </Helmet>
+        
+        {/* Organization structured data */}
+        <script type="application/ld+json">
+          {generateOrganizationStructuredData(companyData)}
+        </script>
+        
+        {/* Property schema if a property is provided */}
+        {property && <PropertySchema property={property} baseUrl={baseUrl} />}
+        
+        {/* Breadcrumbs structured data */}
+        {breadcrumbItems && breadcrumbItems.length > 0 && (
+          <script type="application/ld+json">
+            {generateBreadcrumbStructuredData(breadcrumbItems)}
+          </script>
+        )}
+        
+        {/* Allow for additional custom head elements */}
+        {children}
+      </Helmet>
+    </>
   );
 }
