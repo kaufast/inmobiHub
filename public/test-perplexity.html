@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perplexity API Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+      color: #1d2633;
+      margin-bottom: 30px;
+    }
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .button {
+      background-color: #1d2633;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.2s;
+    }
+    .button:hover {
+      background-color: #131c28;
+    }
+    .button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .spinner {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: #1d2633;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .results {
+      display: none;
+      margin-top: 20px;
+    }
+    .api-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      background-color: #e6f7ff;
+      color: #0070f3;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .chat-card {
+      border-left: 4px solid #1d2633;
+      padding-left: 16px;
+      margin-top: 10px;
+    }
+    .chat-form {
+      display: flex;
+      margin-top: 20px;
+    }
+    .chat-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .error {
+      color: #e53e3e;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <h1>Inmobi - Perplexity API Test</h1>
+  
+  <div class="card">
+    <h2>Test Perplexity API Integration</h2>
+    <p>Click the button below to check if the Perplexity API is configured and working correctly.</p>
+    <button id="testButton" class="button">Test Perplexity API</button>
+    
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Testing API connection...</p>
+    </div>
+    
+    <div id="results" class="results">
+      <div class="api-badge" id="apiSource">Perplexity API</div>
+      <h3>API Response:</h3>
+      <div id="apiResponse" class="chat-card"></div>
+    </div>
+    
+    <div id="error" class="error" style="display: none;"></div>
+  </div>
+  
+  <div class="card">
+    <h2>Chat with AI Assistant</h2>
+    <p>Ask a question about real estate to test the chat functionality:</p>
+    
+    <form id="chatForm" class="chat-form">
+      <input type="text" id="chatInput" class="chat-input" placeholder="E.g., What are the current housing trends in Mexico?" required>
+      <button type="submit" class="button" style="margin-left: 10px;">Send</button>
+    </form>
+    
+    <div id="chatLoading" class="loading">
+      <div class="spinner"></div>
+      <p>Getting response...</p>
+    </div>
+    
+    <div id="chatResults" class="results">
+      <div class="api-badge" id="chatApiSource">API Source</div>
+      <h3>Response:</h3>
+      <div id="chatResponse" class="chat-card"></div>
+    </div>
+    
+    <div id="chatError" class="error" style="display: none;"></div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Test API Button
+      const testButton = document.getElementById('testButton');
+      const loading = document.getElementById('loading');
+      const results = document.getElementById('results');
+      const apiResponse = document.getElementById('apiResponse');
+      const apiSource = document.getElementById('apiSource');
+      const error = document.getElementById('error');
+      
+      testButton.addEventListener('click', async function() {
+        testButton.disabled = true;
+        loading.style.display = 'block';
+        results.style.display = 'none';
+        error.style.display = 'none';
+        
+        try {
+          const response = await fetch('/api/test-perplexity');
+          const data = await response.json();
+          
+          if (data.success) {
+            apiResponse.textContent = data.response;
+            apiSource.textContent = 'Perplexity API';
+            results.style.display = 'block';
+          } else {
+            error.textContent = data.message || 'Failed to test API';
+            error.style.display = 'block';
+          }
+        } catch (err) {
+          error.textContent = 'Error: ' + (err.message || 'Failed to connect to API');
+          error.style.display = 'block';
+        } finally {
+          loading.style.display = 'none';
+          testButton.disabled = false;
+        }
+      });
+      
+      // Chat Form
+      const chatForm = document.getElementById('chatForm');
+      const chatInput = document.getElementById('chatInput');
+      const chatLoading = document.getElementById('chatLoading');
+      const chatResults = document.getElementById('chatResults');
+      const chatResponse = document.getElementById('chatResponse');
+      const chatApiSource = document.getElementById('chatApiSource');
+      const chatError = document.getElementById('chatError');
+      
+      chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        chatForm.querySelector('button').disabled = true;
+        chatLoading.style.display = 'block';
+        chatResults.style.display = 'none';
+        chatError.style.display = 'none';
+        
+        try {
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message })
+          });
+          
+          const data = await response.json();
+          chatResponse.textContent = data.response;
+          chatApiSource.textContent = data.apiSource === 'perplexity' ? 
+            'Perplexity API' : 'Anthropic Claude';
+          chatResults.style.display = 'block';
+        } catch (err) {
+          chatError.textContent = 'Error: ' + (err.message || 'Failed to get response');
+          chatError.style.display = 'block';
+        } finally {
+          chatLoading.style.display = 'none';
+          chatForm.querySelector('button').disabled = false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

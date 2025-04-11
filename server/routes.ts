@@ -73,6 +73,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
   
+  // Serve static files from the public directory
+  app.use('/public', express.static(path.join(process.cwd(), 'public')));
+  
+  // Serve the test page directly
+  app.get('/test-perplexity', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'public', 'test-perplexity.html'));
+  });
+  
   // Configure multer for file uploads
   const storage = multer.memoryStorage();
   const upload = multer({
@@ -255,24 +263,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       let response: string;
+      let apiSource: 'perplexity' | 'anthropic' = 'anthropic';
       
       // Use Perplexity if API key exists, otherwise fallback to Anthropic
       if (process.env.PERPLEXITY_API_KEY) {
-        // Import Perplexity handler dynamically to avoid issues if not configured
-        const { handleChatWithPerplexity } = await import('./perplexity');
-        response = await handleChatWithPerplexity(
-          message, 
-          chatHistory || [], 
-          propertyContext
-        );
+        try {
+          console.log("Using Perplexity API for chat response");
+          // Import Perplexity handler dynamically to avoid issues if not configured
+          const { handleChatWithPerplexity } = await import('./perplexity');
+          response = await handleChatWithPerplexity(
+            message, 
+            chatHistory || [], 
+            propertyContext
+          );
+          apiSource = 'perplexity';
+        } catch (perplexityError) {
+          console.error("Error with Perplexity API, falling back to Anthropic:", perplexityError);
+          response = await handleChatMessage(
+            message, 
+            chatHistory || [], 
+            propertyContext
+          );
+          apiSource = 'anthropic';
+        }
       } else {
         // Use Anthropic as fallback
+        console.log("Perplexity API key not found, using Anthropic fallback");
         response = await handleChatMessage(
           message, 
           chatHistory || [], 
           propertyContext
         );
       }
+      
+      // Add header to indicate which API was used
+      res.setHeader('X-Api-Source', apiSource);
       
       // Save the chat interaction for analytics
       try {
@@ -290,11 +315,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Error saving chat analytics:", analyticsError);
       }
       
-      res.json({ response });
+      res.json({ response, apiSource });
     } catch (error) {
       console.error("Error in chat endpoint:", error);
       res.status(500).json({ 
         message: "Failed to process chat message",
+        error: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Simple test endpoint for verifying Perplexity API works
+  app.get("/api/test-perplexity", async (req, res) => {
+    try {
+      if (!process.env.PERPLEXITY_API_KEY) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Perplexity API key not found in environment variables" 
+        });
+      }
+      
+      const { handleChatWithPerplexity } = await import('./perplexity');
+      const testQuestion = "What are the current real estate trends in Mexico?";
+      
+      console.log("Testing Perplexity API with question:", testQuestion);
+      const response = await handleChatWithPerplexity(testQuestion, []);
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: "Perplexity API is working!", 
+        testQuestion,
+        response 
+      });
+    } catch (error) {
+      console.error("Error testing Perplexity API:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Error testing Perplexity API", 
         error: error instanceof Error ? error.message : "Unknown error" 
       });
     }
