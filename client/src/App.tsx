@@ -21,6 +21,7 @@ import NeighborhoodInsightsPage from "@/pages/neighborhood-insights-page";
 import UserVerificationPage from "@/pages/user-verification";
 import SubscriptionPage from "@/pages/subscription-page";
 import PaymentPage from "@/pages/payment-page";
+import MessagesPage from "@/pages/messages-page";
 import TestFormComponentsPage from "@/pages/test-form-components";
 import AuthTestPage from "@/pages/auth-test";
 import { 
@@ -75,6 +76,7 @@ function AppContent() {
           <AgentProtectedRoute path="/agent/dashboard" component={AgentDashboardPage} />
           <UserProtectedRoute path="/dashboard/properties/new" component={AddPropertyPage} />
           <UserProtectedRoute path="/verification" component={UserVerificationPage} />
+          <UserProtectedRoute path="/messages" component={MessagesPage} />
           
           {/* Premium Features */}
           <PublisherProtectedRoute path="/bulk-upload" component={BulkUploadPage} />

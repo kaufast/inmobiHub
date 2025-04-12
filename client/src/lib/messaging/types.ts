@@ -1,40 +1,38 @@
-import { Message, User } from "@shared/schema";
-
 export type MessageCategory = 'inbox' | 'sent' | 'archived';
 
-// Platform-agnostic interfaces for messaging components
-export interface MessageListProps {
-  messages: Message[] | undefined;
-  selectedMessageId: number | null;
-  onSelectMessage: (messageId: number) => void;
-  onArchiveMessage?: (messageId: number) => void;
-  onDeleteMessage?: (messageId: number) => void;
-  isLoading: boolean;
-  emptyMessage: string;
-  getUserById: (userId: number) => User | undefined;
+export interface Message {
+  id: number;
+  senderId: number;
+  recipientId: number;
+  subject: string;
+  content: string;
+  isRead: boolean;
+  isArchived: boolean;
+  propertyId?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface MessageDetailProps {
-  message: Message | null;
-  onBack?: () => void;
-  onReply?: (messageId: number) => void;
-  onArchive?: (messageId: number) => void;
-  onDelete?: (messageId: number) => void;
-  emptyMessage: string;
-  getUserById: (userId: number) => User | undefined;
-  viewType: MessageCategory;
+export interface User {
+  id: number;
+  username: string;
+  fullName: string;
+  email: string;
+  role: 'user' | 'agent' | 'admin';
+  profileImage?: string | null;
 }
 
-export interface ComposeMessageProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSend: (recipientId: number, subject: string, content: string, propertyId?: number) => Promise<void>;
-  recipients: User[] | undefined;
-  replyToMessage?: Message | null;
-  isLoading: boolean;
-  propertyId?: number;
+export interface MessageWithSenderInfo extends Message {
+  sender: User;
 }
 
-export interface MessagingContainerProps {
-  userId: number;
+export interface MessageWithRecipientInfo extends Message {
+  recipient: User;
+}
+
+export interface MessageRecipient {
+  id: number;
+  name: string;
+  role: string;
+  profileImage?: string | null;
 }

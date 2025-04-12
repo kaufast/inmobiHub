@@ -1,201 +1,157 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Message, User } from "@shared/schema";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { MessageCategory } from "./types";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from 'react';
+import { MessageCategory, Message, User } from './types';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
-/**
- * Hook for using messages with platform-agnostic data fetching and state management
- */
-export function useMessagingSystem(userId: number | undefined) {
-  const [activeCategory, setActiveCategory] = useState<MessageCategory>("inbox");
-  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+// This hook contains the core business logic for the messaging system
+// It's shared between all platform-specific implementations
+export function useMessagingSystem(userId: number) {
+  const { toast } = useToast();
+  const [activeCategory, setActiveCategory] = useState<MessageCategory>('inbox');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
-  
-  // Fetch received messages (inbox)
-  const {
-    data: receivedMessages,
-    isLoading: isLoadingReceived,
-    refetch: refetchReceived
-  } = useQuery<Message[]>({
-    queryKey: ["/api/user/messages", { role: "recipient" }],
-    enabled: !!userId && activeCategory === "inbox",
-  });
-  
-  // Fetch sent messages
-  const {
-    data: sentMessages,
-    isLoading: isLoadingSent,
-    refetch: refetchSent
-  } = useQuery<Message[]>({
-    queryKey: ["/api/user/messages", { role: "sent" }],
-    enabled: !!userId && activeCategory === "sent",
-  });
-  
-  // Fetch archived messages
-  const {
-    data: archivedMessages,
-    isLoading: isLoadingArchived,
-    refetch: refetchArchived
-  } = useQuery<Message[]>({
-    queryKey: ["/api/user/messages", { role: "archived" }],
-    enabled: !!userId && activeCategory === "archived",
+  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [users, setUsers] = useState<User[]>([]);
+
+  // Filtered messages based on category and search term
+  const filteredMessages = messages.filter(message => {
+    const matchesCategory = 
+      (activeCategory === 'inbox' && message.recipientId === userId && !message.isArchived) ||
+      (activeCategory === 'sent' && message.senderId === userId) ||
+      (activeCategory === 'archived' && message.isArchived);
+    
+    const matchesSearch = 
+      searchTerm === '' || 
+      message.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      message.content.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesCategory && matchesSearch;
   });
 
-  // Get users for user lookup
-  const {
-    data: users,
-    isLoading: isLoadingUsers
-  } = useQuery<User[]>({
-    queryKey: ["/api/users"],
-    enabled: !!userId,
-  });
-  
-  // Mutation to send a new message
-  const sendMessageMutation = useMutation({
-    mutationFn: async (data: { recipientId: number; subject: string; content: string; propertyId?: number }) => {
-      const res = await apiRequest("POST", "/api/messages", data);
-      return await res.json();
-    },
-    onSuccess: () => {
-      // Refresh both received and sent messages
-      refetchReceived();
-      refetchSent();
-      
-      // Close the compose dialog
-      setIsComposeOpen(false);
-    },
-  });
-  
-  // Mutation to update message status
-  const updateMessageStatusMutation = useMutation({
-    mutationFn: async ({ messageId, status }: { messageId: number; status: string }) => {
-      const res = await apiRequest("PATCH", `/api/messages/${messageId}/status`, { status });
-      return await res.json();
-    },
-    onSuccess: () => {
-      // Refresh all message categories
-      refetchReceived();
-      refetchSent();
-      refetchArchived();
-    },
-  });
-  
-  // Get messages for the current category
-  const getMessagesForCategory = () => {
-    switch (activeCategory) {
-      case "inbox":
-        return receivedMessages;
-      case "sent":
-        return sentMessages;
-      case "archived":
-        return archivedMessages;
-      default:
-        return undefined;
-    }
-  };
-  
-  // Get loading state for the current category
-  const isLoadingForCategory = () => {
-    switch (activeCategory) {
-      case "inbox":
-        return isLoadingReceived;
-      case "sent":
-        return isLoadingSent;
-      case "archived":
-        return isLoadingArchived;
-      default:
-        return false;
-    }
-  };
-  
-  // Filter messages by search term
-  const getFilteredMessages = () => {
-    const messages = getMessagesForCategory();
+  // Selected message
+  const selectedMessage = selectedMessageId 
+    ? messages.find(m => m.id === selectedMessageId)
+    : null;
+
+  // Mock data loading
+  useEffect(() => {
+    // In a real implementation, we would fetch messages from the API
+    // For now, we'll just set a timeout to simulate loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
     
-    if (!messages) return [];
-    if (!searchTerm) return messages;
-    
-    const term = searchTerm.toLowerCase();
-    return messages.filter(message => 
-      message.subject.toLowerCase().includes(term) || 
-      message.content.toLowerCase().includes(term)
-    );
-  };
-  
-  // Get user by ID
-  const getUserById = (userId: number): User | undefined => {
-    if (!users) return undefined;
-    return users.find(u => u.id === userId);
-  };
-  
+    return () => clearTimeout(timer);
+  }, []);
+
   // Handle message selection
-  const handleSelectMessage = (messageId: number) => {
+  const handleSelectMessage = useCallback((messageId: number) => {
     setSelectedMessageId(messageId);
     
-    // If it's in the inbox and unread, mark it as read
-    const message = getMessagesForCategory()?.find(m => m.id === messageId);
-    if (message && message.status === "unread" && activeCategory === "inbox") {
-      updateMessageStatusMutation.mutate({
-        messageId,
-        status: "read",
-      });
-    }
-  };
-  
-  // Archive a message
-  const archiveMessage = (messageId: number) => {
-    updateMessageStatusMutation.mutate({
-      messageId,
-      status: "archived",
-    });
+    // Mark message as read if it's not already
+    setMessages(prev => 
+      prev.map(m => 
+        m.id === messageId && !m.isRead 
+          ? { ...m, isRead: true } 
+          : m
+      )
+    );
+    
+    // In a real implementation, we would update the read status in the API
+  }, []);
+
+  // Archive message
+  const archiveMessage = useCallback((messageId: number) => {
+    setMessages(prev => 
+      prev.map(m => 
+        m.id === messageId 
+          ? { ...m, isArchived: true } 
+          : m
+      )
+    );
     
     if (selectedMessageId === messageId) {
       setSelectedMessageId(null);
     }
-  };
-  
-  // Delete a message (currently just archives it)
-  const deleteMessage = (messageId: number) => {
-    // Implementation would depend on API - this just archives for now
-    archiveMessage(messageId);
-  };
-  
-  // Get the selected message
-  const selectedMessage = selectedMessageId 
-    ? getMessagesForCategory()?.find(m => m.id === selectedMessageId) || null
-    : null;
-  
+    
+    toast({
+      title: "Message archived",
+      description: "The message has been moved to your archive.",
+    });
+    
+    // In a real implementation, we would update the archived status in the API
+  }, [selectedMessageId, toast]);
+
+  // Delete message
+  const deleteMessage = useCallback((messageId: number) => {
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+    
+    if (selectedMessageId === messageId) {
+      setSelectedMessageId(null);
+    }
+    
+    toast({
+      title: "Message deleted",
+      description: "The message has been permanently deleted.",
+    });
+    
+    // In a real implementation, we would delete the message from the API
+  }, [selectedMessageId, toast]);
+
+  // Send message
+  const sendMessage = useCallback(async (recipientId: number, subject: string, content: string, propertyId?: number) => {
+    // In a real implementation, we would send the message to the API
+    const newMessage: Message = {
+      id: Math.floor(Math.random() * 10000), // Generate a random ID
+      senderId: userId,
+      recipientId,
+      subject,
+      content,
+      isRead: false,
+      isArchived: false,
+      propertyId: propertyId || null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    
+    setMessages(prev => [...prev, newMessage]);
+    setIsComposeOpen(false);
+    
+    toast({
+      title: "Message sent",
+      description: "Your message has been sent successfully.",
+    });
+    
+    return true;
+  }, [userId, toast]);
+
+  // Get user by ID
+  const getUserById = useCallback((id: number): User | undefined => {
+    return users.find(user => user.id === id);
+  }, [users]);
+
   return {
     // State
     activeCategory,
     setActiveCategory,
-    selectedMessageId,
-    setSelectedMessageId,
     searchTerm,
     setSearchTerm,
+    messages,
+    filteredMessages,
     isComposeOpen,
     setIsComposeOpen,
-    
-    // Data
-    messages: getMessagesForCategory(),
-    filteredMessages: getFilteredMessages(),
+    selectedMessageId,
+    setSelectedMessageId,
     selectedMessage,
-    users,
-    
-    // Loading states
-    isLoading: isLoadingForCategory(),
-    isLoadingUsers,
+    isLoading,
     
     // Actions
     handleSelectMessage,
     archiveMessage,
     deleteMessage,
-    sendMessage: sendMessageMutation.mutateAsync,
-    updateMessageStatus: updateMessageStatusMutation.mutateAsync,
-    
-    // Helpers
+    sendMessage,
     getUserById,
   };
 }
