@@ -231,7 +231,7 @@ export default function HeroSection() {
                       <CollapsibleTrigger asChild>
                         <Button variant="outline" size="sm" className="text-white font-medium flex items-center px-4 h-14 bg-gray-700/90 border-gray-600 hover:bg-gray-600 rounded-md">
                           <SlidersHorizontal className="h-4 w-4 mr-2" />
-                          {t("common.advancedSearch", "Advanced Search")}
+                          {t("common.advanced", "Advanced")}
                           <ChevronDown className="h-4 w-4 ml-1" />
                         </Button>
                       </CollapsibleTrigger>
