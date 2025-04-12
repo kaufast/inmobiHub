@@ -796,6 +796,73 @@ const frFR = {
   }
 };
 
+// Italian translations (basic set)
+const itIT = {
+  common: {
+    selectLanguage: 'Seleziona lingua',
+    home: 'Home',
+    properties: 'Proprietà',
+    services: 'Servizi',
+    buying: 'Acquisto',
+    selling: 'Vendita',
+    investing: 'Investimento',
+    about: 'Chi siamo',
+    contact: 'Contatti',
+    login: 'Accedi',
+    register: 'Registrati',
+    logout: 'Esci',
+    dashboard: 'Pannello di controllo',
+    search: 'Cerca',
+    filters: 'Filtri',
+    viewDetails: 'Vedi dettagli',
+    addToFavorites: 'Aggiungi ai preferiti',
+    removeFromFavorites: 'Rimuovi dai preferiti',
+    shareListing: 'Condividi annuncio',
+    copy: 'Copia',
+    copied: 'Copiato',
+    close: 'Chiudi',
+    priceRange: 'Fascia di prezzo',
+    bedrooms: 'Camere da letto',
+    bathrooms: 'Bagni',
+    propertyType: 'Tipo di proprietà',
+    sort: 'Ordina',
+    noResults: 'Nessun risultato trovato',
+    favorites: 'Preferiti',
+    messages: 'Messaggi',
+    profile: 'Profilo',
+    subscription: 'Abbonamento',
+    contactAgent: 'Contatta agente',
+    findYourDreamProperty: 'Trova la tua proprietà dei sogni',
+  },
+  property: {
+    house: 'Casa',
+    apartment: 'Appartamento',
+    condo: 'Condominio',
+    townhouse: 'Casa a schiera',
+    land: 'Terreno',
+    price: 'Prezzo',
+    bedrooms: 'Camere da letto',
+    bathrooms: 'Bagni',
+    sqft: 'Mq',
+    yearBuilt: 'Anno di costruzione',
+    lotSize: 'Dimensione del lotto',
+    garageSpaces: 'Posti auto',
+    propertyType: 'Tipo di proprietà',
+    built: 'Costruito',
+    taxes: 'Tasse',
+    status: 'Stato',
+    description: 'Descrizione',
+    features: 'Caratteristiche',
+    address: 'Indirizzo',
+    city: 'Città',
+    state: 'Regione',
+    zipCode: 'CAP',
+    country: 'Paese',
+    shareTitle: 'Condividi questa proprietà',
+    shareDescription: 'Condividi questa proprietà con amici e familiari, o salvala per riferimento futuro.'
+  }
+};
+
 // German translations (basic set)
 const deDE = {
   common: {
@@ -964,8 +1031,17 @@ i18n
       'en-GB': {
         translation: enGB
       },
+      'en-US': {
+        translation: enGB  // Reuse UK English for US English
+      },
+      'en-ES': {
+        translation: esMX  // Use Spanish-MX for UK-Spanish 
+      },
       'es-MX': {
         translation: esMX
+      },
+      'es-ES': {
+        translation: esMX  // Reuse Mexican Spanish for Spain Spanish
       },
       'ca-ES': {
         translation: caES
@@ -976,14 +1052,11 @@ i18n
       'de-DE': {
         translation: deDE
       },
-      'zh-CN': {
-        translation: zhCN
+      'de-AT': {
+        translation: deDE  // Use German for Austrian German
       },
-      'ja-JP': {
-        translation: jaJP
-      },
-      'ar-SA': {
-        translation: arSA
+      'it-IT': {
+        translation: itIT
       }
     },
     fallbackLng: 'en-GB',

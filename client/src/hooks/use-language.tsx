@@ -4,14 +4,16 @@ import { useAuth } from '@/hooks/use-auth';
 
 // Define supported languages
 export const supportedLanguages = [
-  { code: 'en-GB', name: 'English', flag: '🇬🇧' },
-  { code: 'es-MX', name: 'Español', flag: '🇲🇽' },
+  { code: 'es-MX', name: 'Mexico - ES', flag: '🇲🇽' },
+  { code: 'es-ES', name: 'España - ES', flag: '🇪🇸' },
+  { code: 'en-ES', name: 'U.K. - ES', flag: '🇬🇧' },
+  { code: 'en-GB', name: 'United Kingdom - EN', flag: '🇬🇧' },
+  { code: 'en-US', name: 'U.S. - EN', flag: '🇺🇸' },
   { code: 'ca-ES', name: 'Català', flag: '🇪🇸' },
   { code: 'fr-FR', name: 'Français', flag: '🇫🇷' },
-  { code: 'de-DE', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'zh-CN', name: '中文', flag: '🇨🇳' },
-  { code: 'ja-JP', name: '日本語', flag: '🇯🇵' },
-  { code: 'ar-SA', name: 'العربية', flag: '🇸🇦' }
+  { code: 'de-DE', name: 'Deutschland - DE', flag: '🇩🇪' },
+  { code: 'de-AT', name: 'Österreich - DE', flag: '🇦🇹' },
+  { code: 'it-IT', name: 'Italiano', flag: '🇮🇹' }
 ];
 
 // Language code map for partial matching (e.g., 'en' matches 'en-GB')
@@ -21,9 +23,7 @@ const languageCodeMap: Record<string, string> = {
   'ca': 'ca-ES',
   'fr': 'fr-FR',
   'de': 'de-DE',
-  'zh': 'zh-CN',
-  'ja': 'ja-JP',
-  'ar': 'ar-SA'
+  'it': 'it-IT'
 };
 
 export function useLanguage() {
