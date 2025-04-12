@@ -119,11 +119,22 @@ export default function Messages({ propertyId }: MessagesProps) {
     enabled: !!user && activeTab === "sent",
   });
   
-  // Fetch potential recipients (all users)
-  const { data: allUsers } = useQuery<User[]>({
-    queryKey: ["/api/users"],
-    enabled: !!user && isNewMessageOpen,
-  });
+  // Use our message recipients hook to get all potential recipients
+  const {
+    recipients,
+    isLoadingRecipients,
+    adminUsers,
+    agentUsers,
+    regularUsers,
+    isLoadingAdmins,
+    isLoadingAgents,
+    isLoadingUsers,
+    sendMessageMutation: recipientsSendMessageMutation
+  } = useMessageRecipients();
+  
+  // Get all users for user lookup
+  const allUsers = recipients;
+  const isLoadingAllUsers = isLoadingRecipients;
   
   // Mutation to send a new message
   const sendMessageMutation = useMutation({
@@ -134,7 +145,7 @@ export default function Messages({ propertyId }: MessagesProps) {
     onSuccess: () => {
       toast({
         title: "Message sent",
-        description: "Your message has been sent successfully",
+        description: "Your message has been sent successfully with email notification",
       });
       
       // Refresh both received and sent messages
@@ -597,12 +608,78 @@ export default function Messages({ propertyId }: MessagesProps) {
                           <SelectValue placeholder="Select a recipient" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        {allUsers?.filter(u => u.id !== user?.id).map((recipient) => (
-                          <SelectItem key={recipient.id} value={recipient.id.toString()}>
-                            {recipient.fullName}
-                          </SelectItem>
-                        ))}
+                      <SelectContent className="max-h-[300px]">
+                        {/* Display recipients categorized by role */}
+                        
+                        {/* Admins */}
+                        {adminUsers && adminUsers.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-primary-500 bg-primary-50">
+                              Admin Team
+                            </div>
+                            {adminUsers.map((recipient) => (
+                              <SelectItem key={recipient.id} value={recipient.id.toString()}>
+                                {recipient.fullName} {recipient.role === 'admin' ? '(Admin)' : ''}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
+                        
+                        {/* Agents */}
+                        {agentUsers && agentUsers.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-primary-500 bg-primary-50 mt-1">
+                              Real Estate Agents
+                            </div>
+                            {agentUsers.map((recipient) => (
+                              <SelectItem key={recipient.id} value={recipient.id.toString()}>
+                                {recipient.fullName} {recipient.role === 'agent' ? '(Agent)' : ''}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
+                        
+                        {/* Regular Users */}
+                        {regularUsers && regularUsers.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-primary-500 bg-primary-50 mt-1">
+                              Other Users
+                            </div>
+                            {regularUsers.map((recipient) => (
+                              <SelectItem key={recipient.id} value={recipient.id.toString()}>
+                                {recipient.fullName}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
+                        
+                        {/* Fallback if the role-based lists aren't loaded but we have all users */}
+                        {(!adminUsers || !agentUsers || !regularUsers) && allUsers && (
+                          <>
+                            <div className="px-2 py-1.5 text-xs font-semibold text-primary-500 bg-primary-50">
+                              All Users
+                            </div>
+                            {allUsers.filter(u => u.id !== user?.id).map((recipient) => (
+                              <SelectItem key={recipient.id} value={recipient.id.toString()}>
+                                {recipient.fullName} 
+                                {recipient.role === 'admin' ? ' (Admin)' : recipient.role === 'agent' ? ' (Agent)' : ''}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
+                        
+                        {/* Show loading or empty state */}
+                        {(isLoadingRecipients || isLoadingAdmins || isLoadingAgents || isLoadingUsers) && (
+                          <div className="py-2 px-2 text-center text-primary-400 text-sm">
+                            Loading available recipients...
+                          </div>
+                        )}
+                        
+                        {(!isLoadingRecipients && !allUsers?.length) && (
+                          <div className="py-2 px-2 text-center text-primary-400 text-sm">
+                            No recipients available
+                          </div>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />

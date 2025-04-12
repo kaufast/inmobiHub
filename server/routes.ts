@@ -12,6 +12,7 @@ import Stripe from 'stripe';
 import multer from 'multer';
 import path from 'path';
 import { processImage, processMultipleImages } from './image-utils';
+import { sendNewMessageNotification } from './email-service';
 import {
   createStripeCustomer,
   createPaymentIntent,
