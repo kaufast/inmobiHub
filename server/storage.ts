@@ -21,6 +21,8 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUsersByRole(role: 'user' | 'agent' | 'admin'): Promise<User[]>;
+  getAllMessageRecipients(currentUserId: number): Promise<User[]>;
   createUser(user: RegisterUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser> & { subscriptionTier?: 'free' | 'premium' | 'enterprise' }): Promise<User | undefined>;
   
@@ -189,6 +191,37 @@ export class DatabaseStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
+  }
+  
+  async getUsersByRole(role: 'user' | 'agent' | 'admin'): Promise<User[]> {
+    return db.select()
+      .from(users)
+      .where(eq(users.role, role))
+      .orderBy(users.fullName);
+  }
+  
+  async getAllMessageRecipients(currentUserId: number): Promise<User[]> {
+    // Get all users except the current user, ordered by role (admin, agent, user) and then name
+    return db.select()
+      .from(users)
+      .where(
+        and(
+          // Exclude current user
+          sql`${users.id} != ${currentUserId}`,
+          // Only include active users (not suspended)
+          sql`${users.status} != 'suspended'`
+        )
+      )
+      .orderBy(
+        // Sort by role priority (admin first, then agent, then user)
+        sql`CASE 
+          WHEN ${users.role} = 'admin' THEN 1 
+          WHEN ${users.role} = 'agent' THEN 2 
+          ELSE 3 
+        END`,
+        // Then sort by name
+        users.fullName
+      );
   }
   
   async createUser(user: RegisterUser): Promise<User> {

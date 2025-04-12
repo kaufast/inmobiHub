@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useMessageRecipients } from "@/hooks/use-message-recipients";
 import { User, Message, InsertMessage, Property } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatTimeAgo } from "@/lib/utils";

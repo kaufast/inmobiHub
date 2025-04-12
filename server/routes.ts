@@ -665,6 +665,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get all potential message recipients
+  app.get("/api/message-recipients", isAuthenticated, async (req, res, next) => {
+    try {
+      const recipients = await storage.getAllMessageRecipients(req.user!.id);
+      res.json(recipients);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Get all users of a specific role
+  app.get("/api/users/by-role/:role", isAuthenticated, async (req, res, next) => {
+    try {
+      const role = req.params.role as 'user' | 'agent' | 'admin';
+      if (!['user', 'agent', 'admin'].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      
+      const users = await storage.getUsersByRole(role);
+      res.json(users);
+    } catch (error) {
+      next(error);
+    }
+  });
+  
   app.post("/api/messages", isAuthenticated, async (req, res, next) => {
     try {
       const messageData = insertMessageSchema.parse({
@@ -672,7 +697,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         senderId: req.user!.id,
       });
       
+      // Create the message
       const message = await storage.createMessage(messageData);
+      
+      try {
+        // Get the sender and recipient details for the email
+        const sender = req.user!;
+        const recipient = await storage.getUser(messageData.recipientId);
+        
+        if (recipient && recipient.email) {
+          // Import and use the email service
+          const { sendNewMessageNotification } = await import('./email-service');
+          
+          // Send email notification asynchronously (don't wait for it)
+          sendNewMessageNotification(recipient, message, sender)
+            .then(success => {
+              if (success) {
+                console.log(`Email notification sent successfully to ${recipient.email}`);
+              } else {
+                console.warn(`Failed to send email notification to ${recipient.email}`);
+              }
+            })
+            .catch(err => {
+              console.error('Error sending email notification:', err);
+            });
+        }
+      } catch (emailError) {
+        // Log but don't fail the request if email sending fails
+        console.error('Error with email notification:', emailError);
+      }
+      
       res.status(201).json(message);
     } catch (error) {
       if (error instanceof ZodError) {
