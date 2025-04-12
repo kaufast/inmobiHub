@@ -130,13 +130,11 @@ export default function HeroSection() {
           {/* Left column - Text content */}
           <div className="flex flex-col items-start text-left pl-4 md:pl-16 lg:pl-24">
             <h1 className="text-[2.8rem] md:text-[3.5rem] lg:text-[4.2rem] font-bold text-gray-800 leading-none tracking-tight mb-6">
-              Find your <br /> 
-              Dream <br />
-              Property
+              {t("common.findYourDreamProperty", "Find your Dream Property")}
             </h1>
             
             <p className="text-gray-600 text-lg mb-6 max-w-xl">
-              Unlocking Smart Capital For Data-Driven Investors
+              {t("common.unlockingSmartCapital", "Unlocking Smart Capital For Data-Driven Investors")}
             </p>
           </div>
           
@@ -169,7 +167,7 @@ export default function HeroSection() {
                     className="flex-1 flex items-center justify-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 rounded-tl-lg py-3 px-6"
                   >
                     <Search className="w-4 h-4 mr-1" />
-                    <span>Text</span>
+                    <span>{t("common.text", "Text")}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="image" 
@@ -200,7 +198,7 @@ export default function HeroSection() {
                       type="text"
                       value={searchParams.location}
                       onChange={(e) => handleInputChange('location', e.target.value)}
-                      placeholder="Enter city, zip or address, buy or sell"
+                      placeholder={t("common.searchPlaceholder", "Enter city, zip or address, buy or sell")}
                       className="w-full h-14 pl-10 pr-28 bg-gray-700/90 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-500 text-lg placeholder:text-gray-300 placeholder:font-medium"
                       list="search-suggestions"
                     />
@@ -233,7 +231,7 @@ export default function HeroSection() {
                       <CollapsibleTrigger asChild>
                         <Button variant="outline" size="sm" className="text-white font-medium flex items-center px-4 h-14 bg-gray-700/90 border-gray-600 hover:bg-gray-600 rounded-md">
                           <SlidersHorizontal className="h-4 w-4 mr-2" />
-                          Advanced Search
+                          {t("common.advancedSearch", "Advanced Search")}
                           <ChevronDown className="h-4 w-4 ml-1" />
                         </Button>
                       </CollapsibleTrigger>
