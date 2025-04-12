@@ -14,36 +14,51 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { MessageCategory } from '@/lib/messaging/types';
+import { useMessagingSystem } from '@/lib/messaging/hooks';
+import { useMessageRecipients } from '@/hooks/use-message-recipients';
+import { MessageList } from './MessageList';
+import { MessageDetail } from './MessageDetail';
+import { ComposeMessage } from './ComposeMessage';
 
 interface GmailStyleMessagingProps {
   userId: number;
 }
 
 export function GmailStyleMessaging({ userId }: GmailStyleMessagingProps) {
-  const { toast } = useToast();
-  const [activeCategory, setActiveCategory] = useState<MessageCategory>('inbox');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isComposeOpen, setIsComposeOpen] = useState(false);
-  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    activeCategory,
+    setActiveCategory,
+    searchTerm,
+    setSearchTerm,
+    filteredMessages,
+    isComposeOpen,
+    setIsComposeOpen,
+    selectedMessageId,
+    setSelectedMessageId,
+    selectedMessage,
+    isLoading,
+    handleSelectMessage,
+    archiveMessage,
+    deleteMessage,
+    sendMessage,
+  } = useMessagingSystem(userId);
+  
+  // Use the message recipients hook to get potential recipients
+  const { recipients, isLoadingRecipients } = useMessageRecipients();
 
-  // Temporary placeholder data
-  const filteredMessages = [];
-  const selectedMessage = null;
-  const recipients = [];
-  const isLoadingRecipients = false;
-
-  // Temporary placeholder functions
-  const handleSelectMessage = (id: number) => {
-    setSelectedMessageId(id);
+  // Handle message actions
+  const handleReply = () => {
+    if (!selectedMessage) return;
+    
+    // In a real implementation we would set up defaults for replying
+    setIsComposeOpen(true);
   };
   
-  const handleSendMessage = async (recipientId: number, subject: string, content: string) => {
-    setIsComposeOpen(false);
-    toast({
-      title: "Message sent",
-      description: "Your message has been sent successfully.",
-    });
+  const handleForward = () => {
+    if (!selectedMessage) return;
+    
+    // In a real implementation we would set up defaults for forwarding
+    setIsComposeOpen(true);
   };
 
   return (
@@ -144,9 +159,12 @@ export function GmailStyleMessaging({ userId }: GmailStyleMessagingProps) {
               </p>
             </div>
           ) : (
-            <div className="divide-y">
-              {/* Message list items will go here */}
-            </div>
+            <MessageList 
+              messages={filteredMessages}
+              selectedMessageId={selectedMessageId}
+              onSelectMessage={handleSelectMessage}
+              isSentFolder={activeCategory === 'sent'}
+            />
           )}
         </div>
       </Card>
@@ -154,13 +172,21 @@ export function GmailStyleMessaging({ userId }: GmailStyleMessagingProps) {
       {/* Right column - Message detail or compose form */}
       <Card className="w-1/2 flex-shrink-0">
         {isComposeOpen ? (
-          <CardContent className="p-4 h-full">
-            {/* Compose form will go here */}
-          </CardContent>
-        ) : selectedMessageId ? (
-          <CardContent className="p-4 h-full">
-            {/* Message detail will go here */}
-          </CardContent>
+          <ComposeMessage 
+            onSend={sendMessage}
+            onCancel={() => setIsComposeOpen(false)}
+            recipients={recipients}
+            isLoading={isLoadingRecipients}
+          />
+        ) : selectedMessageId && selectedMessage ? (
+          <MessageDetail
+            message={selectedMessage}
+            onReply={handleReply}
+            onArchive={archiveMessage}
+            onDelete={deleteMessage}
+            onForward={handleForward}
+            isSentFolder={activeCategory === 'sent'}
+          />
         ) : (
           <div className="flex flex-col items-center justify-center h-full p-4 text-center">
             <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />

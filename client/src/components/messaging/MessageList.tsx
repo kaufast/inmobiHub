@@ -1,74 +1,105 @@
-import { formatTimeAgo } from "@/lib/utils";
-import { MessageListProps } from "@/lib/messaging/types";
-import { Search, MessageCircle, Circle, CheckCircle2, Reply, ArchiveIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { useState } from 'react';
+import { Message, MessageWithSenderInfo, MessageWithRecipientInfo } from '@/lib/messaging/types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
-export function MessageList({
-  messages,
-  selectedMessageId,
+interface MessageListProps {
+  messages: MessageWithSenderInfo[] | MessageWithRecipientInfo[];
+  selectedMessageId: number | null;
+  onSelectMessage: (id: number) => void;
+  isSentFolder?: boolean;
+}
+
+export function MessageList({ 
+  messages, 
+  selectedMessageId, 
   onSelectMessage,
-  isLoading,
-  emptyMessage,
-  getUserById,
+  isSentFolder = false
 }: MessageListProps) {
-  // Get status icon based on message status
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "unread":
-        return <Circle className="h-4 w-4 text-blue-500 fill-blue-500" />;
-      case "read":
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case "replied":
-        return <Reply className="h-4 w-4 text-purple-500" />;
-      case "archived":
-        return <ArchiveIcon className="h-4 w-4 text-orange-500" />;
-      default:
-        return <Circle className="h-4 w-4 text-primary-400" />;
-    }
+  const [selectedMessages, setSelectedMessages] = useState<number[]>([]);
+
+  const toggleMessageSelection = (id: number, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setSelectedMessages(prev => 
+      prev.includes(id) 
+        ? prev.filter(messageId => messageId !== id) 
+        : [...prev, id]
+    );
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {isLoading ? (
-        <div className="flex justify-center py-12 flex-grow">
-          <Loader2 className="h-8 w-8 animate-spin text-secondary-500" />
-        </div>
-      ) : messages && messages.length > 0 ? (
-        <div className="divide-y divide-primary-100 overflow-y-auto flex-grow">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`px-4 py-3 cursor-pointer hover:bg-primary-50 transition-colors ${
-                selectedMessageId === message.id ? "bg-primary-50" : ""
-              } ${message.status === "unread" ? "font-medium" : ""}`}
-              onClick={() => onSelectMessage(message.id)}
-            >
-              <div className="flex justify-between items-start mb-1">
-                <div className="flex items-center space-x-2">
-                  {getStatusIcon(message.status)}
-                  <span className="text-sm font-medium truncate max-w-[150px]">
-                    {getUserById(message.senderId)?.fullName || `User #${message.senderId}`}
-                  </span>
-                </div>
-                <span className="text-xs text-primary-500">
-                  {formatTimeAgo(message.createdAt)}
-                </span>
-              </div>
-              <h4 className="text-sm font-medium text-primary-800 truncate">{message.subject}</h4>
-              <p className="text-xs text-primary-500 truncate">{message.content}</p>
+    <div className="divide-y">
+      {messages.map(message => {
+        // For sent messages, we want to show the recipient
+        // For received messages, we want to show the sender
+        const person = isSentFolder 
+          ? ('recipient' in message ? message.recipient : { fullName: 'Unknown', profileImage: null })
+          : ('sender' in message ? message.sender : { fullName: 'Unknown', profileImage: null });
+        
+        const isSelected = selectedMessageId === message.id;
+        const isChecked = selectedMessages.includes(message.id);
+        
+        return (
+          <div 
+            key={message.id}
+            className={cn(
+              "flex items-start p-3 hover:bg-accent/30 cursor-pointer transition-colors", 
+              isSelected && "bg-accent/50", 
+              !message.isRead && !isSentFolder && "font-medium"
+            )}
+            onClick={() => onSelectMessage(message.id)}
+          >
+            <div className="flex items-center mr-3">
+              <Checkbox 
+                checked={isChecked}
+                onCheckedChange={() => {}}
+                onClick={(e) => toggleMessageSelection(message.id, e)}
+                className="data-[state=checked]:bg-primary"
+              />
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-10 flex-grow flex flex-col items-center justify-center">
-          <MessageCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-sm font-medium text-primary-600">No messages found</h3>
-          <p className="text-xs text-primary-500">
-            {emptyMessage}
-          </p>
-        </div>
-      )}
+            
+            <Avatar className="h-10 w-10 mr-3">
+              {person.profileImage ? (
+                <AvatarImage src={person.profileImage} alt={person.fullName} />
+              ) : (
+                <AvatarFallback>{getInitials(person.fullName)}</AvatarFallback>
+              )}
+            </Avatar>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-center mb-1">
+                <div className="font-medium truncate">{person.fullName}</div>
+                <div className="text-xs text-muted-foreground ml-2 whitespace-nowrap">
+                  {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                </div>
+              </div>
+              
+              <div className="text-sm font-medium truncate">{message.subject}</div>
+              
+              <div className="text-sm text-muted-foreground truncate">
+                {message.content.substring(0, 100)}
+                {message.content.length > 100 ? '...' : ''}
+              </div>
+              
+              {!message.isRead && !isSentFolder && (
+                <Badge variant="default" className="mt-1">Unread</Badge>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
