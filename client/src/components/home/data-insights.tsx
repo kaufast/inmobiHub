@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Neighborhood } from "@shared/schema";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function DataInsights() {
+  const { t } = useTranslation();
   const [timeFrame, setTimeFrame] = useState<'1Y' | '5Y' | '10Y'>('1Y');
   const [purchasePrice, setPurchasePrice] = useState(750000);
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
@@ -38,11 +40,11 @@ export default function DataInsights() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-baseline justify-between mb-10">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-primary-800">Data-Driven Insights</h2>
-            <p className="text-primary-500 mt-2">Make smarter investment decisions with our premium analytics</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary-800">{t("sections.dataInsights", "Data-Driven Insights")}</h2>
+            <p className="text-primary-500 mt-2">{t("sections.dataInsightsSubtitle", "Make smarter investment decisions with our premium analytics")}</p>
           </div>
           <a href="#analytics" className="text-secondary-500 hover:text-secondary-600 font-medium mt-4 md:mt-0 inline-flex items-center">
-            Explore all analytics
+            {t("sections.exploreAllAnalytics", "Explore all analytics")}
             <svg className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
@@ -53,7 +55,7 @@ export default function DataInsights() {
           {/* Market Trends Card */}
           <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-primary-200 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-primary-800">Market Trends</h3>
+              <h3 className="text-xl font-semibold text-primary-800">{t("sections.marketTrends", "Market Trends")}</h3>
               <div className="flex space-x-2">
                 <button 
                   className={`text-xs font-medium rounded-full px-2 py-1 ${timeFrame === '1Y' ? 'bg-primary-100 text-primary-800' : 'text-primary-500 hover:bg-primary-50'}`}
@@ -142,7 +144,7 @@ export default function DataInsights() {
           {/* Neighborhood Insights */}
           <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-primary-200 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-primary-800">Neighborhood Insights</h3>
+              <h3 className="text-xl font-semibold text-primary-800">{t("sections.neighborhoodInsights", "Neighborhood Insights")}</h3>
               <button className="text-secondary-500 hover:text-secondary-600 text-sm">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
@@ -165,12 +167,12 @@ export default function DataInsights() {
                     <div className="ml-3 flex-grow">
                       <div className="flex items-baseline justify-between">
                         <h4 className="font-medium text-primary-800">{neighborhood.name}</h4>
-                        <span className="text-sm font-semibold text-secondary-500">+{neighborhood.growth.toFixed(1)}%</span>
+                        <span className="text-sm font-semibold text-secondary-500">+{(neighborhood.growth || 0).toFixed(1)}%</span>
                       </div>
                       <div className="w-full bg-primary-100 rounded-full h-1.5 mt-1">
                         <div 
                           className="bg-secondary-500 h-1.5 rounded-full" 
-                          style={{ width: `${Math.min(100, neighborhood.growth * 7)}%` }}
+                          style={{ width: `${Math.min(100, (neighborhood.growth || 0) * 7)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -187,9 +189,9 @@ export default function DataInsights() {
           {/* Investment Calculator */}
           <div className="bg-white rounded-xl overflow-hidden shadow-lg border border-primary-200 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold text-primary-800">ROI Calculator</h3>
+              <h3 className="text-xl font-semibold text-primary-800">{t("sections.roiCalculator", "ROI Calculator")}</h3>
               <div className="flex items-center text-xs text-primary-500">
-                <span className="mr-1">Premium</span>
+                <span className="mr-1">{t("sections.premium", "Premium")}</span>
                 <svg className="h-4 w-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
@@ -200,7 +202,7 @@ export default function DataInsights() {
             <div className="space-y-4">
               {/* Purchase price */}
               <div>
-                <label htmlFor="purchase_price" className="block text-sm font-medium text-primary-700 mb-1">Purchase Price</label>
+                <label htmlFor="purchase_price" className="block text-sm font-medium text-primary-700 mb-1">{t("sections.purchasePrice", "Purchase Price")}</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <span className="text-primary-500">$</span>
