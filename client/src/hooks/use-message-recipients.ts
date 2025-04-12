@@ -1,46 +1,80 @@
 import { useState, useEffect } from 'react';
 import { MessageRecipient } from '@/lib/messaging/types';
-import { apiRequest } from '@/lib/queryClient';
+import { useToast } from './use-toast';
 
+// Demo data for available message recipients
+const DEMO_RECIPIENTS: MessageRecipient[] = [
+  {
+    id: 1,
+    name: "John Doe",
+    email: "john.doe@example.com",
+    role: "user",
+    profileImage: null
+  },
+  {
+    id: 2,
+    name: "Alice Williams",
+    email: "alice.williams@example.com",
+    role: "agent",
+    profileImage: null
+  },
+  {
+    id: 3,
+    name: "Carlos Rodriguez",
+    email: "carlos.r@example.com",
+    role: "admin",
+    profileImage: null
+  },
+  {
+    id: 4,
+    name: "Sarah Johnson",
+    email: "sarah.j@example.com",
+    role: "user",
+    profileImage: null
+  },
+  {
+    id: 5,
+    name: "Emma Martinez",
+    email: "emma.m@example.com",
+    role: "agent",
+    profileImage: null
+  }
+];
+
+// Hook for fetching and managing message recipients
 export function useMessageRecipients() {
+  const { toast } = useToast();
   const [recipients, setRecipients] = useState<MessageRecipient[]>([]);
   const [isLoadingRecipients, setIsLoadingRecipients] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
+  
+  // Fetch recipients (simulated API call)
   useEffect(() => {
-    // This would fetch recipients from the API in a real implementation
-    async function loadRecipients() {
+    const fetchRecipients = async () => {
+      setIsLoadingRecipients(true);
+      
       try {
-        setIsLoadingRecipients(true);
+        // In a real app, this would be an API call
+        await new Promise(resolve => setTimeout(resolve, 400)); // simulate network delay
         
-        // In a real implementation, we would fetch recipients from the API
-        // const response = await apiRequest('GET', '/api/messaging/recipients');
-        // const data = await response.json();
-        // setRecipients(data);
-        
-        // For now, we'll use mock data
-        setTimeout(() => {
-          setRecipients([
-            { id: 1, name: 'John Doe', role: 'user', profileImage: null },
-            { id: 2, name: 'Jane Smith', role: 'agent', profileImage: null },
-            { id: 3, name: 'Michael Johnson', role: 'admin', profileImage: null },
-            { id: 4, name: 'Emily Brown', role: 'user', profileImage: null },
-            { id: 5, name: 'Roberto Martinez', role: 'agent', profileImage: null },
-          ]);
-          setIsLoadingRecipients(false);
-        }, 1000);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to load recipients'));
+        // Simulate fetching recipients from an API
+        setRecipients(DEMO_RECIPIENTS);
+      } catch (error) {
+        toast({
+          title: "Error loading recipients",
+          description: "Could not load the list of recipients. Please try again later.",
+          variant: "destructive",
+        });
+        setRecipients([]);
+      } finally {
         setIsLoadingRecipients(false);
       }
-    }
-
-    loadRecipients();
-  }, []);
-
+    };
+    
+    fetchRecipients();
+  }, [toast]);
+  
   return {
     recipients,
     isLoadingRecipients,
-    error
   };
 }
