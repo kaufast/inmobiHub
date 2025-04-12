@@ -334,11 +334,11 @@ export default function Messages({ propertyId }: MessagesProps) {
             <CardContent className="p-4">
               <Button 
                 onClick={() => setIsNewMessageOpen(true)} 
-                className="w-full bg-secondary-500 hover:bg-secondary-600 mb-4 py-6"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mb-4 py-6 font-medium"
                 size="lg"
               >
                 <PenSquare className="h-5 w-5 mr-2" />
-                Compose New Message
+                New Message
               </Button>
               
               <div className="space-y-1 mt-6">
