@@ -43,19 +43,19 @@ export default function RecommendedProperties({
 
   if (!user) {
     return (
-      <Card className="bg-white/50 backdrop-blur-xl shadow-md rounded-lg border border-gray-100 p-6">
+      <Card className="glassmorphism-card backdrop-blur-sm bg-white/5 border border-white/10 shadow-md rounded-lg p-6">
         <CardHeader>
-          <CardTitle className="text-xl font-semibold flex items-center">
-            <AIIcon className="mr-2 h-5 w-5 text-blue-500" />
+          <CardTitle className="text-xl font-semibold flex items-center text-white">
+            <AIIcon className="mr-2 h-5 w-5 text-blue-400" />
             {title}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-white/80">
             Log in to see personalized property recommendations tailored to your preferences
           </CardDescription>
         </CardHeader>
         <CardFooter>
           <Link href="/auth">
-            <Button className="mt-4">Log in</Button>
+            <Button className="mt-4 bg-[#131c28] hover:bg-[#0c1319] text-white">Log in</Button>
           </Link>
         </CardFooter>
       </Card>
@@ -66,35 +66,35 @@ export default function RecommendedProperties({
     return (
       <div className={className}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold flex items-center">
-            <AIIcon className="mr-2 h-5 w-5 text-blue-500" />
+          <h2 className="text-xl font-semibold flex items-center text-white">
+            <AIIcon className="mr-2 h-5 w-5 text-blue-400" />
             {title}
           </h2>
-          <Badge variant="outline" className="animate-pulse bg-blue-50">
-            <Sparkles className="h-3 w-3 mr-1 text-blue-500" /> Personalizing...
+          <Badge variant="outline" className="animate-pulse bg-blue-900/30 border border-blue-500/30 text-blue-300">
+            <Sparkles className="h-3 w-3 mr-1 text-blue-400" /> Personalizing...
           </Badge>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array(limit).fill(0).map((_, i) => (
-            <Card key={i} className="overflow-hidden relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg z-10"></div>
-              <Skeleton className="h-48 w-full" />
+            <Card key={i} className="overflow-hidden relative group glassmorphism-card backdrop-blur-sm bg-white/5 border border-white/10">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg z-10"></div>
+              <Skeleton className="h-48 w-full bg-gray-700/50" />
               <CardHeader>
-                <Skeleton className="h-5 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-5 w-3/4 mb-2 bg-gray-700/50" />
+                <Skeleton className="h-4 w-1/2 bg-gray-700/50" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-4 w-full mb-3" />
-                <Skeleton className="h-4 w-5/6 mb-3" />
+                <Skeleton className="h-4 w-full mb-3 bg-gray-700/50" />
+                <Skeleton className="h-4 w-5/6 mb-3 bg-gray-700/50" />
                 <div className="grid grid-cols-2 gap-2 mt-4">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full bg-gray-700/50" />
+                  <Skeleton className="h-4 w-full bg-gray-700/50" />
+                  <Skeleton className="h-4 w-full bg-gray-700/50" />
+                  <Skeleton className="h-4 w-full bg-gray-700/50" />
                 </div>
               </CardContent>
               <CardFooter>
-                <Skeleton className="h-9 w-full" />
+                <Skeleton className="h-9 w-full bg-gray-700/50" />
               </CardFooter>
             </Card>
           ))}
@@ -105,13 +105,13 @@ export default function RecommendedProperties({
 
   if (error || !recommendations || recommendations.length === 0) {
     return (
-      <Card className={`bg-white/50 backdrop-blur-xl shadow-md rounded-lg border border-gray-100 p-6 ${className}`}>
+      <Card className={`glassmorphism-card backdrop-blur-sm bg-white/5 border border-white/10 shadow-md rounded-lg p-6 ${className}`}>
         <CardHeader>
-          <CardTitle className="text-xl font-semibold flex items-center">
-            <AIIcon className="mr-2 h-5 w-5 text-blue-500" />
+          <CardTitle className="text-xl font-semibold flex items-center text-white">
+            <AIIcon className="mr-2 h-5 w-5 text-blue-400" />
             {title}
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-white/80">
             {error 
               ? "Unable to load recommendations at this time. Please try again later." 
               : "No recommendations available yet. Browse more properties to get personalized suggestions."}
@@ -119,13 +119,13 @@ export default function RecommendedProperties({
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center p-6 text-center">
-            <Lightbulb className="h-12 w-12 text-blue-200 mb-4" />
-            <h3 className="text-lg font-medium mb-2">How recommendations work</h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <Lightbulb className="h-12 w-12 text-blue-300 mb-4" />
+            <h3 className="text-lg font-medium mb-2 text-white">How recommendations work</h3>
+            <p className="text-sm text-white/70 mb-4">
               Our AI analyzes your search history, favorited properties, and browsing patterns to suggest properties that match your preferences.
             </p>
             <Link href="/search">
-              <Button variant="outline" className="mt-2">
+              <Button variant="outline" className="mt-2 border-white/20 text-white hover:bg-white/10">
                 Explore Properties <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -140,12 +140,12 @@ export default function RecommendedProperties({
   return (
     <div className={className}>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold flex items-center">
-          <AIIcon className="mr-2 h-5 w-5 text-blue-500" />
+        <h2 className="text-xl font-semibold flex items-center text-white">
+          <AIIcon className="mr-2 h-5 w-5 text-blue-400" />
           {title}
         </h2>
-        <Badge variant="outline" className="bg-blue-50">
-          <Sparkles className="h-3 w-3 mr-1 text-blue-500" /> Personalized for you
+        <Badge variant="outline" className="bg-blue-900/30 border border-blue-500/30 text-blue-300">
+          <Sparkles className="h-3 w-3 mr-1 text-blue-400" /> Personalized for you
         </Badge>
       </div>
       
@@ -160,7 +160,7 @@ export default function RecommendedProperties({
           <Button 
             variant="outline" 
             onClick={() => setExpanded(!expanded)}
-            className="group"
+            className="group border-white/20 text-white hover:bg-white/10"
           >
             {expanded ? (
               <>Show Less <ArrowRight className="ml-2 h-4 w-4 rotate-90 group-hover:-translate-y-1 transition-transform" /></>
@@ -292,18 +292,18 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
       
       <CardContent className="pb-2 flex-grow relative z-10">
         {/* AI insights */}
-        <div className="mb-3 p-2 bg-blue-50/50 rounded-md border border-blue-100">
+        <div className="mb-3 p-2 bg-blue-900/30 rounded-md border border-blue-500/30 backdrop-blur-sm">
           <div className="flex items-start space-x-2">
-            <AIIcon className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+            <AIIcon className="h-4 w-4 text-blue-400 mt-0.5 flex-shrink-0" />
             <div className="w-full">
               <div className="flex justify-between items-center mb-1">
-                <h4 className="text-xs font-medium text-blue-700">Smart Match</h4>
+                <h4 className="text-xs font-medium text-blue-300">Smart Match</h4>
                 <div className="flex items-center">
                   <div 
                     className={`h-2 w-12 rounded-full mr-1 ${
-                      matchScorePercentage >= 90 ? 'bg-gradient-to-r from-blue-400 to-green-500' : 
-                      matchScorePercentage >= 80 ? 'bg-gradient-to-r from-blue-300 to-blue-500' : 
-                      'bg-gradient-to-r from-amber-300 to-amber-500'
+                      matchScorePercentage >= 90 ? 'bg-gradient-to-r from-blue-400 to-green-400' : 
+                      matchScorePercentage >= 80 ? 'bg-gradient-to-r from-blue-400 to-blue-600' : 
+                      'bg-gradient-to-r from-amber-400 to-amber-600'
                     }`}
                   >
                     <div 
@@ -311,14 +311,14 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
                       style={{ width: `${100 - matchScorePercentage}%`, opacity: 0.7 }}
                     ></div>
                   </div>
-                  <span className="text-[10px] font-medium">
+                  <span className="text-[10px] font-medium text-white">
                     {matchScorePercentage}%
                   </span>
                 </div>
               </div>
               <ul className="space-y-1">
                 {highlights.map((highlight, idx) => (
-                  <li key={idx} className="text-xs text-gray-700 flex items-start">
+                  <li key={idx} className="text-xs text-white/80 flex items-start">
                     <span className="inline-block w-3 flex-shrink-0">•</span>
                     <span>{highlight}</span>
                   </li>
@@ -363,8 +363,8 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
           variant="outline"
           size="icon"
           className={cn(
-            "flex-shrink-0",
-            isAlreadyInComparison ? "bg-blue-50 text-blue-600 border-blue-200" : ""
+            "flex-shrink-0 border-white/20 text-white hover:bg-white/10",
+            isAlreadyInComparison ? "bg-blue-900/50 text-blue-300 border-blue-500/50" : ""
           )}
           onClick={() => addToCompare(property.id)}
           disabled={isAlreadyInComparison}
