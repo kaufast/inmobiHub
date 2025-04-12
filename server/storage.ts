@@ -10,7 +10,7 @@ import {
   propertyDrafts, type PropertyDraft, type InsertPropertyDraft
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, inArray, like, gte, lte, desc, sql } from "drizzle-orm";
+import { eq, ne, and, or, inArray, like, gte, lte, desc, sql } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 
@@ -205,12 +205,9 @@ export class DatabaseStorage implements IStorage {
     return db.select()
       .from(users)
       .where(
-        and(
-          // Exclude current user
-          sql`${users.id} != ${currentUserId}`,
-          // Only include active users (not suspended)
-          sql`${users.status} != 'suspended'`
-        )
+        // Exclude current user
+        ne(users.id, currentUserId)
+        // We're not using status filter since it's not in the schema
       )
       .orderBy(
         // Sort by role priority (admin first, then agent, then user)
