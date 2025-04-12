@@ -124,17 +124,17 @@ export default function DataInsights() {
             {/* Stats grid */}
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
-                <p className="text-xs text-primary-500">Median Price</p>
+                <p className="text-xs text-primary-500">{t("sections.medianPrice", "Median Price")}</p>
                 <p className="text-lg font-semibold text-primary-800">$795K</p>
                 <p className="text-xs text-green-500">+8.3%</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-primary-500">Inventory</p>
+                <p className="text-xs text-primary-500">{t("sections.inventory", "Inventory")}</p>
                 <p className="text-lg font-semibold text-primary-800">2,150</p>
                 <p className="text-xs text-red-500">-4.7%</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-primary-500">Days on Market</p>
+                <p className="text-xs text-primary-500">{t("sections.daysOnMarket", "Days on Market")}</p>
                 <p className="text-lg font-semibold text-primary-800">32</p>
                 <p className="text-xs text-green-500">-12.3%</p>
               </div>
@@ -180,7 +180,7 @@ export default function DataInsights() {
                 ))
               ) : (
                 <div className="text-center py-4 text-primary-500">
-                  No neighborhood data available
+                  {t("sections.noNeighborhoodData", "No neighborhood data available")}
                 </div>
               )}
             </div>
@@ -222,7 +222,7 @@ export default function DataInsights() {
               
               {/* Down payment */}
               <div>
-                <label htmlFor="down_payment" className="block text-sm font-medium text-primary-700 mb-1">Down Payment (%)</label>
+                <label htmlFor="down_payment" className="block text-sm font-medium text-primary-700 mb-1">{t("sections.downPayment", "Down Payment (%)")}</label>
                 <Slider
                   id="down_payment"
                   min={5}
@@ -240,7 +240,7 @@ export default function DataInsights() {
               
               {/* Interest rate */}
               <div>
-                <label htmlFor="interest_rate" className="block text-sm font-medium text-primary-700 mb-1">Interest Rate (%)</label>
+                <label htmlFor="interest_rate" className="block text-sm font-medium text-primary-700 mb-1">{t("sections.interestRate", "Interest Rate (%)")}</label>
                 <Input
                   type="text"
                   id="interest_rate"
@@ -254,7 +254,7 @@ export default function DataInsights() {
               
               {/* Estimated rent */}
               <div>
-                <label htmlFor="monthly_rent" className="block text-sm font-medium text-primary-700 mb-1">Monthly Rent</label>
+                <label htmlFor="monthly_rent" className="block text-sm font-medium text-primary-700 mb-1">{t("sections.monthlyRent", "Monthly Rent")}</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <span className="text-primary-500">$</span>
@@ -276,28 +276,28 @@ export default function DataInsights() {
               <div className="bg-primary-50 p-4 rounded-lg">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-primary-500">Monthly Payment</p>
+                    <p className="text-xs text-primary-500">{t("sections.monthlyPayment", "Monthly Payment")}</p>
                     <p className="text-lg font-semibold text-primary-800">${Math.round(monthlyPayment).toLocaleString()}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-primary-500">Cash Flow</p>
+                    <p className="text-xs text-primary-500">{t("sections.cashFlow", "Cash Flow")}</p>
                     <p className={`text-lg font-semibold ${monthlyBalance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                       {monthlyBalance >= 0 ? '+' : ''}{Math.round(monthlyBalance).toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-primary-500">Annual ROI</p>
+                    <p className="text-xs text-primary-500">{t("sections.annualROI", "Annual ROI")}</p>
                     <p className="text-lg font-semibold text-primary-800">{annualROI.toFixed(1)}%</p>
                   </div>
                   <div>
-                    <p className="text-xs text-primary-500">Break-even</p>
-                    <p className="text-lg font-semibold text-primary-800">{breakEven.toFixed(1)} years</p>
+                    <p className="text-xs text-primary-500">{t("sections.breakEven", "Break-even")}</p>
+                    <p className="text-lg font-semibold text-primary-800">{breakEven.toFixed(1)} {t("sections.years", "years")}</p>
                   </div>
                 </div>
               </div>
               
               <Button className="w-full bg-secondary-500 hover:bg-secondary-600">
-                Get Full Analysis
+                {t("sections.getFullAnalysis", "Get Full Analysis")}
               </Button>
             </div>
           </div>
