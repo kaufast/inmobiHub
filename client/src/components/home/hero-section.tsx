@@ -174,14 +174,14 @@ export default function HeroSection() {
                     className="flex-1 flex items-center justify-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 py-3 px-6"
                   >
                     <Image className="w-4 h-4 mr-1" />
-                    <span>Image</span>
+                    <span>{t("common.image", "Image")}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="audio" 
                     className="flex-1 flex items-center justify-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 rounded-tr-lg py-3 px-6"
                   >
                     <Mic className="w-4 h-4 mr-1" />
-                    <span>Voice</span>
+                    <span>{t("common.voice", "Voice")}</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -245,7 +245,7 @@ export default function HeroSection() {
                             onValueChange={(value) => handleInputChange('propertyType', value)}
                           >
                             <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
-                              <SelectValue placeholder="Property Type" />
+                              <SelectValue placeholder={t("common.propertyType", "Property Type")} />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="house">House</SelectItem>
@@ -262,7 +262,7 @@ export default function HeroSection() {
                             onValueChange={(value) => handleInputChange('beds', Number(value))}
                           >
                             <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
-                              <SelectValue placeholder="Bedrooms" />
+                              <SelectValue placeholder={t("common.bedrooms", "Bedrooms")} />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">1+ Bedroom</SelectItem>
@@ -279,7 +279,7 @@ export default function HeroSection() {
                             onValueChange={(value) => handleInputChange('baths', Number(value))}
                           >
                             <SelectTrigger className="bg-gray-700/90 border-gray-600 text-white">
-                              <SelectValue placeholder="Bathrooms" />
+                              <SelectValue placeholder={t("common.bathrooms", "Bathrooms")} />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="1">1+ Bathroom</SelectItem>
@@ -319,7 +319,7 @@ export default function HeroSection() {
                   >
                     <Camera className="h-10 w-10 text-white/60 mb-2" />
                     <p className="text-white/80 text-center px-4">
-                      Upload or drag and drop an image of a property to find similar listings
+                      {t("common.uploadPropertyImage", "Upload or drag and drop an image of a property to find similar listings")}
                     </p>
                     <input
                       type="file"
@@ -337,7 +337,7 @@ export default function HeroSection() {
                   disabled={!imagePreview}
                 >
                   <Search className="mr-2 h-5 w-5" />
-                  Find Similar Properties
+                  {t("common.findSimilarProperties", "Find Similar Properties")}
                 </Button>
               </div>
             </TabsContent>
@@ -354,11 +354,11 @@ export default function HeroSection() {
                   
                   {isRecording ? (
                     <p className="text-white/80 mt-4">
-                      Recording... {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
+                      {t("common.recording", "Recording...")} {Math.floor(recordingTime / 60)}:{String(recordingTime % 60).padStart(2, '0')}
                     </p>
                   ) : (
                     <p className="text-white/80 mt-4">
-                      Tap to start recording your property search
+                      {t("common.tapToRecord", "Tap to start recording your property search")}
                     </p>
                   )}
                 </div>
@@ -373,7 +373,7 @@ export default function HeroSection() {
                   disabled={isRecording}
                 >
                   <Search className="mr-2 h-5 w-5" />
-                  Search Properties
+                  {t("common.searchProperties", "Search Properties")}
                 </Button>
               </div>
             </TabsContent>
