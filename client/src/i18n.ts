@@ -21,6 +21,7 @@ const enGB = {
     faq: 'FAQ',
     contactSupport: 'Contact Support',
     home: 'Home',
+    advanced: 'Advanced',
     properties: 'Properties',
     services: 'Services',
     buying: 'Buying',
@@ -293,6 +294,7 @@ const esMX = {
     faq: 'Preguntas Frecuentes',
     contactSupport: 'Contactar Soporte',
     home: 'Inicio',
+    advanced: 'Avanzado',
     properties: 'Propiedades',
     services: 'Servicios',
     buying: 'Compra',
@@ -645,6 +647,7 @@ const caES = {
     faq: 'Preguntes Freqüents',
     contactSupport: 'Contactar Suport',
     home: 'Inici',
+    advanced: 'Avançat',
     properties: 'Propietats',
     services: 'Serveis',
     buying: 'Compra',
@@ -843,6 +846,7 @@ const frFR = {
   common: {
     selectLanguage: 'Choisir la langue',
     home: 'Accueil',
+    advanced: 'Avancé',
     properties: 'Propriétés',
     services: 'Services',
     buying: 'Achat',
@@ -883,6 +887,7 @@ const itIT = {
   common: {
     selectLanguage: 'Seleziona lingua',
     home: 'Home',
+    advanced: 'Avanzato',
     properties: 'Proprietà',
     services: 'Servizi',
     buying: 'Acquisto',
@@ -950,6 +955,7 @@ const deDE = {
   common: {
     selectLanguage: 'Sprache auswählen',
     home: 'Startseite',
+    advanced: 'Erweitert',
     properties: 'Immobilien',
     services: 'Dienstleistungen',
     buying: 'Kaufen',
@@ -990,6 +996,7 @@ const zhCN = {
   common: {
     selectLanguage: '选择语言',
     home: '首页',
+    advanced: '高级',
     properties: '房产',
     services: '服务',
     buying: '购买',
@@ -1030,6 +1037,7 @@ const jaJP = {
   common: {
     selectLanguage: '言語を選択',
     home: 'ホーム',
+    advanced: '詳細',
     properties: '物件',
     services: 'サービス',
     buying: '買う',
@@ -1070,6 +1078,7 @@ const arSA = {
   common: {
     selectLanguage: 'اختر اللغة',
     home: 'الرئيسية',
+    advanced: 'متقدم',
     properties: 'العقارات',
     services: 'الخدمات',
     buying: 'شراء',
