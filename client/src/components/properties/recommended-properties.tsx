@@ -203,7 +203,7 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
     : null;
 
   return (
-    <Card className="overflow-hidden h-full flex flex-col bg-white/50 backdrop-blur-xl hover:shadow-lg transition-all duration-300 group relative">
+    <Card className="overflow-hidden h-full flex flex-col glassmorphism-card backdrop-blur-sm bg-white/5 border border-white/10 hover:shadow-lg transition-all duration-300 group relative">
       {/* Animated gradient highlight on hover */}
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg z-0"></div>
 
@@ -247,7 +247,7 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
       
       <CardHeader className="pb-2 relative z-10">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-lg font-semibold line-clamp-1">{property.title}</CardTitle>
+          <CardTitle className="text-lg font-semibold line-clamp-1 text-white">{property.title}</CardTitle>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -278,12 +278,12 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
             </Tooltip>
           </TooltipProvider>
         </div>
-        <CardDescription className="flex items-center text-sm">
+        <CardDescription className="flex items-center text-sm text-white/80">
           <PiggyBank className="h-4 w-4 mr-1 inline" />
-          <span className="font-medium text-green-700">{formatPrice(property.price)}</span>
+          <span className="font-medium text-white">{formatPrice(property.price)}</span>
           
           {property.squareFeet > 0 && (
-            <span className="ml-2 text-xs text-gray-500">
+            <span className="ml-2 text-xs text-white/60">
               (${Math.round(property.price / property.squareFeet)}/sq.ft)
             </span>
           )}
@@ -318,7 +318,7 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
               </div>
               <ul className="space-y-1">
                 {highlights.map((highlight, idx) => (
-                  <li key={idx} className="text-xs text-gray-600 flex items-start">
+                  <li key={idx} className="text-xs text-gray-700 flex items-start">
                     <span className="inline-block w-3 flex-shrink-0">•</span>
                     <span>{highlight}</span>
                   </li>
@@ -330,19 +330,19 @@ function RecommendedPropertyCard({ recommendation }: { recommendation: Recommend
         
         {/* Property features */}
         <div className="grid grid-cols-2 gap-2 mt-3">
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-white/80">
             <Home className="h-4 w-4 mr-1 flex-shrink-0" />
             <span className="truncate">{property.propertyType}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-white/80">
             <Bed className="h-4 w-4 mr-1 flex-shrink-0" />
             <span>{property.bedrooms} {property.bedrooms === 1 ? 'bed' : 'beds'}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-white/80">
             <Bath className="h-4 w-4 mr-1 flex-shrink-0" />
             <span>{property.bathrooms} {property.bathrooms === 1 ? 'bath' : 'baths'}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-600">
+          <div className="flex items-center text-sm text-white/80">
             <Square className="h-4 w-4 mr-1 flex-shrink-0" />
             <span>{property.squareFeet.toLocaleString()} sqft</span>
           </div>

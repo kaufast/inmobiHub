@@ -211,7 +211,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                   </Avatar>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-primary-500">Listed by <span className="font-medium text-primary-700">Agent</span></span>
+                      <span className="text-xs text-white/70">Listed by <span className="font-medium text-white">Agent</span></span>
                       {/* Using the correct variant name for the verification badge */}
                       <VerificationBadge isVerified={true} variant="card" />
                     </div>
@@ -254,7 +254,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
                       propertyId={property.id} 
                       variant="outline"
                       size="sm"
-                      className="text-gray-600 hover:text-secondary-500 hover:bg-gray-50 transition"
+                      className="text-white hover:text-secondary-500 hover:bg-white/10 transition"
                     />
                   </div>
                   <div className="text-white bg-[#131c28] hover:bg-[#0c1319] px-3 py-1.5 rounded-md text-sm font-medium shadow-sm hover:shadow-md transition-all">
@@ -389,10 +389,10 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
         </div>
         
         {/* Action buttons below the image */}
-        <div className="flex justify-between p-2 border-b border-gray-100">
+        <div className="flex justify-between p-2 border-b border-white/10">
           <div className="flex items-center gap-1">
             <button 
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md ${isFavorite ? 'text-secondary-500 bg-secondary-50' : 'text-gray-600 hover:bg-gray-50'} transition-colors`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md ${isFavorite ? 'text-secondary-500 bg-secondary-50' : 'text-white hover:bg-white/10'} transition-colors`}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -426,7 +426,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
               size="sm" 
               showIcon={true}
               showLabel={true}
-              className="text-gray-600 hover:text-secondary-500 hover:bg-gray-50 transition"
+              className="text-white hover:text-secondary-500 hover:bg-white/10 transition"
             />
           </div>
         </div>
