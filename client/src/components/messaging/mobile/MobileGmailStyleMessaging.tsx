@@ -92,7 +92,7 @@ export function MobileGmailStyleMessaging({ userId }: MobileGmailStyleMessagingP
               <div className="flex flex-col h-full pt-4">
                 <Button 
                   variant="default" 
-                  className="mx-4 mb-6"
+                  className="mx-4 mb-6 bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={() => {
                     setIsComposeOpen(true);
                     closeSheet();
@@ -141,11 +141,13 @@ export function MobileGmailStyleMessaging({ userId }: MobileGmailStyleMessagingP
         
         {!isComposeOpen && !selectedMessageId && (
           <Button 
-            variant="ghost" 
-            size="icon" 
+            variant="default"
+            size="sm"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => setIsComposeOpen(true)}
           >
-            <PenSquare className="h-5 w-5" />
+            <PenSquare className="h-4 w-4 mr-1" />
+            New
           </Button>
         )}
       </div>

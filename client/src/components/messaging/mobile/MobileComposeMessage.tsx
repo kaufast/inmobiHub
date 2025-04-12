@@ -92,6 +92,7 @@ export function MobileComposeMessage({
         <h2 className="text-base font-semibold flex-1">New Message</h2>
         <Button 
           size="sm" 
+          className="bg-primary text-primary-foreground hover:bg-primary/90"
           disabled={isLoading || !form.formState.isValid}
           onClick={form.handleSubmit(onSubmit)}
         >

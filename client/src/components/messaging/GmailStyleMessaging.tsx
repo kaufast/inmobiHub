@@ -105,7 +105,7 @@ export function GmailStyleMessaging({ userId }: GmailStyleMessagingProps) {
         <div className="w-64 border-r p-4 bg-background">
           <Button 
             variant="default" 
-            className="w-full mb-4"
+            className="w-full mb-4 bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => setIsComposeOpen(true)}
           >
             <PenSquare className="h-4 w-4 mr-2" />

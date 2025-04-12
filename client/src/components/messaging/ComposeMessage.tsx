@@ -198,6 +198,7 @@ export function ComposeMessage({
               </Button>
               <Button 
                 type="submit" 
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={isLoading || !form.formState.isValid}
               >
                 Send Message
