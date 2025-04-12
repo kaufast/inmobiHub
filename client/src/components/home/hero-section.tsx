@@ -364,7 +364,7 @@ export default function HeroSection() {
                 </div>
                 
                 <p className="text-white/70 text-sm max-w-lg text-center mb-4">
-                  Describe the property you're looking for in detail. For example: "I'm looking for a three bedroom house in Boston with a garage and backyard under $600,000"
+                  {t("common.voiceSearchExample", "Describe the property you're looking for in detail. For example: \"I'm looking for a three bedroom house in Boston with a garage and backyard under $600,000\"")}
                 </p>
                 
                 <Button 
@@ -428,7 +428,7 @@ export default function HeroSection() {
                 />
                 <div className="absolute top-2 right-2">
                   <div className="bg-[#131c28] text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-md">
-                    Featured
+                    {t("common.featured", "Featured")}
                   </div>
                 </div>
                 <div className="absolute top-2 left-2">
@@ -463,7 +463,7 @@ export default function HeroSection() {
                     </div>
                   </div>
                   <button className="text-white bg-[#131c28] hover:bg-[#0c1319] text-xs py-1.5 px-3 rounded-md shadow-sm transition-all hover:shadow-md">
-                    View
+                    {t("common.view", "View")}
                   </button>
                 </div>
               </div>
@@ -475,13 +475,13 @@ export default function HeroSection() {
                 <div className="text-white text-xs font-medium">Cancún</div>
               </div>
               <div className="bg-gray-900/80 backdrop-blur-md rounded-lg px-3 py-2 flex items-center space-x-1 border border-gray-700">
-                <div className="text-white text-xs font-medium">Buy</div>
+                <div className="text-white text-xs font-medium">{t("common.buy", "Buy")}</div>
               </div>
               <div className="bg-gray-900/80 backdrop-blur-md rounded-lg px-3 py-2 flex items-center space-x-1 border border-gray-700">
-                <div className="text-white text-xs font-medium">2+ Beds</div>
+                <div className="text-white text-xs font-medium">{t("common.beds", "2+ Beds")}</div>
               </div>
               <div className="bg-gray-900/80 backdrop-blur-md rounded-lg px-3 py-2 flex items-center space-x-1 border border-gray-700">
-                <div className="text-white text-xs font-medium">Any Price</div>
+                <div className="text-white text-xs font-medium">{t("common.anyPrice", "Any Price")}</div>
               </div>
             </div>
           </div>
