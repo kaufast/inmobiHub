@@ -62,6 +62,7 @@ export interface MessageDetailProps {
 // Props for ComposeMessage component
 export interface ComposeMessageProps {
   onSend: (recipientId: number, subject: string, content: string, propertyId?: number) => Promise<boolean>;
+  onClose: () => void;
   recipients: MessageRecipient[];
   isLoading?: boolean;
   defaultRecipientId?: number;

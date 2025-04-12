@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -7,22 +6,16 @@ import {
   Send, 
   ArchiveIcon, 
   PenSquare, 
-  Search, 
-  MessageCircle 
+  Search,
+  MessageCircle
 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  MessageCategory, 
-  MessageWithSenderInfo, 
-  MessageWithRecipientInfo 
-} from '@/lib/messaging/types';
+import { MessageCategory } from '@/lib/messaging/types';
 import { useMessagingSystem } from '@/lib/messaging/hooks';
 import { useMessageRecipients } from '@/hooks/use-message-recipients';
 import { MessageList } from './MessageList';
 import { MessageDetail } from './MessageDetail';
 import { ComposeMessage } from './ComposeMessage';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface GmailStyleMessagingProps {
   userId: number;
@@ -65,90 +58,85 @@ export function GmailStyleMessaging({ userId }: GmailStyleMessagingProps) {
     setIsComposeOpen(true);
   };
 
+  // Function to render category button
+  const CategoryButton = ({ 
+    category, 
+    icon, 
+    label 
+  }: { 
+    category: MessageCategory; 
+    icon: React.ReactNode; 
+    label: string 
+  }) => (
+    <Button
+      variant={activeCategory === category ? "secondary" : "ghost"}
+      className="justify-start w-full"
+      onClick={() => {
+        setActiveCategory(category);
+        setSelectedMessageId(null);
+      }}
+    >
+      {icon}
+      <span className="ml-2">{label}</span>
+    </Button>
+  );
+
   return (
-    <div className="flex h-[calc(100vh-80px)] gap-4">
-      {/* Left sidebar - Message categories */}
-      <Card className="w-64 flex-shrink-0">
-        <CardHeader>
-          <CardTitle>Messages</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="h-[calc(100vh-60px)] flex flex-col">
+      {/* Header */}
+      <div className="border-b p-4 flex items-center justify-between bg-background">
+        <h1 className="text-xl font-semibold">Messages</h1>
+        <div className="flex items-center space-x-2">
+          <div className="relative w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              className="pl-9"
+              placeholder="Search messages..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar */}
+        <div className="w-64 border-r p-4 bg-background">
           <Button 
             variant="default" 
             className="w-full mb-4"
             onClick={() => setIsComposeOpen(true)}
           >
             <PenSquare className="h-4 w-4 mr-2" />
-            Compose New Message
+            New Message
           </Button>
           
-          <div className="space-y-1 mt-6">
-            <Button 
-              variant={activeCategory === "inbox" ? "secondary" : "ghost"}
-              className="w-full justify-start" 
-              onClick={() => {
-                setActiveCategory("inbox");
-                setSelectedMessageId(null);
-              }}
-            >
-              <Inbox className="h-4 w-4 mr-2" />
-              Inbox
-            </Button>
-            
-            <Button 
-              variant={activeCategory === "sent" ? "secondary" : "ghost"}
-              className="w-full justify-start" 
-              onClick={() => {
-                setActiveCategory("sent");
-                setSelectedMessageId(null);
-              }}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Sent
-            </Button>
-            
-            <Button 
-              variant={activeCategory === "archived" ? "secondary" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => {
-                setActiveCategory("archived");
-                setSelectedMessageId(null);
-              }}
-            >
-              <ArchiveIcon className="h-4 w-4 mr-2" />
-              Archived
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Middle column - Message list */}
-      <Card className="flex-grow">
-        <CardHeader className="pb-3">
-          <div className="relative">
-            <Search className="absolute left-2 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              className="pl-8"
-              placeholder="Search messages..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+          <div className="space-y-1">
+            <CategoryButton 
+              category="inbox" 
+              icon={<Inbox className="h-4 w-4" />} 
+              label="Inbox" 
+            />
+            <CategoryButton 
+              category="sent" 
+              icon={<Send className="h-4 w-4" />} 
+              label="Sent" 
+            />
+            <CategoryButton 
+              category="archived" 
+              icon={<ArchiveIcon className="h-4 w-4" />} 
+              label="Archived" 
             />
           </div>
-        </CardHeader>
-        <Separator />
-        
-        <div className="h-[calc(100%-80px)] overflow-auto">
+        </div>
+
+        {/* Message List Column */}
+        <div className={`border-r ${selectedMessageId ? 'w-1/3' : 'flex-1'}`}>
           {isLoading ? (
-            <div className="p-4 space-y-4">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <div key={index} className="flex items-center space-x-4">
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-[250px]" />
-                    <Skeleton className="h-4 w-[200px]" />
-                  </div>
-                </div>
-              ))}
+            <div className="flex flex-col items-center justify-center h-full p-4">
+              <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
+              <p className="mt-4 text-muted-foreground">Loading messages...</p>
             </div>
           ) : filteredMessages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-4 text-center">
@@ -163,53 +151,48 @@ export function GmailStyleMessaging({ userId }: GmailStyleMessagingProps) {
               </p>
             </div>
           ) : (
-            activeCategory === 'sent' ? (
-              <MessageList 
-                messages={filteredMessages as MessageWithRecipientInfo[]}
-                selectedMessageId={selectedMessageId}
-                onSelectMessage={handleSelectMessage}
-                isSentFolder={true}
-              />
-            ) : (
-              <MessageList 
-                messages={filteredMessages as MessageWithSenderInfo[]}
-                selectedMessageId={selectedMessageId}
-                onSelectMessage={handleSelectMessage}
-                isSentFolder={false}
-              />
-            )
+            <MessageList 
+              messages={filteredMessages}
+              selectedMessageId={selectedMessageId}
+              onSelectMessage={handleSelectMessage}
+              isSentFolder={activeCategory === 'sent'}
+            />
           )}
         </div>
-      </Card>
 
-      {/* Right column - Message detail or compose form */}
-      <Card className="w-1/2 flex-shrink-0">
+        {/* Message Detail or Compose Form */}
         {isComposeOpen ? (
-          <ComposeMessage 
-            onSend={sendMessage}
-            onCancel={() => setIsComposeOpen(false)}
-            recipients={recipients}
-            isLoading={isLoadingRecipients}
-          />
+          <div className="flex-1">
+            <ComposeMessage 
+              onSend={sendMessage}
+              onClose={() => setIsComposeOpen(false)}
+              recipients={recipients}
+              isLoading={isLoadingRecipients}
+            />
+          </div>
         ) : selectedMessageId && selectedMessage ? (
-          <MessageDetail
-            message={selectedMessage}
-            onReply={handleReply}
-            onArchive={archiveMessage}
-            onDelete={deleteMessage}
-            onForward={handleForward}
-            isSentFolder={activeCategory === 'sent'}
-          />
+          <div className="flex-1">
+            <MessageDetail 
+              message={selectedMessage}
+              onReply={handleReply}
+              onArchive={archiveMessage}
+              onDelete={deleteMessage}
+              onForward={handleForward}
+              isSentFolder={activeCategory === 'sent'}
+            />
+          </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-            <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">No message selected</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Select a message from the list to view its contents.
-            </p>
+          <div className="flex-1 flex items-center justify-center p-8 bg-muted/30">
+            <div className="text-center max-w-md">
+              <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">Select a message</h3>
+              <p className="text-sm text-muted-foreground">
+                Choose a message from the list to view its contents here.
+              </p>
+            </div>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

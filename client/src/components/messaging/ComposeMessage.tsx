@@ -5,22 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { X } from 'lucide-react';
 import { MessageRecipient } from '@/lib/messaging/types';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-interface ComposeMessageProps {
-  onSend: (recipientId: number, subject: string, content: string, propertyId?: number) => Promise<boolean>;
-  onCancel: () => void;
-  recipients: MessageRecipient[];
-  isLoading?: boolean;
-  defaultRecipientId?: number;
-  defaultSubject?: string;
-  defaultContent?: string;
-  properties?: Array<{ id: number; title: string }>;
-}
 
 // Form validation schema
 const messageFormSchema = z.object({
@@ -32,9 +20,20 @@ const messageFormSchema = z.object({
 
 type MessageFormValues = z.infer<typeof messageFormSchema>;
 
+interface ComposeMessageProps {
+  onSend: (recipientId: number, subject: string, content: string, propertyId?: number) => Promise<boolean>;
+  onClose: () => void;
+  recipients: MessageRecipient[];
+  isLoading?: boolean;
+  defaultRecipientId?: number;
+  defaultSubject?: string;
+  defaultContent?: string;
+  properties?: Array<{ id: number; title: string }>;
+}
+
 export function ComposeMessage({
   onSend,
-  onCancel,
+  onClose,
   recipients,
   isLoading = false,
   defaultRecipientId,
@@ -43,14 +42,21 @@ export function ComposeMessage({
   properties = []
 }: ComposeMessageProps) {
   // Group recipients by role for better organization
-  const groupedRecipients = recipients.reduce((acc, recipient) => {
+  const groupedRecipients = recipients.reduce((acc: Record<string, MessageRecipient[]>, recipient) => {
     const role = recipient.role;
     if (!acc[role]) {
       acc[role] = [];
     }
     acc[role].push(recipient);
     return acc;
-  }, {} as Record<string, MessageRecipient[]>);
+  }, {});
+  
+  // Role display names for grouping
+  const roleDisplayNames: Record<string, string> = {
+    'user': 'Users',
+    'agent': 'Agents',
+    'admin': 'Administrators',
+  };
   
   // Initialize form with default values
   const form = useForm<MessageFormValues>({
@@ -71,29 +77,24 @@ export function ComposeMessage({
       data.propertyId ? parseInt(data.propertyId) : undefined
     );
     if (success) {
-      onCancel();
+      onClose();
     }
   };
 
-  // Role display names for grouping
-  const roleDisplayNames: Record<string, string> = {
-    'user': 'Users',
-    'agent': 'Agents',
-    'admin': 'Administrators',
-  };
-
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex justify-between items-center p-4 border-b">
+    <div className="h-full flex flex-col bg-background">
+      {/* Header */}
+      <div className="p-4 border-b flex justify-between items-center">
         <h2 className="text-xl font-semibold">New Message</h2>
-        <Button variant="ghost" size="icon" onClick={onCancel}>
+        <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-5 w-5" />
         </Button>
       </div>
       
-      <div className="flex-grow p-4 overflow-auto">
+      {/* Form */}
+      <div className="flex-1 overflow-y-auto p-4">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="recipientId"
@@ -114,7 +115,7 @@ export function ComposeMessage({
                           </div>
                           {roleRecipients.map(recipient => (
                             <SelectItem key={recipient.id} value={String(recipient.id)}>
-                              {recipient.name}
+                              {recipient.name} ({recipient.email})
                             </SelectItem>
                           ))}
                         </div>
@@ -177,7 +178,7 @@ export function ComposeMessage({
                   <FormControl>
                     <Textarea 
                       placeholder="Write your message here..." 
-                      className="min-h-[200px]"
+                      className="min-h-[300px]"
                       {...field} 
                     />
                   </FormControl>
@@ -186,20 +187,20 @@ export function ComposeMessage({
               )}
             />
             
-            <div className="flex justify-end space-x-2 pt-4">
+            <div className="flex justify-end pt-4">
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={onCancel}
+                onClick={onClose}
+                className="mr-2"
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                disabled={isLoading}
-                className={cn(isLoading && "opacity-70")}
+                disabled={isLoading || !form.formState.isValid}
               >
-                {isLoading ? "Sending..." : "Send Message"}
+                Send Message
               </Button>
             </div>
           </form>
