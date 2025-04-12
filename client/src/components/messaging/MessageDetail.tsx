@@ -1,18 +1,24 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Message, MessageWithSenderInfo, MessageWithRecipientInfo } from '@/lib/messaging/types';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { format } from 'date-fns';
-import { ArchiveIcon, Trash2, Reply, Forward } from 'lucide-react';
-import { User } from '@/lib/messaging/types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Reply, 
+  Forward, 
+  ArchiveIcon, 
+  Trash2,
+  ExternalLink
+} from 'lucide-react';
+import { MessageDetailProps, MessageWithSenderInfo, MessageWithRecipientInfo } from '@/lib/messaging/types';
 
-interface MessageDetailProps {
-  message: MessageWithSenderInfo | MessageWithRecipientInfo | null;
-  onReply?: () => void;
-  onArchive?: (id: number) => void;
-  onDelete?: (id: number) => void;
-  onForward?: () => void;
-  isSentFolder?: boolean;
+// Helper function to get the initials for the avatar fallback
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
 }
 
 export function MessageDetail({
@@ -23,45 +29,69 @@ export function MessageDetail({
   onForward,
   isSentFolder = false
 }: MessageDetailProps) {
-  if (!message) {
-    return null;
-  }
-
-  // Determine if we should show the sender or recipient info
-  const person: User = isSentFolder
-    ? ('recipient' in message ? message.recipient : { id: 0, username: '', fullName: 'Unknown', email: '', role: 'user' })
-    : ('sender' in message ? message.sender : { id: 0, username: '', fullName: 'Unknown', email: '', role: 'user' });
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
+  if (!message) return null;
+  
+  // Determine if the message has sender or recipient info based on the folder
+  const person = isSentFolder
+    ? (message as MessageWithRecipientInfo).recipient
+    : (message as MessageWithSenderInfo).sender;
+  
+  // Format the date for display
+  const formattedDate = format(new Date(message.createdAt), 'PPP p');
+  
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center p-4 border-b">
-        <h2 className="text-xl font-semibold">{message.subject}</h2>
-        <div className="flex space-x-2">
-          {onArchive && (
-            <Button variant="ghost" size="icon" onClick={() => onArchive(message.id)}>
-              <ArchiveIcon className="h-5 w-5" />
-            </Button>
-          )}
-          {onDelete && (
-            <Button variant="ghost" size="icon" onClick={() => onDelete(message.id)}>
-              <Trash2 className="h-5 w-5" />
-            </Button>
-          )}
-        </div>
-      </div>
-
+    <div className="h-full flex flex-col">
       <div className="p-4 border-b">
-        <div className="flex items-center">
-          <Avatar className="h-10 w-10 mr-3">
+        <div className="flex justify-between items-start">
+          <h2 className="text-xl font-semibold mb-2">{message.subject}</h2>
+          <div className="flex gap-1">
+            {onReply && (
+              <Button variant="ghost" size="icon" onClick={onReply} title="Reply">
+                <Reply className="h-4 w-4" />
+              </Button>
+            )}
+            {onForward && (
+              <Button variant="ghost" size="icon" onClick={onForward} title="Forward">
+                <Forward className="h-4 w-4" />
+              </Button>
+            )}
+            {onArchive && !message.isArchived && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => onArchive(message.id)}
+                title="Archive"
+              >
+                <ArchiveIcon className="h-4 w-4" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => onDelete(message.id)}
+                title="Delete"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {message.propertyId && (
+          <div className="mb-2">
+            <Badge variant="outline" className="mr-2">
+              Related Property #{message.propertyId}
+            </Badge>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+              <ExternalLink className="h-3 w-3 mr-1" />
+              View Property
+            </Button>
+          </div>
+        )}
+        
+        <div className="flex items-center mt-2">
+          <Avatar className="h-10 w-10 mr-4">
             {person.profileImage ? (
               <AvatarImage src={person.profileImage} alt={person.fullName} />
             ) : (
@@ -69,52 +99,27 @@ export function MessageDetail({
             )}
           </Avatar>
           <div>
-            <div className="font-medium">{person.fullName}</div>
+            <div className="font-medium">
+              {person.fullName}
+              <Badge className="ml-2" variant="outline">
+                {person.role}
+              </Badge>
+            </div>
             <div className="text-sm text-muted-foreground">
               {isSentFolder ? 'To: ' : 'From: '}{person.email}
             </div>
           </div>
           <div className="ml-auto text-sm text-muted-foreground">
-            {format(new Date(message.createdAt), 'PPp')}
+            {formattedDate}
           </div>
         </div>
       </div>
-
-      <div className="flex-grow p-4 overflow-auto">
+      
+      <div className="p-4 flex-grow overflow-auto">
         <div className="prose prose-sm dark:prose-invert max-w-none">
           {message.content.split('\n').map((paragraph, index) => (
             <p key={index}>{paragraph}</p>
           ))}
-        </div>
-
-        {/* Property reference if present */}
-        {message.propertyId && (
-          <Card className="mt-6">
-            <CardContent className="p-4">
-              <h3 className="text-sm font-medium mb-2">Referenced Property</h3>
-              <div className="text-sm">
-                Property ID: {message.propertyId}
-                {/* Additional property details would go here in a real implementation */}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      <div className="p-4 border-t mt-auto">
-        <div className="flex space-x-2">
-          {onReply && (
-            <Button variant="outline" onClick={onReply}>
-              <Reply className="h-4 w-4 mr-2" />
-              Reply
-            </Button>
-          )}
-          {onForward && (
-            <Button variant="outline" onClick={onForward}>
-              <Forward className="h-4 w-4 mr-2" />
-              Forward
-            </Button>
-          )}
         </div>
       </div>
     </div>

@@ -1,19 +1,13 @@
-import { useAuth } from "@/hooks/use-auth";
-import { AppAgnosticMessaging } from "@/components/messaging/AppAgnosticMessaging";
-import { ProtectedRoute } from "@/lib/protected-route";
-
-function MessagesPageContent() {
-  const { user } = useAuth();
-  
-  if (!user) return null;
-  
-  return (
-    <div className="container mx-auto">
-      <AppAgnosticMessaging userId={user.id} />
-    </div>
-  );
-}
+import { AppAgnosticMessaging } from '@/components/messaging/AppAgnosticMessaging';
 
 export default function MessagesPage() {
-  return <ProtectedRoute path="/messages" component={MessagesPageContent} />;
+  // In a real application, we would get the user ID from authentication
+  // For now, we'll use a hardcoded demo user ID
+  const demoUserId = 1;
+  
+  return (
+    <div className="container mx-auto p-4">
+      <AppAgnosticMessaging userId={demoUserId} />
+    </div>
+  );
 }

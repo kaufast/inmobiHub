@@ -13,7 +13,11 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { MessageCategory } from '@/lib/messaging/types';
+import { 
+  MessageCategory, 
+  MessageWithSenderInfo, 
+  MessageWithRecipientInfo 
+} from '@/lib/messaging/types';
 import { useMessagingSystem } from '@/lib/messaging/hooks';
 import { useMessageRecipients } from '@/hooks/use-message-recipients';
 import { MessageList } from './MessageList';
@@ -159,12 +163,21 @@ export function GmailStyleMessaging({ userId }: GmailStyleMessagingProps) {
               </p>
             </div>
           ) : (
-            <MessageList 
-              messages={filteredMessages}
-              selectedMessageId={selectedMessageId}
-              onSelectMessage={handleSelectMessage}
-              isSentFolder={activeCategory === 'sent'}
-            />
+            activeCategory === 'sent' ? (
+              <MessageList 
+                messages={filteredMessages as MessageWithRecipientInfo[]}
+                selectedMessageId={selectedMessageId}
+                onSelectMessage={handleSelectMessage}
+                isSentFolder={true}
+              />
+            ) : (
+              <MessageList 
+                messages={filteredMessages as MessageWithSenderInfo[]}
+                selectedMessageId={selectedMessageId}
+                onSelectMessage={handleSelectMessage}
+                isSentFolder={false}
+              />
+            )
           )}
         </div>
       </Card>
