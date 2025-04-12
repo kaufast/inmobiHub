@@ -97,7 +97,8 @@ const enGB = {
     },
     saveThisSearch: 'Save this search',
     propertiesFound: '{{count}} properties found',
-    view: 'View'
+    view: 'View',
+    searchPlaceholder: 'Enter city, zip or address, buy or sell'
   },
   property: {
     house: 'House',
@@ -369,6 +370,7 @@ const esMX = {
     saveThisSearch: 'Guardar Esta Búsqueda',
     propertiesFound: '{{count}} propiedades encontradas',
     view: 'Ver',
+    searchPlaceholder: 'Ingresa ciudad, código postal o dirección, compra o venta',
     featured: 'Destacado',
     text: 'Texto',
     image: 'Imagen',

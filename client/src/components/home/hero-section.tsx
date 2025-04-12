@@ -199,7 +199,7 @@ export default function HeroSection() {
                       value={searchParams.location}
                       onChange={(e) => handleInputChange('location', e.target.value)}
                       placeholder={t("common.searchPlaceholder", "Enter city, zip or address, buy or sell")}
-                      className="w-full h-14 pl-10 pr-28 bg-gray-700/90 border border-gray-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-500 text-lg placeholder:text-gray-300 placeholder:font-medium"
+                      className="w-full h-14 pl-10 pr-28 bg-gray-600/80 border border-gray-500 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-500 text-lg placeholder:text-gray-300 placeholder:font-medium"
                       list="search-suggestions"
                     />
                     <datalist id="search-suggestions">
