@@ -164,21 +164,21 @@ export default function HeroSection() {
                 <TabsList className="w-full flex rounded-t-lg bg-transparent p-0 gap-1">
                   <TabsTrigger 
                     value="text" 
-                    className="flex-1 flex items-center justify-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 rounded-tl-lg py-3 px-6"
+                    className={`flex-1 flex items-center justify-center gap-1 text-white font-medium ${activeTab === "text" ? "bg-secondary-500" : "bg-gray-700 hover:bg-gray-600"} rounded-tl-lg py-3 px-6 transition-colors duration-200`}
                   >
                     <Search className="w-4 h-4 mr-1" />
                     <span>{t("common.text", "Text")}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="image" 
-                    className="flex-1 flex items-center justify-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 py-3 px-6"
+                    className={`flex-1 flex items-center justify-center gap-1 text-white font-medium ${activeTab === "image" ? "bg-secondary-500" : "bg-gray-700 hover:bg-gray-600"} py-3 px-6 transition-colors duration-200`}
                   >
                     <Image className="w-4 h-4 mr-1" />
                     <span>{t("common.image", "Image")}</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="audio" 
-                    className="flex-1 flex items-center justify-center gap-1 text-white font-medium bg-gray-700 data-[state=active]:bg-secondary-500 rounded-tr-lg py-3 px-6"
+                    className={`flex-1 flex items-center justify-center gap-1 text-white font-medium ${activeTab === "audio" ? "bg-secondary-500" : "bg-gray-700 hover:bg-gray-600"} rounded-tr-lg py-3 px-6 transition-colors duration-200`}
                   >
                     <Mic className="w-4 h-4 mr-1" />
                     <span>{t("common.voice", "Voice")}</span>
@@ -217,10 +217,16 @@ export default function HeroSection() {
                       <button onClick={handleSearch} className="bg-secondary-500 hover:bg-secondary-600 rounded-md p-2">
                         <Search className="h-5 w-5 text-white" />
                       </button>
-                      <button onClick={() => setActiveTab("image")} className="text-gray-400 hover:text-white">
+                      <button 
+                        onClick={() => setActiveTab("image")} 
+                        className={`rounded-md p-2 transition-colors ${activeTab === "image" ? "bg-secondary-500 text-white" : "text-gray-400 hover:text-white"}`}
+                      >
                         <Camera className="h-5 w-5" />
                       </button>
-                      <button onClick={() => setActiveTab("audio")} className="text-gray-400 hover:text-white">
+                      <button 
+                        onClick={() => setActiveTab("audio")} 
+                        className={`rounded-md p-2 transition-colors ${activeTab === "audio" ? "bg-secondary-500 text-white" : "text-gray-400 hover:text-white"}`}
+                      >
                         <Mic className="h-5 w-5" />
                       </button>
                     </div>
