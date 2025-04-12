@@ -27,7 +27,7 @@ const languageCodeMap: Record<string, string> = {
 };
 
 export function useLanguage() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const [currentLanguage, setCurrentLanguage] = useState(i18n.language || 'en-GB');
   const [isRTL, setIsRTL] = useState(i18n.language === 'ar-SA' || i18n.language.startsWith('ar'));
   const { user } = useAuth() || { user: null };
@@ -136,6 +136,7 @@ export function useLanguage() {
     isRTL,
     supportedLanguages,
     changeLanguage,
-    getCurrentLanguageInfo
+    getCurrentLanguageInfo,
+    t
   };
 }

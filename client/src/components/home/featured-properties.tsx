@@ -3,8 +3,10 @@ import { Link } from "wouter";
 import { Property } from "@shared/schema";
 import PropertyCard from "@/components/properties/property-card";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function FeaturedProperties() {
+  const { t } = useTranslation();
   const { data: properties, isLoading, error } = useQuery<Property[]>({
     queryKey: ["/api/properties/featured"],
   });
@@ -22,12 +24,12 @@ export default function FeaturedProperties() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-baseline justify-between mb-10">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1d2633]">Featured Properties</h2>
-            <p className="text-gray-600 mt-2">Exclusive listings with premium potential</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1d2633]">{t("sections.featuredProperties", "Featured Properties")}</h2>
+            <p className="text-gray-600 mt-2">{t("sections.featuredPropertiesSubtitle", "Exclusive listings with premium potential")}</p>
           </div>
           <Link href="/search">
             <a className="text-white hover:text-white/80 font-medium mt-4 md:mt-0 inline-flex items-center bg-[#1d2633] hover:bg-[#131c28] px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all">
-              View all properties
+              {t("common.viewAllProperties", "View all properties")}
               <svg className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
