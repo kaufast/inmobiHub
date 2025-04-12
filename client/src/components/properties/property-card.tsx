@@ -185,7 +185,7 @@ export default function PropertyCard({ property, layout = "vertical" }: Property
               </div>
               
               {/* Property features */}
-              <div className="flex justify-between mt-3 text-sm text-primary-600 mb-4">
+              <div className="flex justify-between mt-3 text-sm text-white/80 mb-4">
                 <div className="flex items-center">
                   <Bed className="h-4 w-4 mr-1" />
                   <span>{property.bedrooms} beds</span>
