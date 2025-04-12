@@ -325,18 +325,61 @@ export default function Messages({ propertyId }: MessagesProps) {
           <h1 className="text-2xl font-bold text-primary-800">Messages</h1>
           <p className="text-primary-600">Manage your communications</p>
         </div>
-        <Button 
-          onClick={() => setIsNewMessageOpen(true)} 
-          className="bg-secondary-500 hover:bg-secondary-600"
-        >
-          <PenSquare className="h-4 w-4 mr-2" />
-          New Message
-        </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* Sidebar with Actions */}
+        <div className="md:col-span-3">
+          <Card>
+            <CardContent className="p-4">
+              <Button 
+                onClick={() => setIsNewMessageOpen(true)} 
+                className="w-full bg-secondary-500 hover:bg-secondary-600 mb-4 py-6"
+                size="lg"
+              >
+                <PenSquare className="h-5 w-5 mr-2" />
+                Compose New Message
+              </Button>
+              
+              <div className="space-y-1 mt-6">
+                <Button 
+                  variant={activeTab === "received" ? "secondary" : "ghost"}
+                  className="w-full justify-start" 
+                  onClick={() => setActiveTab("received")}
+                >
+                  <Inbox className="h-4 w-4 mr-2" />
+                  Inbox
+                  {receivedMessages && receivedMessages.filter(m => m.status === "unread").length > 0 && (
+                    <Badge className="ml-auto" variant="secondary">
+                      {receivedMessages.filter(m => m.status === "unread").length}
+                    </Badge>
+                  )}
+                </Button>
+                
+                <Button 
+                  variant={activeTab === "sent" ? "secondary" : "ghost"}
+                  className="w-full justify-start" 
+                  onClick={() => setActiveTab("sent")}
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Sent
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start"
+                  disabled
+                >
+                  <ArchiveIcon className="h-4 w-4 mr-2" />
+                  Archived
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      
         {/* Message List */}
-        <div className="md:col-span-1">
+        <div className="md:col-span-4">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex w-full items-center space-x-2">
@@ -351,9 +394,10 @@ export default function Messages({ propertyId }: MessagesProps) {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              <Tabs defaultValue="received" value={activeTab} onValueChange={(value) => setActiveTab(value as "received" | "sent")}>
-                <TabsList className="grid grid-cols-2 mx-4">
+            <CardContent>
+              {/* Tab indicators for mobile */}
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "received" | "sent")}>
+                <TabsList className="grid grid-cols-2">
                   <TabsTrigger value="received">
                     <Inbox className="h-4 w-4 mr-2" />
                     Inbox
@@ -499,8 +543,8 @@ export default function Messages({ propertyId }: MessagesProps) {
                     <AvatarImage 
                       src={
                         activeTab === "received" 
-                          ? getUserById(selectedMessage.senderId)?.profileImage 
-                          : getUserById(selectedMessage.recipientId)?.profileImage
+                          ? getUserById(selectedMessage.senderId)?.profileImage || undefined 
+                          : getUserById(selectedMessage.recipientId)?.profileImage || undefined
                       } 
                     />
                     <AvatarFallback className="bg-primary-200 text-primary-700">
