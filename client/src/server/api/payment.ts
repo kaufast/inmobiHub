@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import { Request, Response } from 'express';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2025-03-31.basil',
 });
 
 export async function handlePayment(req: Request, res: Response) {

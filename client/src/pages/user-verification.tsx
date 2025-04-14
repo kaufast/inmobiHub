@@ -144,19 +144,37 @@ const UserVerificationPage: React.FC<UserVerificationPageProps> = ({ initialVeri
       return await response.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "Success",
-        description: data.message,
-      });
+      toast.success(data.message);
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(error.message);
     },
   });
+
+  const handleApprove = async () => {
+    try {
+      await updateMutation.mutateAsync({
+        userId: user.id,
+        status: 'approved'
+      });
+      toast.success('User verification approved successfully');
+    } catch (error) {
+      toast.error('Failed to approve verification');
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      await updateMutation.mutateAsync({
+        userId: user.id,
+        status: 'rejected',
+        reason: 'Document verification failed'
+      });
+      toast.success('User verification rejected');
+    } catch (error) {
+      toast.error('Failed to reject verification');
+    }
+  };
 
   if (isAuthLoading || isVerificationLoading) {
     return (
@@ -226,14 +244,9 @@ const UserVerificationPage: React.FC<UserVerificationPageProps> = ({ initialVeri
                         )}
                       </p>
                       <Button
-                        onClick={() =>
-                          updateMutation.mutate({
-                            userId: user.id,
-                            status: AUTH.VERIFICATION_STATUSES.PENDING,
-                          })
-                        }
+                        onClick={handleReject}
                       >
-                        Request Again
+                        Reject
                       </Button>
                     </div>
                   )}
@@ -243,14 +256,9 @@ const UserVerificationPage: React.FC<UserVerificationPageProps> = ({ initialVeri
                         You haven't submitted a verification request yet.
                       </p>
                       <Button
-                        onClick={() =>
-                          updateMutation.mutate({
-                            userId: user.id,
-                            status: AUTH.VERIFICATION_STATUSES.PENDING,
-                          })
-                        }
+                        onClick={handleApprove}
                       >
-                        Request Verification
+                        Approve
                       </Button>
                     </div>
                   )}
