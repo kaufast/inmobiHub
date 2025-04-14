@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/use-auth";
-import { LoginUser, RegisterUser, loginUserSchema, registerUserSchema } from "@shared/schema";
+import { LoginUser, RegisterUser, loginUserSchema, registerUserSchema } from "../shared/schema";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { z } from "zod";
@@ -256,7 +256,7 @@ export default function AuthPage() {
                               <Button 
                                 variant="link" 
                                 type="button"
-                                className="h-auto p-0 text-sm text-secondary-600 hover:text-secondary-500"
+                                className="h-auto p-0 text-secondary-600 hover:text-secondary-500"
                                 onClick={() => toast({
                                   title: "Password Reset",
                                   description: "Password reset functionality is coming soon.",
