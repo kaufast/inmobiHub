@@ -1,6 +1,13 @@
+import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+
+// Debug: Check if DATABASE_URL is loaded
+console.log('Environment variables loaded:', {
+  DATABASE_URL: process.env.DATABASE_URL ? 'Loaded' : 'Not loaded',
+  NODE_ENV: process.env.NODE_ENV
+});
 
 const app = express();
 app.use(express.json());
@@ -11,6 +18,7 @@ app.use((req, res, next) => {
   // Allow requests from any origin in development
   // In production, use specific allowed domains
   const allowedOrigins = [
+    'http://localhost:3000',
     'http://localhost:5000',
     'https://inmobi.replit.app',
     'https://inmobi-app.replit.app',
@@ -93,10 +101,8 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // Use port 3000 for local development
+  const port = 3000;
   server.listen({
     port,
     host: "0.0.0.0",

@@ -1,55 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server/index.ts",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/register",
-      "methods": ["POST"],
-      "dest": "server/index.ts"
-    },
-    {
-      "src": "/api/login",
-      "methods": ["POST"],
-      "dest": "server/index.ts"
-    },
-    {
-      "src": "/api/logout",
-      "methods": ["POST"],
-      "dest": "server/index.ts"
-    },
-    {
-      "src": "/api/user",
-      "methods": ["GET"],
-      "dest": "server/index.ts"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "server/index.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "client/dist/$1"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "rewrites": [
-    { 
-      "source": "/((?!api/.*).*)", 
-      "destination": "/index.html" 
-    }
-  ]
+  "framework": "vite",
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/dist",
+  "installCommand": "cd client && npm install",
+  "public": true
 }

@@ -1,7 +1,8 @@
+import React from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { Property, Neighborhood } from "@shared/schema";
 import { useParams, Link } from "wouter";
-import { Loader2, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle, Sparkles, BarChart2, TrendingUp, CalendarClock } from "lucide-react";
+import { Loader2Icon, MapPin, Bed, Bath, ArrowLeft, Heart, Share, Printer, Home, Info, MessageCircle, Sparkles, BarChart2, TrendingUp, CalendarClock } from "lucide-react";
 import PersonalizedDescription from "@/components/properties/personalized-description";
 import PropertyValuePredictor from "@/components/property/PropertyValuePredictor";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import PropertyTourWidget from "@/components/properties/property-tour-widget";
 import TourScheduler from "@/components/properties/tour-scheduler";
 
-export default function PropertyDetailsPage() {
+interface PropertyDetailsPageProps {
+  id: string;
+}
+
+const PropertyDetailsPage: React.FC<PropertyDetailsPageProps> = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -39,11 +44,21 @@ export default function PropertyDetailsPage() {
 
   const { isLoading, error, data: property } = useQuery<Property>({
     queryKey: [`/api/properties/${id}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/properties/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch property');
+      return response.json();
+    },
   });
 
   const { data: favorites } = useQuery<Property[]>({
     queryKey: ["/api/user/favorites"],
     enabled: !!user,
+    queryFn: async () => {
+      const response = await fetch('/api/user/favorites');
+      if (!response.ok) throw new Error('Failed to fetch favorites');
+      return response.json();
+    },
   });
 
   // Check if property is in favorites
@@ -92,7 +107,7 @@ export default function PropertyDetailsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
+        <Loader2Icon className="h-8 w-8 animate-spin text-primary-500" />
       </div>
     );
   }
@@ -248,10 +263,9 @@ export default function PropertyDetailsPage() {
                     e.preventDefault();
                     toast({
                       title: "Premium Feature",
-                      description: "Property analytics are available to Premium subscribers only",
+                      description: "Upgrade to premium to access property analytics",
                       variant: "destructive",
                     });
-                    return;
                   }
                 }}
               >
@@ -261,241 +275,162 @@ export default function PropertyDetailsPage() {
           </div>
         </div>
 
-        {/* Property Overview */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          {/* Property Gallery */}
-          <PropertyGallery images={property.images} />
-          
-          <div className="p-6">
-            {/* Property header */}
-            <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6">
-              <div>
-                {property.isPremium && (
-                  <span className="inline-block bg-secondary-500 text-white text-xs font-medium px-2.5 py-1 rounded-full mb-2">
-                    Premium
-                  </span>
-                )}
-                <h1 className="text-2xl md:text-3xl font-bold text-primary-800 mb-2">
-                  {property.title}
-                </h1>
-                <div className="flex items-center text-primary-600 mb-2">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  <span>
-                    {property.address}, {property.city}, {property.state} {property.zipCode}
-                  </span>
-                </div>
+        {/* Property Gallery */}
+        <PropertyGallery images={property.images} />
+
+        {/* Property Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="lg:col-span-2">
+            <h1 className="text-3xl font-bold text-primary-800 mb-2">{property.title}</h1>
+            <div className="flex items-center text-primary-600 mb-4">
+              <MapPin className="h-4 w-4 mr-1" />
+              <span>{property.address}, {property.city}, {property.state} {property.zipCode}</span>
+            </div>
+            
+            <div className="flex flex-wrap gap-4 mb-6">
+              <div className="flex items-center">
+                <Bed className="h-4 w-4 mr-1 text-primary-600" />
+                <span>{property.bedrooms} beds</span>
               </div>
-              
-              <div className="mt-4 md:mt-0 text-right">
-                <div className="text-3xl font-bold text-primary-800">
-                  {formatPrice(property.price)}
-                </div>
-                {property.isPremium && (
-                  <div className="text-secondary-500 font-medium text-sm flex items-center justify-end mt-1">
-                    Premium listing
+              <div className="flex items-center">
+                <Bath className="h-4 w-4 mr-1 text-primary-600" />
+                <span>{property.bathrooms} baths</span>
+              </div>
+              <div className="flex items-center">
+                <Home className="h-4 w-4 mr-1 text-primary-600" />
+                <span>{property.squareFeet.toLocaleString()} sq ft</span>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+              <h2 className="text-2xl font-bold text-primary-800 mb-4">Description</h2>
+              <p className="text-primary-600 whitespace-pre-line">{property.description}</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+              <h2 className="text-2xl font-bold text-primary-800 mb-4">Features</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {property.features.map((feature, index) => (
+                  <div key={index} className="flex items-center">
+                    <Sparkles className="h-4 w-4 mr-2 text-secondary-500" />
+                    <span>{feature}</span>
                   </div>
-                )}
+                ))}
               </div>
             </div>
-            
-            {/* Property features */}
-            <div className="grid grid-cols-3 gap-4 mb-6 py-4 border-y border-primary-100">
-              <div className="text-center">
-                <div className="flex justify-center">
-                  <Bed className="h-5 w-5 text-primary-600" />
-                </div>
-                <div className="mt-1">
-                  <span className="font-bold text-primary-800">{property.bedrooms}</span>
-                  <span className="text-primary-600 text-sm ml-1">Beds</span>
-                </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+              <h2 className="text-2xl font-bold text-primary-800 mb-4">Location</h2>
+              <EnhancedPropertyMap 
+                latitude={property.latitude}
+                longitude={property.longitude}
+                address={property.address}
+              />
+            </div>
+          </div>
+
+          <div className="lg:col-span-1">
+            <div className="bg-white p-6 rounded-lg shadow-sm sticky top-4">
+              <div className="text-3xl font-bold text-primary-800 mb-2">
+                {formatPrice(property.price)}
               </div>
               
-              <div className="text-center">
-                <div className="flex justify-center">
-                  <Bath className="h-5 w-5 text-primary-600" />
-                </div>
-                <div className="mt-1">
-                  <span className="font-bold text-primary-800">{property.bathrooms}</span>
-                  <span className="text-primary-600 text-sm ml-1">Baths</span>
-                </div>
+              <div className="flex items-center text-primary-600 mb-4">
+                <TrendingUp className="h-4 w-4 mr-1" />
+                <span>Price per sq ft: ${Math.round(property.price / property.squareFeet)}</span>
               </div>
-              
-              <div className="text-center">
-                <div className="flex justify-center">
-                  <svg
-                    className="h-5 w-5 text-primary-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"
-                    />
-                  </svg>
+
+              <Separator className="my-4" />
+
+              <div className="space-y-4">
+                <Button className="w-full" size="lg">
+                  <CalendarClock className="mr-2 h-4 w-4" />
+                  Schedule a Tour
+                </Button>
+
+                <Button variant="outline" className="w-full" size="lg">
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  Contact Agent
+                </Button>
+
+                <Button variant="outline" className="w-full" size="lg" onClick={toggleFavorite}>
+                  <Heart className={`mr-2 h-4 w-4 ${isFavorite ? 'fill-secondary-500 text-secondary-500' : ''}`} />
+                  {isFavorite ? 'Saved' : 'Save Property'}
+                </Button>
+
+                <PropertyShare property={property} variant="button" className="w-full" />
+              </div>
+
+              <Separator className="my-4" />
+
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-primary-600">Property Type:</span>
+                  <span className="font-medium">{property.propertyType}</span>
                 </div>
-                <div className="mt-1">
-                  <span className="font-bold text-primary-800">{property.squareFeet.toLocaleString()}</span>
-                  <span className="text-primary-600 text-sm ml-1">Sq Ft</span>
+                <div className="flex justify-between">
+                  <span className="text-primary-600">Year Built:</span>
+                  <span className="font-medium">{property.yearBuilt}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-primary-600">Lot Size:</span>
+                  <span className="font-medium">{property.lotSize.toLocaleString()} sq ft</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-primary-600">Garage:</span>
+                  <span className="font-medium">{property.garage ? 'Yes' : 'No'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-primary-600">Pool:</span>
+                  <span className="font-medium">{property.pool ? 'Yes' : 'No'}</span>
                 </div>
               </div>
             </div>
-            
-            {/* Description */}
-            <div className="mb-8">
-              <h2 className="text-xl font-bold text-primary-800 mb-3">About This Property</h2>
-              <p className="text-primary-600 mb-6">{property.description}</p>
-              
-              {/* AI-Powered Personalized Description */}
-              {user && (
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-primary-800 mb-2 flex items-center">
-                    <Sparkles className="h-4 w-4 text-secondary-500 mr-2" />
-                    Personalized Insights
-                  </h3>
-                  <PersonalizedDescription propertyId={property.id} className="mt-2" />
-                </div>
-              )}
-              
-              {/* Share section */}
-              <div className="mt-8 p-4 bg-primary-50 rounded-lg">
-                <h3 className="text-lg font-semibold text-primary-800 mb-2 flex items-center">
-                  <Share className="h-4 w-4 text-secondary-500 mr-2" />
-                  {t('property.shareTitle', 'Share this property')}
-                </h3>
-                <p className="text-primary-600 mb-4 text-sm">
-                  {t('property.shareDescription', 'Share this property with friends and family, or save it for future reference. You can share via social media, email, or by copying the link.')}
-                </p>
-                <PropertyShare property={property} variant="iconButton" className="mt-2" />
-              </div>
-            </div>
-            
-            {/* Property features list */}
-            {property.features && property.features.length > 0 && (
-              <div className="mb-8">
-                <h2 className="text-xl font-bold text-primary-800 mb-3">Features</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {property.features.map((feature, index) => (
-                    <div key={index} className="flex items-center">
-                      <svg
-                        className="h-4 w-4 text-secondary-500 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span className="text-primary-700">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Contact section */}
-            <div className="bg-primary-50 p-6 rounded-xl">
-              <h2 className="text-xl font-bold text-primary-800 mb-4">Interested in this property?</h2>
-              <div className="flex flex-col md:flex-row gap-4">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="flex-1 bg-secondary-600 hover:bg-secondary-700">
-                      <CalendarClock className="mr-2 h-4 w-4" />
-                      Schedule a Viewing
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[900px] p-0">
-                    <TourScheduler 
-                      propertyId={property.id} 
-                      propertyTitle={property.title} 
-                      propertyAddress={`${property.address}, ${property.city}, ${property.state} ${property.zipCode}`}
-                    />
-                  </DialogContent>
-                </Dialog>
-                <Button variant="outline" className="flex-1">Contact Agent</Button>
-              </div>
+
+            <div className="mt-6">
+              <PropertyValuePredictor property={property} />
             </div>
           </div>
         </div>
-        
-        {/* Property value predictor and tour scheduling */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {/* AI Property Value Predictor */}
-          <div>
-            <div className="flex items-center mb-4">
-              <TrendingUp className="h-5 w-5 text-secondary-500 mr-2" />
-              <h2 className="text-xl font-bold text-primary-800">Property Value Trends</h2>
-            </div>
-            <PropertyValuePredictor propertyId={property.id} />
+
+        {/* Neighborhood Information */}
+        {property.neighborhoodId && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-primary-800 mb-6">Neighborhood</h2>
+            <NeighborhoodScoreCard neighborhoodId={property.neighborhoodId} />
           </div>
-          
-          {/* Property Tour Widget */}
-          <div>
-            <PropertyTourWidget property={property} />
-          </div>
+        )}
+
+        {/* Personalized Description */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-primary-800 mb-6">Personalized Description</h2>
+          <PersonalizedDescription property={property} />
         </div>
-        
-        {/* Property Location and Neighborhood */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          <div className="p-6">
-            <Tabs defaultValue="location" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="location">Location</TabsTrigger>
-                <TabsTrigger value="neighborhood">Neighborhood</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="location" className="mt-0">
-                <div className="h-[500px] rounded-lg overflow-hidden">
-                  <EnhancedPropertyMap
-                    initialProperty={property}
-                    center={{ lat: property.latitude, lng: property.longitude }}
-                    zoom={15}
-                    height="100%"
-                  />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="neighborhood" className="mt-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-1">
-                    {property.neighborhoodId ? (
-                      <NeighborhoodScoreCard neighborhoodId={property.neighborhoodId} />
-                    ) : (
-                      <div className="bg-primary-50 p-6 rounded-lg text-center">
-                        <Info className="h-10 w-10 text-primary-400 mx-auto mb-3" />
-                        <h3 className="text-lg font-medium text-primary-800 mb-2">No Neighborhood Data</h3>
-                        <p className="text-primary-600 text-sm">
-                          Detailed neighborhood information is not available for this property.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="lg:col-span-2 h-[400px] rounded-lg overflow-hidden">
-                    <EnhancedPropertyMap
-                      initialProperty={property}
-                      center={{ lat: property.latitude, lng: property.longitude }}
-                      zoom={14}
-                      height="100%"
-                      showNeighborhoodData={true}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-        {/* Property-specific chat widget */}
-        <ChatWidget propertyId={property.id} delayAppearance={10000} />
+
+        {/* Chat Widget */}
+        <ChatWidget propertyId={property.id} />
+
+        {/* Tour Scheduler */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="fixed bottom-4 right-4">
+              <CalendarClock className="mr-2 h-4 w-4" />
+              Schedule a Tour
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Schedule a Property Tour</DialogTitle>
+              <DialogDescription>
+                Choose a date and time that works for you to tour this property.
+              </DialogDescription>
+            </DialogHeader>
+            <TourScheduler propertyId={property.id} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
-}
+};
+
+export default PropertyDetailsPage;

@@ -1,11 +1,13 @@
-import { neon, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import pkg from 'pg';
+const { Pool } = pkg;
+import { drizzle } from 'drizzle-orm/node-postgres';
 
-// Optional: Disable forcing SSL as we're in a secure environment
-neonConfig.fetchConnectionCache = true;
-
-// Use the connection string from environment variables
-const sql = neon(process.env.DATABASE_URL!);
+// Create a connection pool
+const pool = new Pool({
+  user: 'melchor',
+  database: 'neondb_local',
+  ssl: false
+});
 
 // Create Drizzle instance
-export const db = drizzle(sql);
+export const db = drizzle(pool);

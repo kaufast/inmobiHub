@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery, useMutation, UseMutationResult } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { API_ENDPOINTS, AUTH } from "@/lib/constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +16,7 @@ interface User {
 }
 
 interface VerificationStatus {
-  status: string;
+  status: 'pending' | 'approved' | 'rejected' | 'none';
   documentType?: string;
   submittedAt?: string;
   approvedAt?: string;
@@ -106,7 +106,7 @@ const AdminVerificationPanel: React.FC<AdminVerificationPanelProps> = ({ updateM
   );
 };
 
-const UserVerificationPage = ({ initialVerificationStatus }: UserVerificationPageProps) => {
+const UserVerificationPage: React.FC<UserVerificationPageProps> = ({ initialVerificationStatus }) => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const { toast } = useToast();
 
@@ -179,7 +179,7 @@ const UserVerificationPage = ({ initialVerificationStatus }: UserVerificationPag
     <div className="container mx-auto py-8">
       <PageHeader
         title="User Verification"
-        description="View and manage your verification status"
+        description="Manage your verification status and submit documents for review"
       />
 
       <Tabs defaultValue="status" className="mt-8">
@@ -191,69 +191,73 @@ const UserVerificationPage = ({ initialVerificationStatus }: UserVerificationPag
         </TabsList>
 
         <TabsContent value="status" className="mt-4">
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <div className="flex flex-col space-y-1.5 p-6">
-              <h2 className="text-2xl font-semibold leading-none tracking-tight">
-                Verification Status
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Your current verification status and details
-              </p>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
             </div>
-            <div className="p-6 pt-0">
-              <div className="space-y-4">
-                <VerificationBadge status={verificationStatus?.status || "none"} />
-                {verificationStatus?.status === "pending" && (
-                  <p className="text-sm text-muted-foreground">
-                    Your verification request is being reviewed. We'll notify you once it's processed.
-                  </p>
-                )}
-                {verificationStatus?.status === "approved" && (
-                  <p className="text-sm text-muted-foreground">
-                    Your account is verified. Approved on{" "}
-                    {new Date(verificationStatus.approvedAt || "").toLocaleDateString()}
-                  </p>
-                )}
-                {verificationStatus?.status === "rejected" && (
-                  <div className="space-y-2">
-                    <p className="text-sm text-destructive">
-                      Your verification was rejected.
-                      {verificationStatus.rejectionReason && (
-                        <span> Reason: {verificationStatus.rejectionReason}</span>
-                      )}
-                    </p>
-                    <Button
-                      onClick={() =>
-                        updateMutation.mutate({
-                          userId: user.id,
-                          status: AUTH.VERIFICATION_STATUSES.PENDING,
-                        })
-                      }
-                    >
-                      Request Again
-                    </Button>
-                  </div>
-                )}
-                {(!verificationStatus?.status || verificationStatus.status === "none") && (
-                  <div className="space-y-2">
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Verification Status</CardTitle>
+                <CardDescription>
+                  Current status of your verification request
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-4">
+                  <VerificationBadge status={verificationStatus?.status || "none"} />
+                  {verificationStatus?.status === "pending" && (
                     <p className="text-sm text-muted-foreground">
-                      You haven't submitted a verification request yet.
+                      Your verification request is being reviewed. We'll notify you once it's processed.
                     </p>
-                    <Button
-                      onClick={() =>
-                        updateMutation.mutate({
-                          userId: user.id,
-                          status: AUTH.VERIFICATION_STATUSES.PENDING,
-                        })
-                      }
-                    >
-                      Request Verification
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+                  )}
+                  {verificationStatus?.status === "approved" && (
+                    <p className="text-sm text-muted-foreground">
+                      Your account is verified. Approved on{" "}
+                      {new Date(verificationStatus.approvedAt || "").toLocaleDateString()}
+                    </p>
+                  )}
+                  {verificationStatus?.status === "rejected" && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-destructive">
+                        Your verification was rejected.
+                        {verificationStatus.rejectionReason && (
+                          <span> Reason: {verificationStatus.rejectionReason}</span>
+                        )}
+                      </p>
+                      <Button
+                        onClick={() =>
+                          updateMutation.mutate({
+                            userId: user.id,
+                            status: AUTH.VERIFICATION_STATUSES.PENDING,
+                          })
+                        }
+                      >
+                        Request Again
+                      </Button>
+                    </div>
+                  )}
+                  {(!verificationStatus?.status || verificationStatus.status === "none") && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        You haven't submitted a verification request yet.
+                      </p>
+                      <Button
+                        onClick={() =>
+                          updateMutation.mutate({
+                            userId: user.id,
+                            status: AUTH.VERIFICATION_STATUSES.PENDING,
+                          })
+                        }
+                      >
+                        Request Verification
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {user.role === "admin" && (
