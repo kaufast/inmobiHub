@@ -44,7 +44,6 @@ import { OrganizationSchema } from "./components/seo/schema-markup";
 import { Helmet } from "react-helmet";
 import { OnboardingTourProvider } from "./hooks/use-onboarding-tour";
 import { useLanguage } from "./hooks/use-language";
-import CookieConsent from "./components/cookie-consent-fixed";
 
 function AppContent() {
   return (
@@ -87,7 +86,6 @@ function AppContent() {
       </main>
       <Footer />
       <ChatWidget delayAppearance={10000} />
-      <CookieConsent />
       <Toaster />
     </>
   );

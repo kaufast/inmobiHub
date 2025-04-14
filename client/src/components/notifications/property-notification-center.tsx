@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePropertyNotifications } from '@/hooks/use-property-notifications';
 import { Bell, BellOff, X, AlertTriangle, Loader2 } from 'lucide-react';
@@ -38,9 +38,11 @@ export default function PropertyNotificationCenter() {
     }
     
     return () => {
-      unsubscribe();
+      if (user) {
+        unsubscribe();
+      }
     };
-  }, [user, subscribe, unsubscribe]);
+  }, [user]);
   
   const getConnectionStatusColor = () => {
     switch (connectionStatus) {
@@ -52,7 +54,7 @@ export default function PropertyNotificationCenter() {
     }
   };
   
-  const handleToggleSubscription = () => {
+  const handleToggleSubscription = useCallback(() => {
     if (connectionStatus === 'connected') {
       unsubscribe();
       toast({
@@ -66,12 +68,12 @@ export default function PropertyNotificationCenter() {
         description: t('notifications.subscribing'),
       });
     }
-  };
+  }, [connectionStatus, subscribe, unsubscribe, t, toast]);
   
-  const handleClearNotifications = () => {
+  const handleClearNotifications = useCallback(() => {
     clearNotifications();
     setOpen(false);
-  };
+  }, [clearNotifications]);
   
   return (
     <Popover open={open} onOpenChange={setOpen}>

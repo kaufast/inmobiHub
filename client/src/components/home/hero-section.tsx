@@ -196,6 +196,9 @@ export default function HeroSection() {
                     </div>
                     <input
                       type="text"
+                      id="property-search"
+                      name="property-search"
+                      aria-label="Search for properties"
                       value={searchParams.location}
                       onChange={(e) => handleInputChange('location', e.target.value)}
                       placeholder={t("common.searchPlaceholder", "Enter city, zip or address, buy or sell")}

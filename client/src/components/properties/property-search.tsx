@@ -77,10 +77,12 @@ export default function PropertySearch({
             </div>
             <Input 
               id="location" 
+              name="location"
               placeholder="Enter city, zip or address"
               className="pl-10 pr-10 bg-gray-100 focus:bg-white border-gray-300"
               value={searchParams.location || ''}
               onChange={(e) => handleInputChange('location', e.target.value)}
+              aria-label="Search location"
             />
             <div className="absolute inset-y-0 right-0 flex items-center">
               <button
@@ -141,7 +143,7 @@ export default function PropertySearch({
             value={searchParams.listingType} 
             onValueChange={(value) => handleInputChange('listingType', value as any)}
           >
-            <SelectTrigger id="listing_type">
+            <SelectTrigger id="listing_type" aria-label="Select listing type">
               <SelectValue placeholder="Buy" />
             </SelectTrigger>
             <SelectContent>
@@ -158,8 +160,10 @@ export default function PropertySearch({
           <Select 
             value={searchParams.propertyType} 
             onValueChange={(value) => handleInputChange('propertyType', value as any)}
+            id="property_type"
+            name="property_type"
           >
-            <SelectTrigger id="property_type">
+            <SelectTrigger aria-label="Select property type">
               <SelectValue placeholder="All Property Types" />
             </SelectTrigger>
             <SelectContent>
@@ -175,31 +179,37 @@ export default function PropertySearch({
         {/* Price range */}
         <div>
           <Label htmlFor="price_range" className="block text-sm font-medium text-primary-700 mb-1">Price Range</Label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3" id="price_range">
             <div className="relative">
+              <Label htmlFor="min_price" className="sr-only">Minimum Price</Label>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <span className="text-primary-500">$</span>
               </div>
               <Input 
                 id="min_price" 
+                name="min_price"
                 placeholder="Min" 
                 className="pl-8"
                 type="number"
                 value={searchParams.minPrice || ''}
                 onChange={(e) => handleInputChange('minPrice', e.target.value ? Number(e.target.value) : undefined)}
+                aria-label="Minimum price"
               />
             </div>
             <div className="relative">
+              <Label htmlFor="max_price" className="sr-only">Maximum Price</Label>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <span className="text-primary-500">$</span>
               </div>
               <Input 
                 id="max_price" 
+                name="max_price"
                 placeholder="Max" 
                 className="pl-8"
                 type="number"
                 value={searchParams.maxPrice || ''}
                 onChange={(e) => handleInputChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
+                aria-label="Maximum price"
               />
             </div>
           </div>
@@ -208,12 +218,14 @@ export default function PropertySearch({
         {/* Beds & Baths */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="beds" className="block text-sm font-medium text-primary-700 mb-1">Beds</Label>
+            <Label htmlFor="beds-field" className="block text-sm font-medium text-primary-700 mb-1">Beds</Label>
             <Select 
               value={searchParams.beds?.toString()} 
-              onValueChange={(value) => handleInputChange('beds', value ? Number(value) : undefined)}
+              onValueChange={(value) => handleInputChange('beds', Number(value))}
+              id="beds-field"
+              name="beds"
             >
-              <SelectTrigger id="beds">
+              <SelectTrigger aria-label="Select number of bedrooms">
                 <SelectValue placeholder="Any" />
               </SelectTrigger>
               <SelectContent>
@@ -230,9 +242,11 @@ export default function PropertySearch({
             <Label htmlFor="baths" className="block text-sm font-medium text-primary-700 mb-1">Baths</Label>
             <Select 
               value={searchParams.baths?.toString()} 
-              onValueChange={(value) => handleInputChange('baths', value ? Number(value) : undefined)}
+              onValueChange={(value) => handleInputChange('baths', Number(value))}
+              id="baths"
+              name="baths"
             >
-              <SelectTrigger id="baths">
+              <SelectTrigger aria-label="Select number of bathrooms">
                 <SelectValue placeholder="Any" />
               </SelectTrigger>
               <SelectContent>

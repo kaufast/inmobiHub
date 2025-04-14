@@ -165,6 +165,28 @@ export default function Subscription() {
     subscribeMutation.mutate(data);
   };
 
+  const handleManageSubscription = async () => {
+    try {
+      const response = await fetch('/api/customer-portal', {
+        method: 'POST',
+      });
+
+      const { url } = await response.json();
+      
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error('No portal URL received');
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to access customer portal',
+        variant: 'destructive',
+      });
+    }
+  };
+
   // Show loading while subscription data is loading
   if (isLoadingSubscription) {
     return (
@@ -377,6 +399,17 @@ export default function Subscription() {
           </Card>
         )}
       </div>
+
+      {subscription?.tier !== 'free' && (
+        <div className="mt-8">
+          <Button
+            variant="outline"
+            onClick={handleManageSubscription}
+          >
+            Manage Subscription
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

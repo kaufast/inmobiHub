@@ -300,8 +300,23 @@ export const PropertyNotificationsProvider = ({
     
     // Clean up on unmount or user change
     return cleanup;
-  }, [user, connect]);
-  
+  }, [user]);
+
+  // Separate effect for filters
+  useEffect(() => {
+    if (filters && socketRef.current?.readyState === WebSocket.OPEN) {
+      try {
+        const message = JSON.stringify({
+          type: 'subscribe',
+          payload: filters,
+        });
+        socketRef.current.send(message);
+      } catch (error) {
+        console.error('Error sending filters:', error);
+      }
+    }
+  }, [filters]);
+
   return (
     <PropertyNotificationsContext.Provider
       value={{

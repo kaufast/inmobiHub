@@ -213,6 +213,7 @@ export default function ContactPage() {
                           onChange={handleChange}
                           placeholder="Your name"
                           required
+                          autoComplete="name"
                         />
                       </div>
                       
@@ -226,6 +227,7 @@ export default function ContactPage() {
                           onChange={handleChange}
                           placeholder="Your email address"
                           required
+                          autoComplete="email"
                         />
                       </div>
                     </div>
@@ -239,6 +241,7 @@ export default function ContactPage() {
                           value={formData.phone}
                           onChange={handleChange}
                           placeholder="Your phone number"
+                          autoComplete="tel"
                         />
                       </div>
                       
@@ -247,8 +250,10 @@ export default function ContactPage() {
                         <Select 
                           value={formData.inquiryType}
                           onValueChange={handleSelectChange}
+                          id="inquiryType"
+                          name="inquiryType"
                         >
-                          <SelectTrigger id="inquiryType">
+                          <SelectTrigger aria-label="Select inquiry type">
                             <SelectValue placeholder="Select inquiry type" />
                           </SelectTrigger>
                           <SelectContent>
