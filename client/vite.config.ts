@@ -23,5 +23,8 @@ export default defineConfig(({ mode }) => {
     define: {
       'import.meta.env': JSON.stringify(env),
     },
+    css: {
+      postcss: './postcss.config.js',
+    },
   };
 }); 
