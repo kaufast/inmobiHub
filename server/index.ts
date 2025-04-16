@@ -1,7 +1,11 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import cors from 'cors';
+import { config } from './src/config';
+import { setupMiddleware } from './src/middleware';
+import { setupRoutes } from './src/routes';
+import { setupDatabase } from './src/database';
 
 // Debug: Check if DATABASE_URL is loaded
 console.log('Environment variables loaded:', {
@@ -13,43 +17,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Add CORS headers for all API requests
-app.use((req, res, next) => {
-  // Allow requests from any origin in development
-  // In production, use specific allowed domains
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'https://inmobi.replit.app',
-    'https://inmobi-app.replit.app',
-    'https://inmobi.mobi',
-    // Add any other domains that might be used in production
-  ];
-  
-  const origin = req.headers.origin;
-  
-  // In development or when origin is undefined, allow all
-  if (!origin || process.env.NODE_ENV === 'development') {
-    res.header('Access-Control-Allow-Origin', '*');
-  } else if (allowedOrigins.includes(origin)) {
-    // In production, only allow specific origins
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-  
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, Pragma, X-Requested-With');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Vary', 'Origin'); // Important for caching with multiple origins
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  
-  next();
-});
+// Configure CORS
+app.use(cors(config.cors));
+
+// Setup middleware
+setupMiddleware(app);
+
+// Setup routes
+setupRoutes(app);
+
+// Setup database
+setupDatabase();
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -82,7 +60,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  const server = app.listen(config.port, () => {
+    log(`serving on port ${config.port}`);
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -100,14 +80,4 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
-
-  // Use port 3000 for local development
-  const port = 3000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
 })();
