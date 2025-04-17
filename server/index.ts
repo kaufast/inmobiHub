@@ -29,15 +29,13 @@ setupRoutes(app);
 // Setup database
 setupDatabase();
 
-// Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/dist')));
+// Serve static files
+app.use(express.static(path.join(__dirname, '../client/dist')));
   
-  // Handle client-side routing
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-}
+// Handle client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
