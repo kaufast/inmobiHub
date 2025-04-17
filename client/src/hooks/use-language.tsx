@@ -23,7 +23,23 @@ const languageCodeMap: Record<string, string> = {
   'ca': 'ca-ES',
   'fr': 'fr-FR',
   'de': 'de-DE',
-  'it': 'it-IT'
+  'it': 'it-IT',
+  'ar': 'ar-SA',
+  'zh': 'zh-CN'
+};
+
+// Region-specific mappings
+const regionMap: Record<string, string> = {
+  'MX': 'es-MX',
+  'ES': 'es-ES',
+  'GB': 'en-GB',
+  'US': 'en-US',
+  'FR': 'fr-FR',
+  'DE': 'de-DE',
+  'AT': 'de-AT',
+  'IT': 'it-IT',
+  'SA': 'ar-SA',
+  'CN': 'zh-CN'
 };
 
 export function useLanguage() {
@@ -56,9 +72,21 @@ export function useLanguage() {
       return code;
     }
     
-    // If it's a language code without region (e.g., 'en' instead of 'en-GB')
-    const baseCode = code.split('-')[0];
-    return languageCodeMap[baseCode] || 'en-GB'; // Default to English if not found
+    // Split into language and region
+    const [lang, region] = code.split('-');
+    
+    // If we have a region, try to map it
+    if (region && regionMap[region]) {
+      return regionMap[region];
+    }
+    
+    // If it's a language code without region, use the default mapping
+    if (lang && languageCodeMap[lang]) {
+      return languageCodeMap[lang];
+    }
+    
+    // Default to English if not found
+    return 'en-GB';
   }, []);
   
   // Change language with normalization and persistence
@@ -68,8 +96,9 @@ export function useLanguage() {
     // Change the language in i18next
     await i18n.changeLanguage(normalizedCode);
     
-    // Store in localStorage for unauthenticated users
+    // Store in localStorage and cookie for persistence
     localStorage.setItem('i18nextLng', normalizedCode);
+    document.cookie = `i18next=${normalizedCode}; path=/; sameSite=strict`;
     
     // If user is authenticated, update their profile preference
     if (user?.id) {
@@ -98,10 +127,9 @@ export function useLanguage() {
     const detectAndSetLanguage = async () => {
       // Priority order:
       // 1. User's saved preference from profile (if authenticated)
-      // 2. Previously stored preference in localStorage
+      // 2. Previously stored preference in localStorage/cookie
       // 3. Browser language setting
-      // 4. IP geolocation (optional)
-      // 5. Default to English
+      // 4. Default to English
 
       let detectedLang;
       
@@ -109,16 +137,13 @@ export function useLanguage() {
       if (user?.preferredLanguage) {
         detectedLang = user.preferredLanguage;
       } 
-      // 2. Check localStorage
+      // 2. Check localStorage and cookie
       else if (localStorage.getItem('i18nextLng')) {
         detectedLang = localStorage.getItem('i18nextLng');
       } 
       // 3. Check browser language
       else {
         detectedLang = navigator.language;
-        
-        // 4. Optionally check IP geolocation (could be implemented in the future)
-        // This would require a backend API call to a geolocation service
       }
       
       // Normalize and set the language

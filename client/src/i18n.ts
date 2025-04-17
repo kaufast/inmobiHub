@@ -620,9 +620,9 @@ const esMX = {
     newProperty: 'Nueva propiedad listada',
     updatedProperty: 'Propiedad actualizada',
     status: {
-      connecting: 'Conectando',
-      connected: 'Conectado',
-      disconnected: 'Desconectado',
+      connecting: 'Connectando',
+      connected: 'Connectado',
+      disconnected: 'Desconnectado',
       error: 'Error de conexión'
     }
   }
@@ -1157,8 +1157,17 @@ i18n
     },
     returnObjects: true,
     detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
+      order: ['path', 'querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
+      lookupQuerystring: 'lng',
+      lookupCookie: 'i18next',
+      lookupLocalStorage: 'i18nextLng',
+      lookupFromPathIndex: 0,
+      caches: ['localStorage', 'cookie'],
+      excludeCacheFor: ['cimode'],
+      cookieMinutes: 10,
+      cookieDomain: '',
+      htmlTag: document.documentElement,
+      cookieOptions: { path: '/', sameSite: 'strict' }
     },
   });
 
