@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
-import { setupVite, serveStatic, log } from "./vite";
 import cors from 'cors';
+import path from 'path';
 import { config } from './src/config';
 import { setupMiddleware } from './src/middleware';
 import { setupRoutes } from './src/routes';
@@ -29,6 +29,16 @@ setupRoutes(app);
 // Setup database
 setupDatabase();
 
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  
+  // Handle client-side routing
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+}
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -52,32 +62,22 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      log(logLine);
+      console.log(logLine);
     }
   });
 
   next();
 });
 
-(async () => {
-  const server = app.listen(config.port, () => {
-    log(`serving on port ${config.port}`);
-  });
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  res.status(status).json({ message });
+  console.error(err);
+});
 
-    res.status(status).json({ message });
-    throw err;
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
-})();
+const port = process.env.PORT || config.port;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});

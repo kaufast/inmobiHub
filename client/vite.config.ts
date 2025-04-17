@@ -17,9 +17,17 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
+      emptyOutDir: true,
       sourcemap: true,
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         external: ['i18next', 'i18next-browser-languagedetector'],
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom', 'react-router-dom'],
+            leaflet: ['leaflet', 'react-leaflet'],
+          },
+        },
       },
     },
     server: {
