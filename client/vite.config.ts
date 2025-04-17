@@ -12,9 +12,15 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    optimizeDeps: {
+      include: ['i18next', 'i18next-browser-languagedetector'],
+    },
     build: {
       outDir: 'dist',
       sourcemap: true,
+      rollupOptions: {
+        external: ['i18next', 'i18next-browser-languagedetector'],
+      },
     },
     server: {
       port: 3000,
